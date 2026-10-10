@@ -1,0 +1,24 @@
+#include "engines/dense/apply_matrix.h"
+
+#include "kernels/dense_kernels.h"
+
+namespace menos::engines::dense {
+
+// The body moved to the primitive API when the CUDA backend arrived
+// (docs/adr/0014). These forwarders are kept so the dense engine's existing
+// call sites and its oracle tests (tests/engines/dense/apply_matrix_test.cpp)
+// keep exercising the same code through the same name.
+void apply_matrix(std::span<std::complex<double>> state,
+                  std::span<const std::complex<double>> matrix,
+                  std::span<const std::uint32_t> operands) {
+    kernels::cpu::apply_matrix(state, matrix, operands, /*num_threads=*/1);
+}
+
+void apply_matrix(std::span<std::complex<double>> state,
+                  std::span<const std::complex<double>> matrix,
+                  std::span<const std::uint32_t> operands,
+                  std::uint32_t num_threads) {
+    kernels::cpu::apply_matrix(state, matrix, operands, num_threads);
+}
+
+}  // namespace menos::engines::dense

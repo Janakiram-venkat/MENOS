@@ -1,0 +1,12 @@
+# LeakSanitizer suppressions for the cuda-dev and cuda12-dev test presets.
+#
+# WSL's CUDA driver shim leaks 320 bytes in 2 allocations, once per process,
+# from a pthread_once initializer reached through cuGetProcAddress_v2 /
+# cuDriverGetVersion. No MENOS frame appears in the stack, and it happens with
+# both the CUDA 12.4 and 13.3 runtimes (docs/adr/0014 section 17).
+#
+# The pattern is the WSL shim's full path, deliberately: a leak through a
+# native Linux libcuda, or any leak whose stack does not pass through this
+# library, is still reported. LeakSanitizer prints every suppressed leak in
+# its summary, so this never hides that the suppression fired.
+leak:/usr/lib/wsl/lib/libcuda.so

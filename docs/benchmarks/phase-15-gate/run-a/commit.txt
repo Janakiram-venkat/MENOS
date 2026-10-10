@@ -1,0 +1,1 @@
+1332f7e Read the hardware thread count once per process

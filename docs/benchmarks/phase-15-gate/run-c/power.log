@@ -1,0 +1,3 @@
+04:34:04 start power: {"ac_online": true, "battery_percent": 100, "power_scheme": "Balanced"}
+OPENBLAS_NUM_THREADS=1
+04:45:48 end power: {"ac_online": true, "battery_percent": 100, "power_scheme": "Balanced"}

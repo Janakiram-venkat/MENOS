@@ -1,0 +1,459 @@
+environment: os=Linux arch=x86_64 compiler=GCC 13.4.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+2026-10-08T16:19:29+00:00
+Running /home/janakiram/MENOS/build/cuda12-release/benchmarks/menos_cuda_kernel_benchmark
+Run on (22 X 2995.2 MHz CPU s)
+CPU Caches:
+  L1 Data 48 KiB (x11)
+  L1 Instruction 64 KiB (x11)
+  L2 Unified 2048 KiB (x11)
+  L3 Unified 24576 KiB (x1)
+Load Average: 1.00, 1.13, 1.00
+***WARNING*** ASLR is enabled, the results may have unreproducible noise in them.
+
+=== MENOS CUDA kernel benchmark (Phase 16 step 1) ===
+environment      : environment: os=Linux arch=x86_64 compiler=GCC 13.4.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+GPU              : NVIDIA GeForce RTX 4060 Laptop GPU (compute capability 8.9, 24 SMs)
+repetitions      : 10 per point after a warm-up; medians unless stated
+
+== (a) probe (hand-written H, CX) against the generic kernel ==
+  n  gates   generic(s)     probe(s)    ratio   gen e2e(s) probe e2e(s) e2e ratio  max|diff|
+  4     39     0.004966     0.002933    1.69x     0.005867     0.003862     1.52x   0.00e+00
+  6     57     0.005350     0.002457    2.18x     0.006162     0.003142     1.96x   1.67e-16
+  8     75     0.010141     0.004413    2.30x     0.011129     0.005284     2.11x   2.22e-16
+ 10     93     0.013509     0.005505    2.45x     0.014350     0.006320     2.27x   4.00e-16
+ 12    111     0.016309     0.005582    2.92x     0.017217     0.006633     2.60x   2.22e-16
+ 14    129     0.015108     0.008346    1.81x     0.015997     0.009256     1.73x   1.67e-16
+ 16    147     0.024279     0.008349    2.91x     0.025581     0.009757     2.62x   2.22e-16
+ 18    165     0.051456     0.010852    4.74x     0.054364     0.013515     4.02x   1.67e-16
+ 20    183     0.124523     0.025214    4.94x     0.131887     0.032213     4.09x   1.24e-16
+ 22    201     0.473504     0.190156    2.49x     0.500617     0.217157     2.31x   1.22e-15
+ 24    219     1.855759     0.750367    2.47x     1.957076     0.858786     2.28x   2.29e-16
+ 26    237     7.758891     3.014416    2.57x     8.163840     3.433211     2.38x   2.48e-16
+
+== (b) one gate's cost in parts (microseconds, medians) ==
+  n   k   generic wall  generic event     probe wall    probe event    launch+sync 2 const copies
+  4   1         170.67         182.64          64.69          58.75          32.43          68.49
+  4   2         118.92         169.05          26.51          39.65          63.19         110.17
+  8   1          60.43         137.64          32.86          35.17          32.13          52.64
+  8   2          86.42         163.15          61.69          66.18          59.39          78.83
+ 12   1          90.41         106.24          33.10          38.68          38.21          62.34
+ 12   2          94.37         140.81          34.75          36.28          35.76          65.13
+ 16   1         119.73         147.85          41.55          61.44          32.59          73.22
+ 16   2         169.66         223.49          72.37          54.98          34.59          64.06
+ 20   1         618.06         685.18         137.52         144.65          68.14          92.33
+ 20   2         852.22         913.43          98.11          75.62          62.94          83.05
+ 22   1        2096.49        2179.34         950.95         978.65          46.07         105.18
+ 22   2        2899.17        2951.36         279.24         270.38          53.35         112.31
+ 24   1        8177.88        8651.22        3937.25        3823.77          61.65         127.27
+ 24   2       11079.85       11260.21        2089.58        1881.34          64.69         144.42
+ 26   1       31446.48       31678.25       14066.33       14111.05          51.65         111.41
+ 26   2       40514.50       39911.69        7303.45        7374.93          40.93          94.20
+
+== (c) device memory bandwidth (read + write bytes / time) ==
+  n       copy (s)      copy GB/s      touch (s)     touch GB/s
+ 20       0.000090          373.4       0.000076          443.7
+ 22       0.000949          141.5       0.000911          147.3
+ 24       0.003559          150.8       0.003526          152.3
+ 26       0.014081          152.5       0.013917          154.3
+
+---------------------------------------------------------------------------
+Benchmark                                 Time             CPU   Iterations
+---------------------------------------------------------------------------
+BM_CudaKernelReport/iterations:1 ERROR OCCURRED: 'report-only benchmark: see the printed tables'
+Collecting data...
+Generating '/tmp/nsys-report-cb1e.qdstrm'
+Press Ctrl-C to stop symbol files downloading
+[1/1] [0%                          ] p16-nsys-b.nsys-rep[1/1] [0%                          ] p16-nsys-b.nsys-rep[1/1] [0%                          ] p16-nsys-b.nsys-rep[1/1] [13%                         ] p16-nsys-b.nsys-rep[1/1] [12%                         ] p16-nsys-b.nsys-rep[1/1] [11%                         ] p16-nsys-b.nsys-rep[1/1] [10%                         ] p16-nsys-b.nsys-rep[1/1] [9%                          ] p16-nsys-b.nsys-rep[1/1] [==18%                       ] p16-nsys-b.nsys-rep[1/1] [=17%                        ] p16-nsys-b.nsys-rep[1/1] [=16%                        ] p16-nsys-b.nsys-rep[1/1] [==18%                       ] p16-nsys-b.nsys-rep[1/1] [=17%                        ] p16-nsys-b.nsys-rep[1/1] [=16%                        ] p16-nsys-b.nsys-rep[1/1] [=15%                        ] p16-nsys-b.nsys-rep[1/1] [14%                         ] p16-nsys-b.nsys-rep[1/1] [13%                         ] p16-nsys-b.nsys-rep[1/1] [12%                         ] p16-nsys-b.nsys-rep[1/1] [13%                         ] p16-nsys-b.nsys-rep[1/1] [14%                         ] p16-nsys-b.nsys-rep[1/1] [=15%                        ] p16-nsys-b.nsys-rep[1/1] [=16%                        ] p16-nsys-b.nsys-rep[1/1] [=17%                        ] p16-nsys-b.nsys-rep[1/1] [==18%                       ] p16-nsys-b.nsys-rep[1/1] [==19%                       ] p16-nsys-b.nsys-rep[1/1] [==20%                       ] p16-nsys-b.nsys-rep[1/1] [==21%                       ] p16-nsys-b.nsys-rep[1/1] [===22%                      ] p16-nsys-b.nsys-rep[1/1] [===23%                      ] p16-nsys-b.nsys-rep[1/1] [===24%                      ] p16-nsys-b.nsys-rep[1/1] [========================100%] p16-nsys-b.nsys-rep
+Importer error status: Importation succeeded with non-fatal errors.
+**** Analysis failed with:
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/Services/FlatData/../FlatData/CudaEvent.h(454): Throw in function uint32_t QuadDCommon::FlatComm::Cuda::EventNS::CudaActivityDevice::GetNumTpcs() const\nDynamic exception type: boost::wrapexcept<QuadDCommon::NotInitializedException>\nstd::exception::what: NotInitializedException\n[QuadDCommon::tag_message*] = Data member NumTpcs was not initialized\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+Status: TargetProfilingFailed
+Props {
+  Items {
+    Type: DeviceId
+    Value: "Local (CLI)"
+  }
+}
+Error {
+  Type: RuntimeError
+  Props {
+    Items {
+      Type: ErrorText
+      Value: "/dvs/p4/build/sw/devtools/Agora/Rel/CUDA13.3/QuadD/Common/SessionState/Modules/StringStorage.cpp(109): Throw in function QuadDCommon::StringId QuadDSessionState::StringStorage::GetKeyForExteriorId(QuadDSessionState::GlobalProcess, ExteriorId) const\nDynamic exception type: boost::wrapexcept<QuadDCommon::LogicException>\nstd::exception::what: LogicException\n[QuadDCommon::tag_message*] = Cannot find bucket for a bucket index\n"
+    }
+  }
+}
+
+
+**** Errors occurred while processing the raw events. ****
+**** Please see the Diagnostics Summary page after opening the report file in GUI. ****
+Generated:
+	/tmp/p16-nsys-b.qdstrm
+	/tmp/p16-nsys-b.nsys-rep

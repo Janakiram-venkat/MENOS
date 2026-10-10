@@ -1,0 +1,82 @@
+environment: os=Linux arch=x86_64 compiler=GCC 13.4.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+2026-10-09T03:18:38+00:00
+Running build/cuda12-release/benchmarks/menos_cuda_factorized_backend_benchmark
+Run on (22 X 2995.2 MHz CPU s)
+CPU Caches:
+  L1 Data 48 KiB (x11)
+  L1 Instruction 64 KiB (x11)
+  L2 Unified 2048 KiB (x11)
+  L3 Unified 24576 KiB (x1)
+Load Average: 1.07, 0.85, 0.59
+***WARNING*** ASLR is enabled, the results may have unreproducible noise in them.
+
+=== MENOS per-region backend benchmark (Phase 17 step 4a) ===
+environment      : environment: os=Linux arch=x86_64 compiler=GCC 13.4.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+GPU              : NVIDIA GeForce RTX 4060 Laptop GPU
+repetitions      : 10 per point after a warm-up; shots 1000
+
+== (a) Factorized plans: every CPU/CUDA assignment of the regions ==
+assignment letters follow region order: C = CPU, G = CUDA
+
+12+22 qubits (2 regions; planner's own assignment: CC)
+  assignment   median (s)              min-max (s)
+  CC             1.731503    1.524628-1.875909   
+  GC             1.842432    1.771000-1.908426   
+  CG             1.176969    1.041383-1.356278   
+  GG             1.061745    1.019774-1.111542   
+  best GG: 1.63x faster than all-CPU
+
+16+20 qubits (2 regions; planner's own assignment: CC)
+  assignment   median (s)              min-max (s)
+  CC             0.481399    0.416731-0.530459   
+  GC             0.512003    0.467013-0.574679   
+  CG             0.343718    0.326719-0.410851   
+  GG             0.326054    0.310040-0.343129   
+  best GG: 1.48x faster than all-CPU
+
+20+22 qubits (2 regions; planner's own assignment: CC)
+  assignment   median (s)              min-max (s)
+  CC             2.284257    2.036513-2.484723   
+  GC             2.326826    2.274299-2.432263   
+  CG             1.781247    1.709524-1.916331   
+  GG             1.639329    1.580614-1.731758   
+  best GG: 1.39x faster than all-CPU
+
+10+16+22 qubits (3 regions; planner's own assignment: CCC)
+  assignment   median (s)              min-max (s)
+  CCC            1.790888    1.743953-1.924523   
+  GCC            1.809452    1.729405-1.869911   
+  CGC            1.886877    1.828152-2.182523   
+  GGC            1.898039    1.818295-1.943970   
+  CCG            1.362989    1.306336-1.442673   
+  GCG            1.362511    1.337064-1.393652   
+  CGG            1.325878    1.276820-1.418646   
+  GGG            1.365890    1.288952-1.462020   
+  best CGG: 1.35x faster than all-CPU
+
+14+18+22 qubits (3 regions; planner's own assignment: CCC)
+  assignment   median (s)              min-max (s)
+  CCC            1.844028    1.805315-1.976107   
+  GCC            1.901399    1.770588-2.040051   
+  CGC            2.013825    1.792308-2.063236   
+  GGC            2.034629    1.929783-2.163781   
+  CCG            1.515999    1.417990-1.636324   
+  GCG            1.487708    1.391138-1.551670   
+  CGG            1.437674    1.361267-1.503338   
+  GGG            1.405724    1.378185-1.484506   
+  best GGG: 1.31x faster than all-CPU
+
+== (b) One fragment-sized evaluation (dense expectation) on each backend ==
+  n      CPU (s)     CUDA (s)   CPU/CUDA
+  8     0.003782     0.013371      0.28x
+ 10     0.007686     0.021627      0.36x
+ 12     0.017032     0.029087      0.59x
+ 14     0.032326     0.042212      0.77x
+ 16     0.083440     0.098498      0.85x
+ 18     0.183129     0.150869      1.21x
+
+JSON written     : build/phase17-4a/run-b/factorized_backend.json
+----------------------------------------------------------------------------------
+Benchmark                                        Time             CPU   Iterations
+----------------------------------------------------------------------------------
+BM_FactorizedBackendReport/iterations:1 ERROR OCCURRED: 'report-only benchmark: see the printed tables'

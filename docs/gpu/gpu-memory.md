@@ -1,0 +1,51 @@
+# GPU Memory
+
+Device memory is a **separate budget** from host memory, and on most GPUs it is the smaller one.
+
+## The budget
+
+The device budget is the **free** memory the CUDA driver reports, not the marketing capacity. The development GPU is sold as 4096 MiB; the driver reports about **3770 MiB total**, and a little less free once the display and other processes have taken theirs. Budgeting against the nameplate would over-commit the card and then fail at allocation.
+
+## What must fit
+
+For a dense region of `n` qubits, the device holds one allocation of `16 · 2ⁿ` bytes, reused across every gate. Gate matrices are tiny and are uploaded per gate; the initial state is built on the device, so nothing of that size is uploaded.
+
+| Qubits | Device state |
+|---|---|
+| 20 | 16 MiB |
+| 24 | 256 MiB |
+| 26 | 1 GiB |
+| 27 | 2 GiB |
+| 28 | 4 GiB |
+
+On a card with about 3.6 GiB free, **27 qubits is the arithmetic ceiling**. The largest size actually executed in verification was **26 qubits**; 27 is what the arithmetic allows and was not run.
+
+## Why the GPU limit sits below the CPU's
+
+Host memory is typically larger, and by default half of it is available, so the CPU path can go further than a 4 GB card. Above the device ceiling the CUDA candidate is simply infeasible and the CPU wins by default.
+
+## Refusal, then fallback
+
+A region that does not fit the device budget is refused **before any `cudaMalloc`**. The planner then keeps the region on the CPU instead of failing the job, so the plan report simply shows `backend=cpu` for that region. A hardware profile with a smaller device budget is honoured the same way, which is how the project's C++ tests exercise this behaviour.
+
+## Transfers
+
+| Direction | What | When |
+|---|---|---|
+| Host to device | Gate matrices | Per gate (small) |
+| Device to host | The full `16 · 2ⁿ` state | Only if a statevector or counts are requested |
+| Device to host | One scalar per term | For an expectation value |
+
+An expectation-only job transfers almost nothing back, which is where the GPU's advantage is largest.
+
+## Other processes
+
+A desktop environment, a browser, or another GPU job all hold device memory. The free figure is read when MENOS first queries the device and cached for the process, so memory released or claimed afterwards is not noticed.
+
+## If a device allocation still fails
+
+An allocation that fails even though the budget check passed surfaces as `InternalError` with the CUDA error text, for example `cuda: cudaMalloc failed: out of memory`. That is the signal that something else took device memory after the query.
+
+## Related
+
+[Memory Constraints](/planning/memory-constraints) · [CPU vs CUDA](/gpu/cpu-vs-cuda) · [Troubleshooting CUDA](/gpu/troubleshooting-cuda)

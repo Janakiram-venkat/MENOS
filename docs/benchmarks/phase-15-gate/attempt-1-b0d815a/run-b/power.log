@@ -1,0 +1,4 @@
+02:51:43 start power: {"ac_online": true, "battery_percent": 98, "power_scheme": "Balanced"}
+02:55:06 after-crossover power: {"ac_online": true, "battery_percent": 98, "power_scheme": "Balanced"}
+03:10:28 after-dashboard power: {"ac_online": true, "battery_percent": 100, "power_scheme": "Balanced"}
+03:16:44 end power: {"ac_online": true, "battery_percent": 100, "power_scheme": "Balanced"}

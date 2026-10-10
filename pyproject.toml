@@ -1,0 +1,42 @@
+[build-system]
+requires = ["scikit-build-core==1.0.3", "nanobind==3.1.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "menos"
+version = "0.2.1"
+description = "A quantum circuit simulation runtime with a Qiskit BackendV2 adapter"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = ["quantum", "simulator", "qiskit", "statevector", "tensor-network", "cuda"]
+requires-python = ">=3.14"
+dependencies = [
+    "numpy",
+    "twine>=7.0.0",
+]
+
+[project.optional-dependencies]
+qiskit = ["qiskit==2.5.2"]
+test = ["pytest==9.1.1", "qiskit==2.5.2"]
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+build-dir = "build/py-{wheel_tag}"
+
+[tool.scikit-build.wheel]
+# key = importable name, value = source path (verified against installed
+# scikit-build-core 1.0.3's get_packages()/package_search_dirs() source --
+# the reverse mapping silently produced an empty package).
+packages = { "menos" = "python/menos" }
+
+[tool.scikit-build.cmake.define]
+MENOS_BUILD_PYTHON_BINDINGS = "ON"
+
+[tool.scikit-build.editable]
+mode = "redirect"
+rebuild = false
+
+[tool.cibuildwheel]
+build = "cp314-*"
+skip = "*-musllinux_*"  

@@ -1,0 +1,110 @@
+environment: os=Linux arch=x86_64 compiler=GCC 15.2.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+2026-10-07T18:29:57+00:00
+Running build/bench/benchmarks/menos_dense_gate_application_benchmark
+Run on (22 X 2995.2 MHz CPU s)
+CPU Caches:
+  L1 Data 48 KiB (x11)
+  L1 Instruction 64 KiB (x11)
+  L2 Unified 2048 KiB (x11)
+  L3 Unified 24576 KiB (x1)
+Load Average: 0.98, 0.59, 1.45
+***WARNING*** ASLR is enabled, the results may have unreproducible noise in them.
+---------------------------------------------------------------------------------------------------------
+Benchmark                                               Time             CPU   Iterations UserCounters...
+---------------------------------------------------------------------------------------------------------
+BM_DenseGateApplication/16/repeats:10_mean          0.598 ms        0.596 ms           10 amplitudes=65.536k
+BM_DenseGateApplication/16/repeats:10_median        0.581 ms        0.581 ms           10 amplitudes=65.536k
+BM_DenseGateApplication/16/repeats:10_stddev        0.037 ms        0.035 ms           10 amplitudes=0
+BM_DenseGateApplication/16/repeats:10_cv             6.20 %          5.94 %            10 amplitudes=0.00%
+BM_DenseGateApplication/18/repeats:10_mean           2.47 ms         2.47 ms           10 amplitudes=262.144k
+BM_DenseGateApplication/18/repeats:10_median         2.48 ms         2.48 ms           10 amplitudes=262.144k
+BM_DenseGateApplication/18/repeats:10_stddev        0.067 ms        0.065 ms           10 amplitudes=0
+BM_DenseGateApplication/18/repeats:10_cv             2.71 %          2.61 %            10 amplitudes=0.00%
+BM_DenseGateApplication/20/repeats:10_mean           12.1 ms         12.1 ms           10 amplitudes=1.04858M
+BM_DenseGateApplication/20/repeats:10_median         12.0 ms         12.0 ms           10 amplitudes=1.04858M
+BM_DenseGateApplication/20/repeats:10_stddev        0.471 ms        0.471 ms           10 amplitudes=0
+BM_DenseGateApplication/20/repeats:10_cv             3.90 %          3.90 %            10 amplitudes=0.00%
+BM_DenseGateApplication/22/repeats:10_mean           49.7 ms         49.7 ms           10 amplitudes=4.1943M
+BM_DenseGateApplication/22/repeats:10_median         49.5 ms         49.4 ms           10 amplitudes=4.1943M
+BM_DenseGateApplication/22/repeats:10_stddev         1.86 ms         1.88 ms           10 amplitudes=0
+BM_DenseGateApplication/22/repeats:10_cv             3.73 %          3.78 %            10 amplitudes=0.00%
+BM_DenseGateApplication/24/repeats:10_mean            194 ms          193 ms           10 amplitudes=16.7772M
+BM_DenseGateApplication/24/repeats:10_median          194 ms          193 ms           10 amplitudes=16.7772M
+BM_DenseGateApplication/24/repeats:10_stddev         5.27 ms         5.11 ms           10 amplitudes=0
+BM_DenseGateApplication/24/repeats:10_cv             2.72 %          2.65 %            10 amplitudes=0.00%
+BM_DenseGateApplication/26/repeats:10_mean            794 ms          794 ms           10 amplitudes=67.1089M
+BM_DenseGateApplication/26/repeats:10_median          794 ms          793 ms           10 amplitudes=67.1089M
+BM_DenseGateApplication/26/repeats:10_stddev         12.5 ms         12.8 ms           10 amplitudes=0
+BM_DenseGateApplication/26/repeats:10_cv             1.58 %          1.61 %            10 amplitudes=0.00%
+BM_DenseGateApplication1Q/16/repeats:10_mean        0.666 ms        0.664 ms           10 amplitudes=65.536k
+BM_DenseGateApplication1Q/16/repeats:10_median      0.665 ms        0.664 ms           10 amplitudes=65.536k
+BM_DenseGateApplication1Q/16/repeats:10_stddev      0.010 ms        0.009 ms           10 amplitudes=0
+BM_DenseGateApplication1Q/16/repeats:10_cv           1.53 %          1.42 %            10 amplitudes=0.00%
+BM_DenseGateApplication1Q/18/repeats:10_mean         2.96 ms         2.96 ms           10 amplitudes=262.144k
+BM_DenseGateApplication1Q/18/repeats:10_median       2.97 ms         2.97 ms           10 amplitudes=262.144k
+BM_DenseGateApplication1Q/18/repeats:10_stddev      0.079 ms        0.080 ms           10 amplitudes=0
+BM_DenseGateApplication1Q/18/repeats:10_cv           2.68 %          2.71 %            10 amplitudes=0.00%
+BM_DenseGateApplication1Q/20/repeats:10_mean         13.1 ms         13.1 ms           10 amplitudes=1.04858M
+BM_DenseGateApplication1Q/20/repeats:10_median       13.1 ms         13.1 ms           10 amplitudes=1.04858M
+BM_DenseGateApplication1Q/20/repeats:10_stddev      0.235 ms        0.230 ms           10 amplitudes=0
+BM_DenseGateApplication1Q/20/repeats:10_cv           1.79 %          1.76 %            10 amplitudes=0.00%
+BM_DenseGateApplication1Q/22/repeats:10_mean         55.6 ms         55.6 ms           10 amplitudes=4.1943M
+BM_DenseGateApplication1Q/22/repeats:10_median       55.1 ms         55.1 ms           10 amplitudes=4.1943M
+BM_DenseGateApplication1Q/22/repeats:10_stddev       1.36 ms         1.35 ms           10 amplitudes=0
+BM_DenseGateApplication1Q/22/repeats:10_cv           2.44 %          2.43 %            10 amplitudes=0.00%
+BM_DenseGateApplication1Q/24/repeats:10_mean          235 ms          235 ms           10 amplitudes=16.7772M
+BM_DenseGateApplication1Q/24/repeats:10_median        234 ms          234 ms           10 amplitudes=16.7772M
+BM_DenseGateApplication1Q/24/repeats:10_stddev       3.82 ms         3.68 ms           10 amplitudes=0
+BM_DenseGateApplication1Q/24/repeats:10_cv           1.62 %          1.57 %            10 amplitudes=0.00%
+BM_DenseGateApplication1Q/26/repeats:10_mean         1023 ms         1023 ms           10 amplitudes=67.1089M
+BM_DenseGateApplication1Q/26/repeats:10_median       1014 ms         1014 ms           10 amplitudes=67.1089M
+BM_DenseGateApplication1Q/26/repeats:10_stddev       33.6 ms         33.7 ms           10 amplitudes=0
+BM_DenseGateApplication1Q/26/repeats:10_cv           3.29 %          3.30 %            10 amplitudes=0.00%
+BM_DenseExpectationTerm/16/repeats:10_mean          0.108 ms        0.108 ms           10 amplitudes=65.536k
+BM_DenseExpectationTerm/16/repeats:10_median        0.107 ms        0.107 ms           10 amplitudes=65.536k
+BM_DenseExpectationTerm/16/repeats:10_stddev        0.004 ms        0.004 ms           10 amplitudes=0
+BM_DenseExpectationTerm/16/repeats:10_cv             3.40 %          3.52 %            10 amplitudes=0.00%
+BM_DenseExpectationTerm/18/repeats:10_mean          0.437 ms        0.436 ms           10 amplitudes=262.144k
+BM_DenseExpectationTerm/18/repeats:10_median        0.437 ms        0.437 ms           10 amplitudes=262.144k
+BM_DenseExpectationTerm/18/repeats:10_stddev        0.016 ms        0.015 ms           10 amplitudes=0
+BM_DenseExpectationTerm/18/repeats:10_cv             3.60 %          3.51 %            10 amplitudes=0.00%
+BM_DenseExpectationTerm/20/repeats:10_mean           2.07 ms         2.06 ms           10 amplitudes=1.04858M
+BM_DenseExpectationTerm/20/repeats:10_median         2.04 ms         2.04 ms           10 amplitudes=1.04858M
+BM_DenseExpectationTerm/20/repeats:10_stddev        0.108 ms        0.108 ms           10 amplitudes=0
+BM_DenseExpectationTerm/20/repeats:10_cv             5.24 %          5.22 %            10 amplitudes=0.00%
+BM_DenseExpectationTerm/22/repeats:10_mean           10.4 ms         10.4 ms           10 amplitudes=4.1943M
+BM_DenseExpectationTerm/22/repeats:10_median         10.4 ms         10.4 ms           10 amplitudes=4.1943M
+BM_DenseExpectationTerm/22/repeats:10_stddev        0.229 ms        0.227 ms           10 amplitudes=0
+BM_DenseExpectationTerm/22/repeats:10_cv             2.20 %          2.18 %            10 amplitudes=0.00%
+BM_DenseExpectationTerm/24/repeats:10_mean           37.1 ms         37.1 ms           10 amplitudes=16.7772M
+BM_DenseExpectationTerm/24/repeats:10_median         37.3 ms         37.3 ms           10 amplitudes=16.7772M
+BM_DenseExpectationTerm/24/repeats:10_stddev         1.25 ms         1.25 ms           10 amplitudes=0
+BM_DenseExpectationTerm/24/repeats:10_cv             3.37 %          3.37 %            10 amplitudes=0.00%
+BM_DenseExpectationTerm/26/repeats:10_mean            135 ms          135 ms           10 amplitudes=67.1089M
+BM_DenseExpectationTerm/26/repeats:10_median          134 ms          134 ms           10 amplitudes=67.1089M
+BM_DenseExpectationTerm/26/repeats:10_stddev         6.28 ms         6.25 ms           10 amplitudes=0
+BM_DenseExpectationTerm/26/repeats:10_cv             4.66 %          4.64 %            10 amplitudes=0.00%
+BM_DenseSample/16/repeats:10_mean                   0.395 ms        0.394 ms           10 amplitudes=65.536k
+BM_DenseSample/16/repeats:10_median                 0.393 ms        0.392 ms           10 amplitudes=65.536k
+BM_DenseSample/16/repeats:10_stddev                 0.009 ms        0.008 ms           10 amplitudes=0
+BM_DenseSample/16/repeats:10_cv                      2.39 %          2.15 %            10 amplitudes=0.00%
+BM_DenseSample/18/repeats:10_mean                   0.878 ms        0.877 ms           10 amplitudes=262.144k
+BM_DenseSample/18/repeats:10_median                 0.884 ms        0.883 ms           10 amplitudes=262.144k
+BM_DenseSample/18/repeats:10_stddev                 0.027 ms        0.026 ms           10 amplitudes=0
+BM_DenseSample/18/repeats:10_cv                      3.03 %          2.98 %            10 amplitudes=0.00%
+BM_DenseSample/20/repeats:10_mean                    3.31 ms         3.31 ms           10 amplitudes=1.04858M
+BM_DenseSample/20/repeats:10_median                  3.33 ms         3.32 ms           10 amplitudes=1.04858M
+BM_DenseSample/20/repeats:10_stddev                 0.073 ms        0.072 ms           10 amplitudes=0
+BM_DenseSample/20/repeats:10_cv                      2.21 %          2.18 %            10 amplitudes=0.00%
+BM_DenseSample/22/repeats:10_mean                    13.7 ms         13.7 ms           10 amplitudes=4.1943M
+BM_DenseSample/22/repeats:10_median                  13.5 ms         13.5 ms           10 amplitudes=4.1943M
+BM_DenseSample/22/repeats:10_stddev                  1.02 ms         1.02 ms           10 amplitudes=0
+BM_DenseSample/22/repeats:10_cv                      7.44 %          7.46 %            10 amplitudes=0.00%
+BM_DenseSample/24/repeats:10_mean                    53.9 ms         53.8 ms           10 amplitudes=16.7772M
+BM_DenseSample/24/repeats:10_median                  54.2 ms         54.0 ms           10 amplitudes=16.7772M
+BM_DenseSample/24/repeats:10_stddev                  1.94 ms         1.90 ms           10 amplitudes=0
+BM_DenseSample/24/repeats:10_cv                      3.61 %          3.53 %            10 amplitudes=0.00%
+BM_DenseSample/26/repeats:10_mean                     203 ms          203 ms           10 amplitudes=67.1089M
+BM_DenseSample/26/repeats:10_median                   203 ms          203 ms           10 amplitudes=67.1089M
+BM_DenseSample/26/repeats:10_stddev                  8.42 ms         8.28 ms           10 amplitudes=0
+BM_DenseSample/26/repeats:10_cv                      4.15 %          4.09 %            10 amplitudes=0.00%

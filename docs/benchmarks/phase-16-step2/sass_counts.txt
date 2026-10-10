@@ -1,0 +1,3 @@
+FP64 instruction counts per kernel, cuobjdump -sass of the cuda12-release dense_kernels.cu.o (sm_86)
+apply_matrix_1q_kernel: DMUL 16 DADD 16 DFMA 0
+apply_matrix_2q_kernel: DMUL 64 DADD 64 DFMA 0

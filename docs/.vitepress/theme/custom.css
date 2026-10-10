@@ -1,0 +1,276 @@
+/* MENOS documentation theme: dark only, flat and neutral. One accent (white),
+   hairline borders, no gradients, glows or motion. */
+:root,
+.dark {
+  --vp-c-bg: #0a0a0a;
+  --vp-c-bg-alt: #0a0a0a;
+  --vp-c-bg-elv: #111111;
+  --vp-c-bg-soft: #111111;
+  --vp-c-gutter: #0a0a0a;
+  --vp-c-divider: #1f1f1f;
+  --vp-c-border: #2a2a2a;
+  --vp-c-text-1: #ededed;
+  --vp-c-text-2: #a1a1a1;
+  --vp-c-text-3: #737373;
+  --vp-c-brand-1: #ffffff;
+  --vp-c-brand-2: #d4d4d4;
+  --vp-c-brand-3: #a3a3a3;
+  --vp-c-brand-soft: rgba(255, 255, 255, 0.08);
+  --vp-c-default-soft: rgba(255, 255, 255, 0.06);
+  --vp-code-block-bg: #0f0f0f;
+  --vp-code-line-highlight-color: rgba(255, 255, 255, 0.05);
+  --vp-button-brand-bg: #ededed;
+  --vp-button-brand-hover-bg: #ffffff;
+  --vp-button-brand-active-bg: #d4d4d4;
+  --vp-button-brand-text: #0a0a0a;
+  --vp-button-brand-hover-text: #0a0a0a;
+  --vp-button-brand-active-text: #0a0a0a;
+  --vp-button-alt-bg: #171717;
+  --vp-button-alt-hover-bg: #1f1f1f;
+  --vp-font-family-base: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --vp-font-family-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo,
+    Consolas, monospace;
+  --vp-layout-max-width: 1360px;
+  color-scheme: dark;
+}
+
+html {
+  scroll-padding-top: calc(var(--vp-nav-height) + 16px);
+}
+::selection {
+  background: rgba(255, 255, 255, 0.22);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a2a transparent;
+}
+
+/* ---------- Navigation ---------- */
+.VPNavBar,
+.VPNavBar .content-body,
+.VPNavBar.has-sidebar .content-body {
+  background-color: #0a0a0a;
+}
+.VPNavBar .divider-line {
+  background-color: var(--vp-c-divider);
+}
+.VPNavBarTitle .logo {
+  height: 20px;
+  width: auto;
+}
+.VPNavBarMenuLink,
+.VPNavBarMenuGroup .button {
+  font-size: 0.875rem;
+  font-weight: 450;
+  color: var(--vp-c-text-2);
+}
+.VPNavBarMenuLink.active,
+.VPNavBarMenuLink:hover {
+  color: var(--vp-c-text-1);
+}
+.VPNavBarSearch .DocSearch-Button,
+.VPNavBarSearch .VPNavBarSearchButton {
+  border: 1px solid var(--vp-c-border);
+  border-radius: 8px;
+  background: transparent;
+}
+
+/* ---------- Sidebar ---------- */
+.VPSidebar {
+  background-color: #0a0a0a;
+  border-right: 1px solid var(--vp-c-divider);
+}
+.VPSidebarItem.level-0 > .item .text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+.VPSidebarItem .link .text {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--vp-c-text-2);
+}
+.VPSidebarItem .link:hover .text {
+  color: var(--vp-c-text-1);
+}
+.VPSidebarItem.is-active > .item > .link {
+  background: #171717;
+  border-radius: 6px;
+}
+.VPSidebarItem.is-active > .item > .link > .text {
+  color: #ffffff;
+  font-weight: 500;
+}
+.VPDocAsideOutline .outline-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+.VPDocAsideOutline .outline-link {
+  font-size: 0.8rem;
+}
+.VPDocAsideOutline .outline-marker {
+  background: #ffffff;
+  width: 1px;
+}
+
+/* ---------- Content ---------- */
+.vp-doc h1 {
+  font-size: 2rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.vp-doc h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--vp-c-divider);
+}
+.vp-doc h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.vp-doc p,
+.vp-doc li {
+  line-height: 1.75;
+  color: var(--vp-c-text-1);
+}
+.vp-doc a {
+  font-weight: 500;
+  color: #ffffff;
+  text-decoration: underline;
+  text-decoration-color: #404040;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.vp-doc a:hover {
+  text-decoration-color: #ffffff;
+}
+.vp-doc .header-anchor {
+  text-decoration: none;
+}
+.vp-doc :not(pre) > code {
+  background: #171717;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 5px;
+  padding: 0.1em 0.38em;
+  font-size: 0.86em;
+  color: var(--vp-c-text-1);
+}
+.vp-doc a > code {
+  color: inherit;
+}
+.vp-doc div[class*='language-'] {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-code-block-bg);
+  margin: 1.25rem 0;
+}
+.vp-doc [class*='language-'] > span.lang {
+  font-size: 0.7rem;
+  color: var(--vp-c-text-3);
+}
+.vp-doc table {
+  display: table;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+.vp-doc th {
+  background: #111111;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--vp-c-text-2);
+}
+.vp-doc th,
+.vp-doc td {
+  border: none;
+  border-bottom: 1px solid var(--vp-c-divider);
+  padding: 0.6rem 0.9rem;
+}
+.vp-doc tr {
+  background: transparent;
+}
+.vp-doc tr:last-child td {
+  border-bottom: none;
+}
+.vp-doc .custom-block {
+  border: 1px solid var(--vp-c-border);
+  border-radius: 8px;
+  background: #111111;
+  padding: 0.85rem 1.1rem;
+}
+.vp-doc .custom-block-title {
+  font-weight: 600;
+}
+.VPDocFooterLinks .pager-link {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+}
+.VPDocFooterLinks .pager-link:hover {
+  border-color: #404040;
+}
+.VPDocFooter .edit-info,
+.VPFooter {
+  border-color: var(--vp-c-divider);
+}
+
+/* ---------- Home: a plain page of link cards ---------- */
+.menos-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 2rem 0 2.5rem;
+}
+.vp-doc .menos-cards a {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: transparent;
+  text-decoration: none;
+  font-weight: 400;
+}
+.vp-doc .menos-cards a:hover {
+  border-color: #404040;
+  background: #111111;
+}
+.menos-cards strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+.menos-cards span {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--vp-c-text-2);
+}
+
+/* A compact "at a glance" strip used on several pages. */
+.menos-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+.menos-flow span {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.875rem;
+}
+.menos-flow .arrow {
+  border: none;
+  padding: 0;
+  color: var(--vp-c-text-3);
+}

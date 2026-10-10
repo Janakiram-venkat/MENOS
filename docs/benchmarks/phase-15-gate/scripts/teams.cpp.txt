@@ -1,0 +1,65 @@
+// Phase 15 scratch measurement (docs/adr/0019 section 3.3): the group count at
+// which the threaded CPU kernel first beats the serial one. Built against a
+// release build whose kGroupsPerThread is 1, so every call with T > 1
+// threads really forms a team. Prints, per k and n, the median time per call
+// on 1 thread and on T threads over 7 batches.
+#include <algorithm>
+#include <chrono>
+#include <complex>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <random>
+#include <vector>
+
+#include "common/thread_count.h"
+#include "kernels/dense_kernels.h"
+
+using Complex = std::complex<double>;
+using Clock = std::chrono::steady_clock;
+
+static double seconds_per_call(std::vector<Complex>& state,
+                               const std::vector<Complex>& m,
+                               const std::vector<std::uint32_t>& ops,
+                               std::uint32_t threads) {
+    std::vector<double> batches;
+    for (int b = 0; b < 7; ++b) {
+        std::uint64_t calls = 0;
+        const auto start = Clock::now();
+        double elapsed = 0.0;
+        do {
+            menos::kernels::cpu::apply_matrix(state, m, ops, threads);
+            ++calls;
+            elapsed = std::chrono::duration<double>(Clock::now() - start).count();
+        } while (elapsed < 0.05);
+        batches.push_back(elapsed / static_cast<double>(calls));
+    }
+    std::sort(batches.begin(), batches.end());
+    return batches[3];
+}
+
+int main(int argc, char** argv) {
+    std::mt19937_64 rng(7);
+    std::uniform_real_distribution<double> d(-1, 1);
+    std::vector<Complex> m(16);
+    for (auto& c : m)
+        c = {d(rng), d(rng)};
+    std::printf("2-qubit gate, median us per call\nthreads");
+    const std::uint32_t ns[] = {12, 16, 20, 22};
+    for (auto n : ns)
+        std::printf("   n=%-8u", n);
+    std::printf("\n");
+    for (int a = 1; a < argc; ++a) {
+        const auto T = static_cast<std::uint32_t>(std::atoi(argv[a]));
+        std::printf("%7u", T);
+        for (auto n : ns) {
+            std::vector<Complex> state(std::size_t{1} << n);
+            for (auto& c : state)
+                c = {d(rng), d(rng)};
+            std::vector<std::uint32_t> ops = {0, n - 1};
+            std::printf(" %11.1f", seconds_per_call(state, m, ops, T) * 1e6);
+        }
+        std::printf("\n");
+        std::fflush(stdout);
+    }
+}

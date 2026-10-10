@@ -1,0 +1,87 @@
+environment: os=Linux arch=x86_64 compiler=GCC 13.4.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+2026-10-09T04:09:12+00:00
+Running build/cuda12-release/benchmarks/menos_cuda_factorized_backend_benchmark
+Run on (22 X 2995.2 MHz CPU s)
+CPU Caches:
+  L1 Data 48 KiB (x11)
+  L1 Instruction 64 KiB (x11)
+  L2 Unified 2048 KiB (x11)
+  L3 Unified 24576 KiB (x1)
+Load Average: 1.39, 2.42, 2.05
+***WARNING*** ASLR is enabled, the results may have unreproducible noise in them.
+
+=== MENOS per-region backend benchmark (Phase 17 step 4a) ===
+environment      : environment: os=Linux arch=x86_64 compiler=GCC 13.4.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+GPU              : NVIDIA GeForce RTX 4060 Laptop GPU
+repetitions      : 10 per point after a warm-up; shots 1000
+
+== (a) Factorized plans: every CPU/CUDA assignment of the regions ==
+assignment letters follow region order: C = CPU, G = CUDA
+
+12+22 qubits (2 regions; planner's own assignment: CG)
+  assignment   median (s)              min-max (s)
+  CC             1.808887    1.740456-1.968657   
+  GC             1.867372    1.801457-2.053533   
+  CG             1.499284    1.437855-1.547127   
+  GG             1.486977    1.459503-1.560021   
+  best GG: 1.22x faster than all-CPU
+  planner CG: 1.21x faster than all-CPU
+
+16+20 qubits (2 regions; planner's own assignment: GG)
+  assignment   median (s)              min-max (s)
+  CC             0.501894    0.463191-0.603459   
+  GC             0.553562    0.511945-0.620843   
+  CG             0.421826    0.401926-0.433264   
+  GG             0.400087    0.372805-0.425035   
+  best GG: 1.25x faster than all-CPU
+  planner GG: 1.25x faster than all-CPU
+
+20+22 qubits (2 regions; planner's own assignment: GG)
+  assignment   median (s)              min-max (s)
+  CC             2.328241    2.210181-2.526029   
+  GC             2.469689    2.347054-2.685944   
+  CG             2.412733    2.156963-2.693254   
+  GG             2.440773    2.295252-2.559991   
+  best CC: 1.00x faster than all-CPU
+  planner GG: 0.95x faster than all-CPU
+
+10+16+22 qubits (3 regions; planner's own assignment: CGG)
+  assignment   median (s)              min-max (s)
+  CCC            2.385783    2.121045-2.617138   
+  GCC            1.892841    1.842154-1.965540   
+  CGC            1.897873    1.825671-2.048243   
+  GGC            1.996926    1.932245-2.234453   
+  CCG            1.618784    1.516869-1.686047   
+  GCG            1.716146    1.681427-1.814129   
+  CGG            1.663349    1.597211-1.705702   
+  GGG            1.676224    1.630904-1.723369   
+  best CCG: 1.47x faster than all-CPU
+  planner CGG: 1.43x faster than all-CPU
+
+14+18+22 qubits (3 regions; planner's own assignment: CGG)
+  assignment   median (s)              min-max (s)
+  CCC            2.166257    1.962478-2.375514   
+  GCC            2.071954    1.957673-2.437488   
+  CGC            2.337038    2.122466-2.462242   
+  GGC            2.647890    2.416593-2.919000   
+  CCG            2.294935    2.183364-2.577080   
+  GCG            2.633405    2.470185-2.842608   
+  CGG            2.210803    2.114075-2.311498   
+  GGG            1.951174    1.888734-2.056629   
+  best GGG: 1.11x faster than all-CPU
+  planner CGG: 0.98x faster than all-CPU
+
+== (b) One fragment-sized evaluation (dense expectation) on each backend ==
+  n      CPU (s)     CUDA (s)   CPU/CUDA
+  8     0.006541     0.015765      0.41x
+ 10     0.013671     0.029572      0.46x
+ 12     0.027472     0.044220      0.62x
+ 14     0.048929     0.056567      0.86x
+ 16     0.123543     0.135425      0.91x
+ 18     0.283497     0.190737      1.49x
+
+JSON written     : build/phase17-4b/run-b/factorized_backend.json
+----------------------------------------------------------------------------------
+Benchmark                                        Time             CPU   Iterations
+----------------------------------------------------------------------------------
+BM_FactorizedBackendReport/iterations:1 ERROR OCCURRED: 'report-only benchmark: see the printed tables'

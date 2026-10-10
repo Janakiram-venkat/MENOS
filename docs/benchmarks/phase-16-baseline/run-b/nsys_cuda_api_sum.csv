@@ -1,0 +1,8 @@
+Time (%),Total Time (ns),Num Calls,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+66.1,25450900,12,2120908.3,46106.5,17808,13975834,4658718.2,cudaDeviceSynchronize
+32.4,12461957,220,56645.3,28056.5,5162,2677604,191754.3,cudaMemcpyToSymbol
+0.9,342728,4,85682.0,85361.0,26709,145297,65072.5,cudaEventSynchronize
+0.4,149346,8,18668.3,8228.0,3595,84520,27266.2,cudaEventRecord
+0.2,69996,3,23332.0,22580.0,9599,37817,14124.0,cudaLaunchKernel
+0.0,9636,8,1204.5,649.0,221,4792,1525.8,cudaEventCreate
+0.0,7189,8,898.6,662.5,186,3024,934.5,cudaEventDestroy

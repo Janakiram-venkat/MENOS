@@ -1,0 +1,18 @@
+{
+  "name": "menos-docs",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Documentation site for MENOS SDK, a quantum circuit simulation runtime",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "node scripts/check-nav.mjs && vitepress build && node scripts/check-anchors.mjs",
+    "preview": "vitepress preview",
+    "check": "node scripts/check-nav.mjs",
+    "check:anchors": "node scripts/check-anchors.mjs"
+  },
+  "devDependencies": {
+    "vitepress": "1.6.4"
+  }
+}

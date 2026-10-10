@@ -1,0 +1,126 @@
+name: Build MENOS Linux Wheels
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and Diagnose MENOS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout MENOS
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Inspect project configuration
+        run: |
+          set -eux
+
+          python --version
+
+          echo "===== Git status ====="
+          git status --short
+
+          echo "===== pyproject.toml ====="
+          cat pyproject.toml
+
+          echo "===== CMake LAPACKE configuration ====="
+          sed -n '1,180p' src/common/CMakeLists.txt
+
+          echo "===== Project files ====="
+          find . -maxdepth 3 -type f \
+            ! -path './.git/*' \
+            ! -path './.venv/*' \
+            | sort | head -200
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install cibuildwheel build
+
+      - name: Check source distribution
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          python -m build --sdist --verbose 2>&1 | tee sdist-build.log
+
+      - name: Build MENOS manylinux wheel
+        run: |
+          set -o pipefail
+          python -m cibuildwheel \
+            --output-dir wheelhouse \
+            --debug-traceback 2>&1 | tee cibuildwheel.log
+        env:
+          CIBW_BUILD: "cp314-manylinux_x86_64"
+          CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
+          CIBW_BUILD_VERBOSITY: "3"
+          CIBW_DEBUG_KEEP_CONTAINER: "true"
+          CIBW_BEFORE_BUILD_LINUX: >-
+            set -eux;
+            yum install -y openblas-devel lapack-devel cmake make gcc gcc-c++;
+            cd /tmp;
+            git clone --depth 1 --branch v3.12.1 https://github.com/Reference-LAPACK/lapack.git lapacke-src;
+            cmake -S /tmp/lapacke-src -B /tmp/lapacke-src/build
+            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_INSTALL_PREFIX=/usr/local
+            -DBUILD_SHARED_LIBS=ON
+            -DLAPACKE=ON
+            -DBUILD_TESTING=OFF;
+            cmake --build /tmp/lapacke-src/build --parallel 2;
+            cmake --install /tmp/lapacke-src/build;
+            ldconfig;
+            echo '=== Verify LAPACKE header ===';
+            find /usr/local /usr/include -name lapacke.h -print;
+            test -f /usr/local/include/lapacke.h;
+            echo '=== Verify LAPACKE library ===';
+            ldconfig -p | grep -i lapacke
+      - name: Print build failure summary
+        if: failure()
+        run: |
+          echo "===== Relevant build errors ====="
+
+          if [ -f cibuildwheel.log ]; then
+            grep -in -B 10 -A 15 \
+              -E 'LAPACKE|lapacke\.h|CMake Error|fatal error:|error:|FAILED|not found|No match for argument' \
+              cibuildwheel.log || true
+
+            echo "===== Last 120 lines of build log ====="
+            tail -n 120 cibuildwheel.log
+          fi
+
+          echo "===== Source distribution log ====="
+          if [ -f sdist-build.log ]; then
+            tail -n 60 sdist-build.log
+          fi
+
+      - name: Inspect generated wheels
+        if: success()
+        run: |
+          set -eux
+
+          echo "===== Generated wheels ====="
+          ls -lh wheelhouse/
+
+          python -m pip install auditwheel
+          auditwheel show wheelhouse/*.whl
+
+      - name: Upload build logs and artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: menos-build-diagnostics
+          path: |
+            cibuildwheel.log
+            sdist-build.log
+            wheelhouse/
+            dist/
+          if-no-files-found: warn
+          retention-days: 14

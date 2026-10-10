@@ -1,0 +1,17 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 11K of event 'cpu-clock'
+# Event count (approx.): 11224224213
+#
+# Overhead  Shared Object                                      Symbol                                                                                                                                                                                                                IPC   [IPC Coverage]
+# ........  .................................................  ....................................................................................................................................................................................................................  ....................
+#
+    90.71%  _core.cpython-314-x86_64-linux-gnu.so              [.] menos::kernels::cpu::apply_matrix(std::span<std::complex<double>, 18446744073709551615ul>, std::span<std::complex<double> const, 18446744073709551615ul>, std::span<unsigned int const, 18446744073709551615ul>)  -      -            
+     6.00%  libscipy_openblas64_-f48b354e.so                   [.] blas_thread_server                                                                                                                                                                                                -      -            
+     0.30%  python3.14                                         [.] gc_collect_main                                                                                                                                                                                                   -      -            
+#
+# (Cannot load tips.txt file, please install perf!)
+#

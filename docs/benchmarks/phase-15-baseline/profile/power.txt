@@ -1,0 +1,1 @@
+{"ac_online": true, "battery_percent": 99, "power_scheme": "Balanced"}

@@ -1,0 +1,10 @@
+environment: os=Linux arch=x86_64 compiler=GCC 15.2.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+cost-model correlation: work_units (direct, brickwork H+CX circuit) vs measured execution seconds
+  n=10 work_units=43008 seconds=5.87283e-05
+  n=12 work_units=204800 seconds=8.92337e-05
+  n=14 work_units=950272 seconds=0.000340994
+  n=16 work_units=4325376 seconds=0.00153674
+  n=18 work_units=19398656 seconds=0.0068139
+  n=20 work_units=85983232 seconds=0.0395299
+Spearman rank correlation (work_units, measured_seconds) = 1
+This is machine-specific empirical evidence the cost model ranks candidates usefully here; it is not a universal wall-clock-time guarantee.

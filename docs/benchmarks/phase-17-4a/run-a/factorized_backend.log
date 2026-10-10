@@ -1,0 +1,39 @@
+environment: os=Linux arch=x86_64 compiler=GCC 13.4.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+2026-10-09T03:10:23+00:00
+Running build/cuda12-release/benchmarks/menos_cuda_factorized_backend_benchmark
+Run on (22 X 2995.2 MHz CPU s)
+CPU Caches:
+  L1 Data 48 KiB (x11)
+  L1 Instruction 64 KiB (x11)
+  L2 Unified 2048 KiB (x11)
+  L3 Unified 24576 KiB (x1)
+Load Average: 0.72, 0.29, 0.34
+***WARNING*** ASLR is enabled, the results may have unreproducible noise in them.
+
+=== MENOS per-region backend benchmark (Phase 17 step 4a) ===
+environment      : environment: os=Linux arch=x86_64 compiler=GCC 13.4.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+GPU              : NVIDIA GeForce RTX 4060 Laptop GPU
+repetitions      : 10 per point after a warm-up; shots 1000
+
+== (a) Factorized plans: every CPU/CUDA assignment of the regions ==
+assignment letters follow region order: C = CPU, G = CUDA
+12+22: planner chose a non-factorized plan; skipped
+16+20: planner chose a non-factorized plan; skipped
+20+22: planner chose a non-factorized plan; skipped
+10+16+22: planner chose a non-factorized plan; skipped
+14+18+22: planner chose a non-factorized plan; skipped
+
+== (b) One fragment-sized evaluation (dense expectation) on each backend ==
+  n      CPU (s)     CUDA (s)   CPU/CUDA
+  8     0.003466     0.008655      0.40x
+ 10     0.011508     0.012527      0.92x
+ 12     0.091513     0.015179      6.03x
+ 14     0.176924     0.017341     10.20x
+ 16     0.250107     0.026775      9.34x
+ 18     0.337734     0.064392      5.24x
+
+JSON written     : build/phase17-4a/run-a/factorized_backend.json
+----------------------------------------------------------------------------------
+Benchmark                                        Time             CPU   Iterations
+----------------------------------------------------------------------------------
+BM_FactorizedBackendReport/iterations:1 ERROR OCCURRED: 'report-only benchmark: see the printed tables'

@@ -1,0 +1,9 @@
+nvcc -O3 -fmad=false -arch=sm_86 fp64peak.cu (scratch, 2026-10-08)
+rep 0: 174.99 ms, 71.9 G FP64 instr/s
+rep 1: 161.43 ms, 77.9 G FP64 instr/s
+rep 2: 146.34 ms, 86.0 G FP64 instr/s
+rep 3: 146.45 ms, 85.9 G FP64 instr/s
+rep 4: 146.35 ms, 86.0 G FP64 instr/s
+rep 5: 146.34 ms, 86.0 G FP64 instr/s
+reported max clock 1755 MHz
+NVIDIA GeForce RTX 4060 Laptop GPU, 566.14

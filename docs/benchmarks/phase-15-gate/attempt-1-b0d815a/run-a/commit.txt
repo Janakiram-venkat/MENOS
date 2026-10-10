@@ -1,0 +1,1 @@
+b0d815a Document RunOptions.max_threads and the CPU thread pool in the README

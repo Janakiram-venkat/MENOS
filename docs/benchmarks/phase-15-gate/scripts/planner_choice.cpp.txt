@@ -1,0 +1,26 @@
+// Phase 15 step 5: the planner's CPU/CUDA choice for the dashboard circuit
+// (statevector output), via menos::preview, which plans without executing.
+#include <cstdio>
+#include <string>
+
+#include "menos/menos.h"
+
+int main() {
+    std::printf(" n  engine/backend of region 0\n");
+    for (std::uint32_t n = 10; n <= 26; n += 2) {
+        menos::Circuit c(n, 0);
+        for (int layer = 0; layer < 6; ++layer) {
+            for (menos::QubitId q = 0; q < n; ++q)
+                c.append(menos::Opcode::H, {q});
+            c.append(menos::Opcode::T, {0});
+            for (menos::QubitId q = layer % 2; q + 1 < n; q += 2)
+                c.append(menos::Opcode::CX, {q, q + 1});
+        }
+        menos::RunOptions options{.shots = 0, .want_statevector = true, .seed = 1};
+        const menos::Plan plan = menos::preview(c, options);
+        const std::string text = plan.explain();
+        const auto pos = text.find("engine=");
+        const auto end = text.find('\n', pos);
+        std::printf("%2u  %s\n", n, text.substr(pos, end - pos).c_str());
+    }
+}

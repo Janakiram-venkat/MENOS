@@ -1,0 +1,63 @@
+environment: os=Linux arch=x86_64 compiler=GCC 13.4.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+2026-10-08T17:50:34+00:00
+Running build/cuda12-release/benchmarks/menos_cuda_kernel_benchmark
+Run on (22 X 2995.2 MHz CPU s)
+CPU Caches:
+  L1 Data 48 KiB (x11)
+  L1 Instruction 64 KiB (x11)
+  L2 Unified 2048 KiB (x11)
+  L3 Unified 24576 KiB (x1)
+Load Average: 0.95, 1.29, 1.29
+***WARNING*** ASLR is enabled, the results may have unreproducible noise in them.
+
+=== MENOS CUDA kernel benchmark (Phase 16) ===
+environment      : environment: os=Linux arch=x86_64 compiler=GCC 13.4.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+GPU              : NVIDIA GeForce RTX 4060 Laptop GPU (compute capability 8.9, 24 SMs)
+repetitions      : 10 per point after a warm-up; medians unless stated
+
+== (a) the specialised kernels and the probe against the generic kernel, same run ==
+  n gates  generic(s)     spec(s)  g/spec    probe(s) g/probe  gen e2e(s) spec e2e(s)  g/spec   probe e2e g/probe bitwise  probe|d|
+  4    39    0.008445    0.003287   2.57x    0.003191   2.65x    0.010928    0.004745   2.30x    0.004958   2.20x     yes  0.00e+00
+  6    57    0.009519    0.005819   1.64x    0.004870   1.95x    0.011105    0.007927   1.40x    0.006886   1.61x     yes  1.67e-16
+  8    75    0.011579    0.007724   1.50x    0.006066   1.91x    0.013228    0.009501   1.39x    0.007772   1.70x     yes  2.22e-16
+ 10    93    0.018066    0.009016   2.00x    0.010063   1.80x    0.019835    0.010803   1.84x    0.011868   1.67x     yes  4.00e-16
+ 12   111    0.019088    0.008916   2.14x    0.007958   2.40x    0.021028    0.010655   1.97x    0.009891   2.13x     yes  2.22e-16
+ 14   129    0.021400    0.010449   2.05x    0.007953   2.69x    0.023546    0.012414   1.90x    0.009711   2.42x     yes  1.67e-16
+ 16   147    0.033987    0.018716   1.82x    0.012840   2.65x    0.036383    0.021368   1.70x    0.015135   2.40x     yes  2.22e-16
+ 18   165    0.062930    0.043488   1.45x    0.024128   2.61x    0.067421    0.048051   1.40x    0.028360   2.38x     yes  1.67e-16
+ 20   183    0.179702    0.122302   1.47x    0.041603   4.32x    0.189021    0.130609   1.45x    0.049914   3.79x     yes  1.24e-16
+ 22   201    0.607343    0.467936   1.30x    0.174419   3.48x    0.637658    0.497055   1.28x    0.202491   3.15x     yes  1.22e-15
+ 24   219    2.492845    1.973049   1.26x    0.741756   3.36x    2.608981    2.083360   1.25x    0.852707   3.06x     yes  2.29e-16
+ 26   237   10.287242    8.156936   1.26x    3.069978   3.35x   10.713767    8.603791   1.25x    3.530618   3.03x     yes  2.48e-16
+
+== (b) one gate's cost in parts (microseconds, medians) ==
+  n   k  generic wall generic event     spec wall    spec event   g/spec    probe wall   probe event   launch+sync 2 const copies
+  4   1        209.15        172.24         55.42         70.14    3.77x         52.76         68.10         51.77          97.75
+  4   2        119.80        170.83         61.78         73.65    1.94x         53.19         65.43         49.82         104.40
+  8   1        119.96        173.47         53.28         69.73    2.25x         54.92         67.89         49.49          98.55
+  8   2        125.56        179.64         55.03         80.51    2.28x         52.24         64.61         52.78          96.86
+ 12   1        126.44        173.03         58.99         71.27    2.14x         56.33         79.72         59.31         103.21
+ 12   2        170.26        219.60        102.96        105.34    1.65x         60.71         74.62         56.94         116.18
+ 16   1        220.14        364.24        123.29        123.80    1.79x         72.32         83.69         83.45          99.28
+ 16   2        269.59        312.96        201.33        178.43    1.34x         56.62         76.19         48.37          98.92
+ 20   1       1192.50        904.52        486.37        524.67    2.45x        229.97        197.58         96.02         237.30
+ 20   2       1071.00       1228.13        968.01        962.89    1.11x        103.97        124.03         61.19         104.43
+ 22   1       2784.09       2671.31       1976.83       1791.10    1.41x        983.39       1001.75         97.07         154.96
+ 22   2       3586.98       3678.05       3569.47       3424.20    1.00x        272.37        337.74         59.75         100.19
+ 24   1      10282.31      10399.21       6756.86       6941.95    1.52x       3879.72       3919.62         70.61         106.52
+ 24   2      13818.87      14215.55      13193.92      13156.02    1.05x       1972.46       1865.06         52.29          99.08
+ 26   1      38915.76      39142.96      26327.29      26105.63    1.48x      14246.34      14214.86         49.24          93.07
+ 26   2      53053.35      53087.13      52083.52      51943.73    1.02x       7355.81       7491.30         96.13         191.74
+
+== (c) device memory bandwidth (read + write bytes / time) ==
+  n       copy (s)      copy GB/s      touch (s)     touch GB/s
+ 20       0.000161          208.7       0.000116          288.7
+ 22       0.000984          136.4       0.000971          138.3
+ 24       0.003622          148.2       0.003562          150.7
+ 26       0.014138          151.9       0.013873          154.8
+
+JSON written     : build/phase16-gate/run-b/kernel.json
+---------------------------------------------------------------------------
+Benchmark                                 Time             CPU   Iterations
+---------------------------------------------------------------------------
+BM_CudaKernelReport/iterations:1 ERROR OCCURRED: 'report-only benchmark: see the printed tables'

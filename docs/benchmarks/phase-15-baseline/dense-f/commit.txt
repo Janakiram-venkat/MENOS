@@ -1,0 +1,1 @@
+4790bdc Keep every dense benchmark repetition in the JSON output

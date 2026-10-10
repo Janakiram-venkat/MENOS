@@ -1,0 +1,168 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "dev",
+      "displayName": "Debug, ASan+UBSan, warnings as errors",
+      "binaryDir": "${sourceDir}/build/dev",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer",
+        "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release, warnings as errors",
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "cuda-dev",
+      "inherits": "dev",
+      "displayName": "Dev with the CUDA dense backend",
+      "description": "CMAKE_CUDA_COMPILER and CUDAToolkit_ROOT are both pinned because they must be. This machine has two CUDA toolkits: a bare enable_language(CUDA) resolves /usr/bin/nvcc (12.4, which rejects GCC 15), and FindCUDAToolkit independently resolves libcudart from /usr/lib/x86_64-linux-gnu (also 12.4) while the headers come from /usr/local/cuda (13.4). That header/runtime mismatch compiles and links silently but misreads cudaDeviceProp fields. See docs/adr/0014.",
+      "binaryDir": "${sourceDir}/build/cuda-dev",
+      "cacheVariables": {
+        "MENOS_ENABLE_CUDA": "ON",
+        "CMAKE_CUDA_COMPILER": "/usr/local/cuda/bin/nvcc",
+        "CMAKE_CUDA_ARCHITECTURES": "86",
+        "CUDAToolkit_ROOT": "/usr/local/cuda"
+      }
+    },
+    {
+      "name": "cuda-release",
+      "inherits": "release",
+      "displayName": "Release with the CUDA dense backend",
+      "description": "CMAKE_CUDA_COMPILER and CUDAToolkit_ROOT are both pinned because they must be. This machine has two CUDA toolkits: a bare enable_language(CUDA) resolves /usr/bin/nvcc (12.4, which rejects GCC 15), and FindCUDAToolkit independently resolves libcudart from /usr/lib/x86_64-linux-gnu (also 12.4) while the headers come from /usr/local/cuda (13.4). That header/runtime mismatch compiles and links silently but misreads cudaDeviceProp fields. See docs/adr/0014.",
+      "binaryDir": "${sourceDir}/build/cuda-release",
+      "cacheVariables": {
+        "MENOS_ENABLE_CUDA": "ON",
+        "CMAKE_CUDA_COMPILER": "/usr/local/cuda/bin/nvcc",
+        "CMAKE_CUDA_ARCHITECTURES": "86",
+        "CUDAToolkit_ROOT": "/usr/local/cuda"
+      }
+    },
+    {
+      "name": "cuda12-dev",
+      "inherits": "dev",
+      "displayName": "Dev with the CUDA dense backend on CUDA 12.x",
+      "description": "CUDA 12.x build. /usr/bin/nvcc is the Ubuntu nvidia-cuda-toolkit (12.4), whose headers and libcudart live under /usr, so CUDAToolkit_ROOT is /usr. CUDA 12.4 accepts host GCC up to 13, so GCC 13 compiles the WHOLE build (C++ and the nvcc host pass) rather than only the .cu objects, which avoids a mixed-compiler boundary. GCC 12+ is the project minimum (docs/adr/0001). Exists because a driver older than the CUDA 13 runtime (e.g. 566.x, which runs up to CUDA 12.7) cannot run a CUDA 13 build at all. See docs/adr/0014 section 17.",
+      "binaryDir": "${sourceDir}/build/cuda12-dev",
+      "cacheVariables": {
+        "MENOS_ENABLE_CUDA": "ON",
+        "CMAKE_CXX_COMPILER": "g++-13",
+        "CMAKE_CUDA_HOST_COMPILER": "g++-13",
+        "CMAKE_CUDA_COMPILER": "/usr/bin/nvcc",
+        "CMAKE_CUDA_ARCHITECTURES": "86",
+        "CUDAToolkit_ROOT": "/usr"
+      }
+    },
+    {
+      "name": "cuda12-release",
+      "inherits": "release",
+      "displayName": "Release with the CUDA dense backend on CUDA 12.x",
+      "description": "CUDA 12.x build. /usr/bin/nvcc is the Ubuntu nvidia-cuda-toolkit (12.4), whose headers and libcudart live under /usr, so CUDAToolkit_ROOT is /usr. CUDA 12.4 accepts host GCC up to 13, so GCC 13 compiles the WHOLE build (C++ and the nvcc host pass) rather than only the .cu objects, which avoids a mixed-compiler boundary. GCC 12+ is the project minimum (docs/adr/0001). Exists because a driver older than the CUDA 13 runtime (e.g. 566.x, which runs up to CUDA 12.7) cannot run a CUDA 13 build at all. See docs/adr/0014 section 17.",
+      "binaryDir": "${sourceDir}/build/cuda12-release",
+      "cacheVariables": {
+        "MENOS_ENABLE_CUDA": "ON",
+        "CMAKE_CXX_COMPILER": "g++-13",
+        "CMAKE_CUDA_HOST_COMPILER": "g++-13",
+        "CMAKE_CUDA_COMPILER": "/usr/bin/nvcc",
+        "CMAKE_CUDA_ARCHITECTURES": "86",
+        "CUDAToolkit_ROOT": "/usr"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "dev",
+      "configurePreset": "dev"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "cuda-dev",
+      "configurePreset": "cuda-dev"
+    },
+    {
+      "name": "cuda-release",
+      "configurePreset": "cuda-release"
+    },
+    {
+      "name": "cuda12-dev",
+      "configurePreset": "cuda12-dev"
+    },
+    {
+      "name": "cuda12-release",
+      "configurePreset": "cuda12-release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "dev",
+      "configurePreset": "dev",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "cuda-dev",
+      "configurePreset": "cuda-dev",
+      "output": {
+        "outputOnFailure": true
+      },
+      "environment": {
+        "ASAN_OPTIONS": "protect_shadow_gap=0",
+        "LSAN_OPTIONS": "suppressions=${sourceDir}/scripts/lsan-wsl-libcuda.supp"
+      }
+    },
+    {
+      "name": "cuda-release",
+      "configurePreset": "cuda-release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "environment": {
+        "ASAN_OPTIONS": "protect_shadow_gap=0"
+      }
+    },
+    {
+      "name": "cuda12-dev",
+      "configurePreset": "cuda12-dev",
+      "output": {
+        "outputOnFailure": true
+      },
+      "environment": {
+        "ASAN_OPTIONS": "protect_shadow_gap=0",
+        "LSAN_OPTIONS": "suppressions=${sourceDir}/scripts/lsan-wsl-libcuda.supp"
+      }
+    },
+    {
+      "name": "cuda12-release",
+      "configurePreset": "cuda12-release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "environment": {
+        "ASAN_OPTIONS": "protect_shadow_gap=0"
+      }
+    }
+  ]
+}

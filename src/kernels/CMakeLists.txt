@@ -1,0 +1,20 @@
+# The dense-statevector primitive API (docs/adr/0014). One target per backend;
+# the shared contract lives in dense_kernels.h, which both implement.
+add_library(menos_kernels_cpu STATIC
+    cpu/dense_kernels.cpp
+    cpu/thread_pool.cpp
+)
+target_include_directories(menos_kernels_cpu PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(menos_kernels_cpu PUBLIC menos_common Threads::Threads)
+target_compile_features(menos_kernels_cpu PUBLIC cxx_std_20)
+target_compile_options(menos_kernels_cpu PRIVATE ${MENOS_WARNING_FLAGS}
+    # The CPU twin of the CUDA kernels' -fmad=false (docs/adr/0014 section 10):
+    # no a*b+c is ever fused, so the specialised kernels stay bitwise identical
+    # to the generic one and to CUDA even if an FMA-capable -march is added
+    # (docs/adr/0019 section 4). A no-op on baseline x86-64, which has no FMA.
+    -ffp-contract=off
+)
+
+if(MENOS_ENABLE_CUDA)
+    add_subdirectory(cuda)
+endif()

@@ -1,0 +1,90 @@
+---
+# bugprone, performance and clang-analyzer are enabled in full (CLAUDE.md
+# names these as required). modernize/readability/cppcoreguidelines are a
+# deliberately narrow, documented subset aimed at conventions CLAUDE.md
+# already states (RAII, enum class, const-by-default, naming), not a
+# blanket style opinion. Extend the subset only when a specific finding
+# earns its place.
+Checks: >
+  -*,
+  bugprone-*,
+  performance-*,
+  clang-analyzer-*,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-equals-default,
+  modernize-use-equals-delete,
+  modernize-use-using,
+  modernize-pass-by-value,
+  readability-identifier-naming,
+  readability-else-after-return,
+  readability-container-size-empty,
+  readability-redundant-smartptr-get,
+  readability-redundant-string-init,
+  readability-simplify-boolean-expr,
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-pro-type-const-cast,
+  cppcoreguidelines-pro-type-static-cast-downcast,
+  cppcoreguidelines-slicing,
+  cppcoreguidelines-special-member-functions,
+  -bugprone-easily-swappable-parameters-of-similar-type
+
+WarningsAsErrors: 'bugprone-*'
+
+# Diagnostics in our own headers, reported through whichever translation
+# unit includes them (scripts/verify.sh lints .cpp files only: a header has
+# no compile command of its own, and letting clang-tidy guess one by
+# interpolating from the "nearest" compile_commands.json entry made the
+# result depend on which entry it happened to pick, so a fresh clone and a
+# long-lived build tree disagreed).
+#
+# Two things are load-bearing here, both learned by measurement:
+#
+# 1. The leading (^|/), because clang-tidy matches this against the path as
+#    it resolves it, which is absolute. An anchored '^(src|include)' never
+#    matches anything, so header diagnostics are silently never reported.
+# 2. 'include/menos' rather than bare 'include', because a bare include/
+#    arm matches any path with an include/ component anywhere in it --
+#    /usr/include/python3.14/... and .venv/.../nanobind/include/... both
+#    qualify, which surfaced 492 third-party findings in the bindings stage.
+#    Our public headers all live under include/menos/, so scope it there.
+HeaderFilterRegex: '(^|/)(include/menos|src)/.*\.h$'
+
+# FetchContent dependencies are not ours to lint, and one of them slips past
+# the filter above on the src/ arm (googletest's own
+# googletest-src/googletest/src/gtest-internal-inl.h). google_benchmark is
+# the reason this is needed rather than optional: unlike googletest and
+# nlohmann, which arrive via -isystem and are suppressed as system headers,
+# it arrives via a plain -I. One prefix covers both _deps/ and _deps-cache/.
+ExcludeHeaderFilterRegex: '/_deps'
+
+CheckOptions:
+  # Naming, taken directly from CLAUDE.md's C++ conventions section.
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.GlobalConstantPrefix
+    value: k
+  - key: readability-identifier-naming.StaticConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.StaticConstantPrefix
+    value: k
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: CamelCase
+  - key: readability-identifier-naming.ConstexprVariablePrefix
+    value: k
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: true

@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MENOS Benchmarks</title>
+<!--
+  Rendered by tools/dashboard/menos_dashboard.py, which replaces the data
+  placeholder below with a results JSON. Fully self-contained: no network
+  requests. A value that was not measured is null in the data and is shown
+  blank or as "not measured", never interpolated.
+-->
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.10);
+  --s-cpu: #2a78d6;
+  --s-cuda: #eb6834;
+  --s-qiskit: #1baf7a;
+  --good: #0ca30c;
+  --good-ink: #006300;
+  --critical: #d03b3b;
+  --wash: rgba(11, 11, 11, 0.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --s-cpu: #3987e5;
+    --s-cuda: #d95926;
+    --s-qiskit: #199e70;
+    --good-ink: #0ca30c;
+    --wash: rgba(255, 255, 255, 0.05);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --muted: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.10);
+  --s-cpu: #3987e5;
+  --s-cuda: #d95926;
+  --s-qiskit: #199e70;
+  --good-ink: #0ca30c;
+  --wash: rgba(255, 255, 255, 0.05);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
+header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+h2 { font-size: 16px; margin: 0 0 4px; }
+.sub { color: var(--ink-2); margin: 0; max-width: 70ch; }
+.note { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; max-width: 80ch; }
+button {
+  font: inherit; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer;
+}
+button:hover { background: var(--wash); }
+button:focus-visible { outline: 2px solid var(--s-cpu); outline-offset: 2px; }
+.env {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1px; background: var(--border); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin: 20px 0;
+}
+.env div { background: var(--surface); padding: 10px 14px; min-width: 0; }
+.env dt { color: var(--muted); font-size: 12px; }
+.env dd { margin: 0; overflow-wrap: anywhere; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.kpi .label { color: var(--ink-2); font-size: 13px; }
+.kpi .value { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin: 2px 0; }
+.kpi .ctx { color: var(--muted); font-size: 12.5px; }
+section.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 18px 14px; margin-bottom: 20px;
+}
+.card-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 8px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+.chart { position: relative; }
+.chart h3 { font-size: 13px; font-weight: 600; color: var(--ink-2); margin: 6px 0 2px; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); margin: 4px 0; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.tip {
+  position: absolute; pointer-events: none; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12.5px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12); white-space: nowrap; display: none; z-index: 2;
+}
+.tip b { font-weight: 600; }
+.tip .row { display: flex; align-items: center; gap: 6px; }
+.tip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; }
+.seg button[aria-pressed="true"] { background: var(--wash); font-weight: 600; }
+.empty { color: var(--muted); padding: 28px 0; text-align: center; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--ink-2); font-weight: 600; }
+.badge { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+.badge.ok { color: var(--good-ink); }
+.badge.bad { color: var(--critical); }
+details summary { cursor: pointer; color: var(--ink-2); }
+text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>MENOS benchmarks</h1>
+      <p class="sub">MENOS on CPU and CUDA compared with pure Qiskit (<code>qiskit.quantum_info.Statevector</code>), all on the same circuit family.</p>
+    </div>
+    <button id="theme" type="button" aria-label="Toggle colour theme">Theme</button>
+  </header>
+
+  <dl class="env" id="env"></dl>
+  <div class="kpis" id="kpis"></div>
+
+  <section class="card" id="mq">
+    <div class="card-head">
+      <div>
+        <h2>MENOS vs Qiskit</h2>
+        <p class="sub" id="mq-sub"></p>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="chart" id="mq-time"><h3>Wall time, seconds (log scale)</h3></div>
+      <div class="chart" id="mq-speed"><h3>MENOS speedup over Qiskit (×, log scale)</h3></div>
+    </div>
+    <p class="note">Wall time for MENOS includes Qiskit → MENOS conversion, planning and the copy of the statevector back to Python. Qiskit's <code>Statevector</code> is a reference simulator, not a performance-tuned one, so this is a speedup over Qiskit's exact reference path, not over Qiskit Aer.</p>
+  </section>
+
+  <section class="card" id="xo">
+    <div class="card-head">
+      <div>
+        <h2>CPU vs CUDA</h2>
+        <p class="sub" id="xo-sub"></p>
+      </div>
+      <div class="seg" role="group" aria-label="Output mode" id="xo-mode">
+        <button type="button" data-mode="statevector" aria-pressed="true">Statevector</button>
+        <button type="button" data-mode="expectation" aria-pressed="false">Expectation</button>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="chart" id="xo-time"><h3>End-to-end time, seconds (log scale)</h3></div>
+      <div class="chart" id="xo-speed"><h3>CUDA speedup over CPU (×, log scale)</h3></div>
+    </div>
+    <p class="note" id="xo-note"></p>
+  </section>
+
+  <section class="card">
+    <h2>Correctness against Qiskit</h2>
+    <p class="sub" id="ok-sub"></p>
+    <div class="table-wrap"><table id="ok-table"></table></div>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>Raw data</summary>
+      <div class="table-wrap" style="margin-top:10px"><table id="raw-mq"></table></div>
+      <div class="table-wrap" style="margin-top:16px"><table id="raw-xo"></table></div>
+    </details>
+  </section>
+</main>
+
+<script>
+const DATA = /*__MENOS_DASHBOARD_DATA__*/null;
+
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const isNum = (v) => typeof v === "number" && isFinite(v);
+
+  // Theme toggle: stamps data-theme, which wins over the OS preference both ways.
+  try {
+    const saved = localStorage.getItem("menos-dash-theme");
+    if (saved) document.documentElement.dataset.theme = saved;
+  } catch (e) { /* storage unavailable: OS preference applies */ }
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("menos-dash-theme", root.dataset.theme); } catch (e) { /* ignore */ }
+  });
+
+  if (!DATA) {
+    document.querySelector("main").insertAdjacentHTML("beforeend", '<p class="empty">No results embedded. Render this page with tools/dashboard/menos_dashboard.py.</p>');
+    return;
+  }
+
+  const fmtS = (s) => !isNum(s) ? "" : s >= 1 ? s.toFixed(2) + " s" : s >= 1e-3 ? (s * 1e3).toFixed(s >= 0.1 ? 0 : 2) + " ms" : (s * 1e6).toFixed(0) + " µs";
+  const fmtX = (x) => !isNum(x) ? "" : (x >= 10 ? x.toFixed(0) : x >= 0.01 ? x.toFixed(2) : x.toPrecision(1)) + "×";
+  const fmtB = (b) => !isNum(b) ? "" : b >= 2 ** 30 ? (b / 2 ** 30).toFixed(1) + " GiB" : b >= 2 ** 20 ? (b / 2 ** 20).toFixed(1) + " MiB" : (b / 1024).toFixed(1) + " KiB";
+  const ratio = (a, b) => isNum(a) && isNum(b) && b > 0 ? a / b : null;
+
+  // Median with its measured range, for table cells.
+  const fmtSpread = (s, fmt) => !s ? "" : `${esc(fmt(s.median))}<br><small style="color:var(--muted)">${esc(fmt(s.min))}–${esc(fmt(s.max))} · IQR ${esc(fmt(s.q1))}–${esc(fmt(s.q3))}</small>`;
+  // Speed-up range implied by the two series' ranges (slowest Qiskit over
+  // fastest MENOS and the reverse). A range, not a confidence interval.
+  const ratioRange = (q, mn) => q && mn ? { min: ratio(q.min, mn.max), max: ratio(q.max, mn.min) } : null;
+
+  // ---- Environment strip -------------------------------------------------
+  const env = DATA.environment || {};
+  function powerText(p) {
+    if (!p) return "";
+    const ac = p.ac_online === true ? "on AC" : p.ac_online === false ? "on battery" : "AC state unknown";
+    return [ac, isNum(p.battery_percent) ? `battery ${p.battery_percent}%` : null, p.power_scheme ? `scheme ${p.power_scheme}` : null].filter(Boolean).join(" · ");
+  }
+  const xo = DATA.crossover;
+  const gpu = xo && xo.gpu;
+  const envItems = [
+    ["CPU", env.cpu],
+    ["GPU", gpu ? `${gpu.name} (cc ${gpu.compute_capability})` : (xo ? "no CUDA device" : "not measured")],
+    ["GPU memory", gpu ? `${fmtB(gpu.total_memory_bytes)} total, ${fmtB(gpu.free_memory_bytes)} free` : ""],
+    ["CUDA toolkit", xo && xo.cuda_toolkit],
+    ["Cores", isNum(env.logical_cpus) ? `${env.logical_cpus} logical, ${isNum(env.physical_cpus) ? env.physical_cpus : "unknown"} physical as the OS reports them${env.wsl ? " (WSL: virtual topology)" : ""}` : ""],
+    // Both readings are shown only when AC state or scheme changed mid-sweep.
+    ["Power", env.power && env.power_after && (env.power_after.ac_online !== env.power.ac_online || env.power_after.power_scheme !== env.power.power_scheme)
+      ? `before: ${powerText(env.power)}; after: ${powerText(env.power_after)}`
+      : powerText(env.power)],
+    ["CPU governor", env.cpu_governor || (env.power ? "not exposed" : "")],
+    ["Versions", `MENOS ${env.menos} · Qiskit ${env.qiskit} · Python ${env.python}`],
+    ["Commit / date", `${env.git_commit || "unknown"} · ${env.timestamp || ""}`],
+  ].filter(([, v]) => v);
+  $("env").innerHTML = envItems.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
+
+  // ---- Line chart (log y, gaps on null, crosshair tooltip) ---------------
+  function lineChart(host, opts) {
+    const { xs, series, yFmt, refLine, markers, tipExtra } = opts;
+    const W = 520, H = 280, m = { t: 14, r: 64, b: 34, l: 58 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    // A series may carry `ranges`: per point {min, max} (or null), drawn as a
+    // shaded band behind its median line and shown in the tooltip.
+    const ys = series.flatMap((s) => [...s.values, ...(s.ranges || []).flatMap((r) => r ? [r.min, r.max] : [])]).filter((v) => isNum(v) && v > 0);
+    if (refLine) ys.push(refLine.value);
+    host.querySelectorAll("svg,.legend,.tip,.empty").forEach((n) => n.remove());
+    if (!ys.length || !xs.length) {
+      host.insertAdjacentHTML("beforeend", '<p class="empty">Not measured.</p>');
+      return;
+    }
+    let lo = Math.floor(Math.log10(Math.min(...ys))), hi = Math.ceil(Math.log10(Math.max(...ys)));
+    if (lo === hi) { lo -= 1; hi += 1; }
+    const x0 = xs[0], x1 = xs[xs.length - 1];
+    const sx = (x) => m.l + (x1 === x0 ? iw / 2 : ((x - x0) / (x1 - x0)) * iw);
+    const sy = (y) => m.t + ih - ((Math.log10(y) - lo) / (hi - lo)) * ih;
+    let g = "";
+    for (let e = lo; e <= hi; e++) {
+      const y = sy(10 ** e);
+      g += `<line x1="${m.l}" x2="${m.l + iw}" y1="${y}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
+      g += `<text x="${m.l - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(yFmt(10 ** e))}</text>`;
+    }
+    const step = Math.max(1, Math.ceil(xs.length / 8));
+    xs.forEach((x, i) => {
+      if (i % step === 0 || i === xs.length - 1)
+        g += `<text x="${sx(x)}" y="${m.t + ih + 18}" text-anchor="middle" font-size="11" fill="var(--muted)">${x}</text>`;
+    });
+    g += `<text x="${m.l + iw / 2}" y="${H - 2}" text-anchor="middle" font-size="11" fill="var(--muted)">qubits</text>`;
+    g += `<line x1="${m.l}" x2="${m.l + iw}" y1="${m.t + ih}" y2="${m.t + ih}" stroke="var(--axis)"/>`;
+    if (refLine) {
+      const y = sy(refLine.value);
+      g += `<line x1="${m.l}" x2="${m.l + iw}" y1="${y}" y2="${y}" stroke="var(--ink-2)" stroke-dasharray="4 4" stroke-width="1"/>`;
+      g += `<text x="${m.l + iw + 6}" y="${y + 4}" font-size="11" fill="var(--ink-2)">${esc(refLine.label)}</text>`;
+    }
+    (markers || []).forEach((mk) => {
+      const x = sx(mk.x);
+      g += `<line x1="${x}" x2="${x}" y1="${m.t}" y2="${m.t + ih}" stroke="var(--muted)" stroke-dasharray="2 3"/>`;
+      g += `<text x="${x - 4}" y="${m.t + 10}" text-anchor="end" font-size="11" fill="var(--ink-2)">${esc(mk.label)}</text>`;
+    });
+    const labels = [];
+    const okRange = (r) => r && isNum(r.min) && isNum(r.max) && r.min > 0 && r.max > 0;
+    series.forEach((s) => {
+      if (!s.ranges) return;
+      // One polygon per run of consecutive points that all have a range.
+      let run = [];
+      const flush = () => {
+        if (run.length) {
+          const top = run.map((i) => `${sx(xs[i]).toFixed(1)},${sy(s.ranges[i].max).toFixed(1)}`);
+          const bottom = run.slice().reverse().map((i) => `${sx(xs[i]).toFixed(1)},${sy(s.ranges[i].min).toFixed(1)}`);
+          g += `<polygon points="${[...top, ...bottom].join(" ")}" fill="${s.color}" fill-opacity="0.16" stroke="none"/>`;
+        }
+        run = [];
+      };
+      xs.forEach((x, i) => { if (okRange(s.ranges[i])) run.push(i); else flush(); });
+      flush();
+    });
+    series.forEach((s) => {
+      let d = "", pen = false;
+      xs.forEach((x, i) => {
+        const v = s.values[i];
+        if (isNum(v) && v > 0) { d += `${pen ? "L" : "M"}${sx(x).toFixed(1)},${sy(v).toFixed(1)}`; pen = true; }
+        else pen = false;
+      });
+      g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"${s.dash ? ' stroke-dasharray="5 4"' : ""}/>`;
+      xs.forEach((x, i) => {
+        const v = s.values[i];
+        if (isNum(v) && v > 0) g += `<circle cx="${sx(x)}" cy="${sy(v)}" r="3" fill="${s.color}" stroke="var(--surface)" stroke-width="1.5"/>`;
+      });
+      // Direct label at the last measured point.
+      for (let i = xs.length - 1; i >= 0; i--) {
+        if (isNum(s.values[i]) && s.values[i] > 0) {
+          labels.push({ x: sx(xs[i]) + 8, y: sy(s.values[i]) + 4, text: s.short || s.name });
+          break;
+        }
+      }
+    });
+    // Push overlapping end labels apart so each stays readable.
+    labels.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < labels.length; i++) labels[i].y = Math.max(labels[i].y, labels[i - 1].y + 13);
+    labels.forEach((l) => { g += `<text x="${l.x}" y="${l.y}" font-size="11" fill="var(--ink-2)">${esc(l.text)}</text>`; });
+    g += `<line class="xh" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-2)" stroke-width="1" visibility="hidden"/>`;
+    g += `<rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent" class="hit"/>`;
+    host.insertAdjacentHTML("beforeend",
+      (series.length > 1 ? `<div class="legend">${series.map((s) => `<span><i style="${s.dash ? `background:repeating-linear-gradient(90deg,${s.color} 0 5px,transparent 5px 8px)` : `background:${s.color}`}"></i>${esc(s.name)}</span>`).join("")}</div>` : "") +
+      `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(host.querySelector("h3").textContent)}">${g}</svg><div class="tip"></div>`);
+    const svg = host.querySelector("svg"), tip = host.querySelector(".tip"), xh = svg.querySelector(".xh");
+    const hide = () => { tip.style.display = "none"; xh.setAttribute("visibility", "hidden"); };
+    svg.querySelector(".hit").addEventListener("pointermove", (ev) => {
+      const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+      const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      let best = 0;
+      xs.forEach((x, i) => { if (Math.abs(sx(x) - p.x) < Math.abs(sx(xs[best]) - p.x)) best = i; });
+      xh.setAttribute("x1", sx(xs[best])); xh.setAttribute("x2", sx(xs[best])); xh.setAttribute("visibility", "visible");
+      const rows = series.map((s) => {
+        const r = s.ranges && s.ranges[best];
+        const range = okRange(r) ? ` <span style="color:var(--muted)">(${esc(yFmt(r.min))}–${esc(yFmt(r.max))}${isNum(r.q1) ? `, IQR ${esc(yFmt(r.q1))}–${esc(yFmt(r.q3))}` : ""})</span>` : "";
+        return `<div class="row"><i style="background:${s.color}"></i>${esc(s.name)}: <b>${isNum(s.values[best]) ? esc(yFmt(s.values[best])) : "not measured"}</b>${range}</div>`;
+      }).join("");
+      tip.innerHTML = `<b>${xs[best]} qubits</b>${rows}${tipExtra ? tipExtra(best) : ""}`;
+      tip.style.display = "block";
+      const box = host.getBoundingClientRect(), sb = svg.getBoundingClientRect();
+      const px = sb.left - box.left + (sx(xs[best]) / W) * sb.width;
+      const left = px + 12 + tip.offsetWidth > box.width ? px - 12 - tip.offsetWidth : px + 12;
+      tip.style.left = Math.max(0, left) + "px";
+      tip.style.top = (sb.top - box.top + 20) + "px";
+    });
+    svg.querySelector(".hit").addEventListener("pointerleave", hide);
+  }
+
+  const css = (v) => `var(${v})`;
+
+  // ---- MENOS vs Qiskit ---------------------------------------------------
+  const pts = DATA.menos_vs_qiskit || [];
+  const mqX = pts.map((p) => p.n);
+  const backends = [...new Set(pts.map((p) => p.menos_backend))];
+  $("mq-sub").textContent = pts.length
+    ? `${DATA.circuit.layers} layers of ${DATA.circuit.description}; median of ${DATA.repeats} run(s) after a warm-up, shaded band = min–max of those runs. MENOS backend chosen by the planner: ${backends.join(", ")}.`
+    : "Not measured.";
+  const mqSpeed = pts.map((p) => ratio(p.qiskit_wall_seconds, p.menos_wall_seconds));
+  const mqSpeedRange = pts.map((p) => ratioRange(p.qiskit_wall_spread, p.menos_wall_spread));
+  const backendTip = (i) => `<div class="row" style="color:var(--muted)">planner backend: ${esc(pts[i].menos_backend)} · ${pts[i].gates} gates</div>`;
+  lineChart($("mq-time"), {
+    xs: mqX, yFmt: fmtS, tipExtra: backendTip,
+    series: [
+      { name: "MENOS (end-to-end)", short: "MENOS", color: css("--s-cpu"), values: pts.map((p) => p.menos_wall_seconds), ranges: pts.map((p) => p.menos_wall_spread) },
+      { name: "MENOS (engine execute only)", short: "execute", color: css("--s-cpu"), dash: true, values: pts.map((p) => p.menos_execute_seconds), ranges: pts.map((p) => p.menos_execute_spread) },
+      { name: "Qiskit Statevector", short: "Qiskit", color: css("--s-qiskit"), values: pts.map((p) => p.qiskit_wall_seconds), ranges: pts.map((p) => p.qiskit_wall_spread) },
+    ],
+  });
+  lineChart($("mq-speed"), {
+    xs: mqX, yFmt: fmtX, tipExtra: backendTip, refLine: { value: 1, label: "parity" },
+    series: [{ name: "Speedup (median; band = range implied by the run spreads)", short: "Speedup", color: css("--s-cpu"), values: mqSpeed, ranges: mqSpeedRange }],
+  });
+
+  // ---- CPU vs CUDA -------------------------------------------------------
+  let mode = "statevector";
+  function crossoverN(rows) {
+    // Smallest n from which CUDA is faster than CPU at every larger measured n.
+    let n = null;
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const r = rows[i];
+      if (!isNum(r.cpu_seconds) || !isNum(r.cuda_seconds)) continue;
+      if (r.cuda_seconds < r.cpu_seconds) n = r.n; else break;
+    }
+    return n;
+  }
+  function peak(rows) {
+    let best = null;
+    rows.forEach((r) => { const s = ratio(r.cpu_seconds, r.cuda_seconds); if (s !== null && (!best || s > best.s)) best = { s, n: r.n }; });
+    return best;
+  }
+  function drawCrossover() {
+    document.querySelectorAll("#xo-mode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+    const rows = (xo && xo[mode]) || [];
+    if (!xo) $("xo-sub").textContent = "Not measured: no crossover JSON was given to menos_dashboard.py run --crossover-json.";
+    else if (!xo.device_present) $("xo-sub").textContent = "Not measured: the crossover benchmark found no CUDA device.";
+    else $("xo-sub").textContent = `Forced side by side with menos_cuda_crossover_benchmark: DenseEngine vs CudaDenseEngine on ${xo.circuit.layers} layers of ${xo.circuit.description}. ${xo.timing}.`;
+    const xs = rows.map((r) => r.n);
+    const firstNoVram = rows.find((r) => !r.vram_ok);
+    const markers = firstNoVram ? [{ x: firstNoVram.n, label: "VRAM limit" }] : [];
+    const cx = crossoverN(rows);
+    if (cx !== null) markers.push({ x: cx, label: `crossover n=${cx}` });
+    const tipExtra = (i) => `<div class="row" style="color:var(--muted)">host ${fmtB(rows[i].host_bytes)} · device ${fmtB(rows[i].dev_bytes)}${rows[i].vram_ok ? "" : " · exceeds VRAM"}</div>`;
+    lineChart($("xo-time"), {
+      xs, yFmt: fmtS, markers, tipExtra,
+      series: [
+        { name: "CPU (DenseEngine)", short: "CPU", color: css("--s-cpu"), values: rows.map((r) => r.cpu_seconds) },
+        { name: "CUDA (CudaDenseEngine)", short: "CUDA", color: css("--s-cuda"), values: rows.map((r) => r.cuda_seconds) },
+      ],
+    });
+    lineChart($("xo-speed"), {
+      xs, yFmt: fmtX, refLine: { value: 1, label: "parity" }, tipExtra,
+      series: [{ name: "Speedup", color: css("--s-cuda"), values: rows.map((r) => ratio(r.cpu_seconds, r.cuda_seconds)) }],
+    });
+    $("xo-note").textContent = rows.length
+      ? "A blank point was not measured: the benchmark skips CPU runs above 24 qubits (minutes each) and CUDA runs whose state does not fit in free device memory."
+      : "";
+  }
+  document.querySelectorAll("#xo-mode button").forEach((b) => b.addEventListener("click", () => { mode = b.dataset.mode; drawCrossover(); }));
+  drawCrossover();
+
+  // ---- KPIs ---------------------------------------------------------------
+  const kpis = [];
+  // Headline the largest circuit, where fixed overheads no longer dominate;
+  // small-n ratios mostly compare per-call overhead.
+  const mqMeasured = mqSpeed.map((s, i) => ({ s, n: mqX[i] })).filter((p) => p.s !== null);
+  if (mqMeasured.length) {
+    const last = mqMeasured[mqMeasured.length - 1];
+    const lastRange = mqSpeedRange[mqX.indexOf(last.n)];
+    const runs = lastRange && isNum(lastRange.min) && isNum(lastRange.max) ? `${fmtX(lastRange.min)}–${fmtX(lastRange.max)} across runs; ` : "";
+    const all = mqMeasured.map((p) => p.s);
+    kpis.push([`Speedup over Qiskit at ${last.n} qubits`, fmtX(last.s), `end-to-end median; ${runs}${fmtX(Math.min(...all))} to ${fmtX(Math.max(...all))} across the sweep`]);
+  }
+  if (xo && xo.device_present) {
+    const sv = xo.statevector || [], ex = xo.expectation || [];
+    const cx = crossoverN(sv);
+    kpis.push(["CUDA crossover (statevector)", cx === null ? "none" : `n = ${cx}`, "CUDA faster from here on"]);
+    const pk = peak(sv), pe = peak(ex);
+    if (pk) kpis.push(["Peak CUDA speedup, statevector", fmtX(pk.s), `at ${pk.n} qubits, transfers included`]);
+    if (pe) kpis.push(["Peak CUDA speedup, expectation", fmtX(pe.s), `at ${pe.n} qubits`]);
+  }
+  const agree = pts.filter((p) => p.agrees).length;
+  if (pts.length) kpis.push(["Agreement with Qiskit", `${agree} / ${pts.length}`, `statevectors within ${DATA.abs_tol}`]);
+  $("kpis").innerHTML = kpis.map(([l, v, c]) => `<div class="kpi"><div class="label">${esc(l)}</div><div class="value">${esc(v)}</div><div class="ctx">${esc(c)}</div></div>`).join("");
+
+  // ---- Correctness and raw tables ----------------------------------------
+  $("ok-sub").textContent = pts.length
+    ? `Largest absolute amplitude difference between MENOS and Qiskit statevectors, against the project tolerance ${DATA.abs_tol} (src/common/tolerance.h).`
+    : "Not measured.";
+  const badge = (ok) => ok ? '<span class="badge ok">✓ agrees</span>' : '<span class="badge bad">✕ mismatch</span>';
+  $("ok-table").innerHTML = pts.length
+    ? `<thead><tr><th>Qubits</th><th>Max |Δ amplitude|</th><th>Result</th></tr></thead><tbody>${pts.map((p) => `<tr><td>${p.n}</td><td>${p.max_abs_deviation.toExponential(2)}</td><td>${badge(p.agrees)}</td></tr>`).join("")}</tbody>`
+    : "";
+  $("raw-mq").innerHTML = pts.length
+    ? `<caption style="text-align:left;color:var(--ink-2);padding:4px 0">MENOS vs Qiskit</caption><thead><tr><th>Qubits</th><th>Gates</th><th>Backend</th><th>MENOS end-to-end</th><th>MENOS execute</th><th>Qiskit</th><th>Speedup</th></tr></thead><tbody>${pts.map((p, i) => `<tr><td>${p.n}</td><td>${p.gates}</td><td>${esc(p.menos_backend)}</td><td>${fmtSpread(p.menos_wall_spread, fmtS)}</td><td>${fmtSpread(p.menos_execute_spread, fmtS)}</td><td>${fmtSpread(p.qiskit_wall_spread, fmtS)}</td><td>${esc(fmtX(mqSpeed[i]))}${mqSpeedRange[i] ? `<br><small style="color:var(--muted)">${esc(fmtX(mqSpeedRange[i].min))}–${esc(fmtX(mqSpeedRange[i].max))}</small>` : ""}</td></tr>`).join("")}</tbody>`
+    : "";
+  const xoRows = xo ? ["statevector", "expectation"].flatMap((md) => (xo[md] || []).map((r) => ({ md, ...r }))) : [];
+  $("raw-xo").innerHTML = xoRows.length
+    ? `<caption style="text-align:left;color:var(--ink-2);padding:4px 0">CPU vs CUDA</caption><thead><tr><th>Mode</th><th>Qubits</th><th>Host bytes</th><th>Device bytes</th><th>CPU</th><th>CUDA</th><th>Speedup</th><th>Fits VRAM</th></tr></thead><tbody>${xoRows.map((r) => `<tr><td>${r.md}</td><td>${r.n}</td><td>${fmtB(r.host_bytes)}</td><td>${fmtB(r.dev_bytes)}</td><td>${fmtS(r.cpu_seconds)}</td><td>${fmtS(r.cuda_seconds)}</td><td>${fmtX(ratio(r.cpu_seconds, r.cuda_seconds))}</td><td>${r.vram_ok ? "yes" : "no"}</td></tr>`).join("")}</tbody>`
+    : "";
+})();
+</script>
+</body>
+</html>

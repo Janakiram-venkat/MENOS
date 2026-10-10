@@ -1,0 +1,71 @@
+# Installation Problems
+
+Each entry is a **symptom**, its **cause**, and a **solution**.
+
+## `ModuleNotFoundError: No module named 'menos'`
+
+| | |
+|---|---|
+| **Symptom** | `import menos` fails |
+| **Cause** | MENOS is not installed in the Python environment you are running, most often because the virtual environment is not the one in use |
+| **Solution** | Run the interpreter from the environment you installed into (`.venv/bin/python`), or activate it. Check with `python -c "import sys; print(sys.executable)"` |
+
+## `ImportError` mentioning `_core`
+
+| | |
+|---|---|
+| **Symptom** | `import menos` fails with an `ImportError` about `menos._core` |
+| **Cause** | The native extension did not build, or was built for a different Python version than the one importing it |
+| **Solution** | Reinstall into an environment created with Python 3.14 (`uv venv .venv --python 3.14`). An extension built for one Python version cannot load in another |
+
+## `ModuleNotFoundError: No module named 'qiskit'`
+
+| | |
+|---|---|
+| **Symptom** | `from menos.qiskit import MENOSBackend` fails |
+| **Cause** | Qiskit is an optional extra |
+| **Solution** | Install with the extra: `pip install "menos[qiskit]"` or `uv add "menos[qiskit]"` (from a source checkout: `uv pip install --python .venv/bin/python ".[qiskit]"`). The [native API](/build/native-api) works without it |
+
+## The installer says the package requires a different Python
+
+| | |
+|---|---|
+| **Symptom** | `pip` or `uv` refuses to install, naming a Python version requirement |
+| **Cause** | `menos` requires Python `>=3.14` |
+| **Solution** | Use Python 3.14. If your system does not provide it, `uv python install 3.14` installs one. The PyPI wheel is built for CPython 3.14 on Linux x86-64 only, and no source distribution is published; on other platforms [install from source](/get-started/installation#install-from-source) |
+
+## Qiskit version problems
+
+| | |
+|---|---|
+| **Symptom** | `MENOSBackend` or `MENOSEstimator` raise errors from inside Qiskit, or behave unexpectedly |
+| **Cause** | The `qiskit` extra pins **2.5.2**. A different installed version is untested |
+| **Solution** | `uv pip install --python .venv/bin/python "qiskit==2.5.2"` |
+
+## The build cannot download its dependencies
+
+| | |
+|---|---|
+| **Symptom** | The build fails while configuring, with a network or `git` error |
+| **Cause** | When building from source, CMake fetches GoogleTest and nlohmann/json from GitHub at configure time, even for a Python install. They are used only by the test suite, but the build needs them |
+| **Solution** | Ensure `git` is installed and `github.com` is reachable (check proxy settings). Offline builds are not supported |
+
+## A stale build after changing options
+
+| | |
+|---|---|
+| **Symptom** | A rebuild ignores a new CMake option, for example turning CUDA on |
+| **Cause** | The previous configuration is cached in the build directory (`build/py-…` for Python installs) |
+| **Solution** | Delete that build directory and install again |
+
+## Installation succeeded but examples fail
+
+| | |
+|---|---|
+| **Symptom** | An example in the repository fails immediately |
+| **Cause** | Usually the `qiskit` extra is missing, or you are running a different interpreter |
+| **Solution** | Run [Verify Installation](/get-started/verify-installation) |
+
+## See also
+
+[Build Errors](/troubleshooting/build-errors) · [Requirements](/get-started/requirements)

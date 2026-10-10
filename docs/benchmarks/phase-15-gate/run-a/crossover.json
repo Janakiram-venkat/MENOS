@@ -1,0 +1,261 @@
+{
+  "calibration": {
+    "d2h_bytes_per_second": 3180753865.1719236,
+    "device_work_units_per_second": 6510786202.580545,
+    "h2d_bytes_per_second": 2953950863.548959,
+    "host_work_units_per_second": 1241049652.041858,
+    "kernel_launch_seconds": 8.851033750000001e-05
+  },
+  "circuit": {
+    "description": "H on all qubits, T on q0, CX on alternating pairs, per layer",
+    "layers": 6
+  },
+  "device_present": true,
+  "expectation": [
+    {
+      "cpu_seconds": 3.496e-06,
+      "cuda_seconds": 0.006532877,
+      "dev_bytes": 256,
+      "host_bytes": 256,
+      "n": 4,
+      "vram_ok": true,
+      "work_units": 1568
+    },
+    {
+      "cpu_seconds": 2.1631e-05,
+      "cuda_seconds": 0.007169099,
+      "dev_bytes": 1024,
+      "host_bytes": 1024,
+      "n": 6,
+      "vram_ok": true,
+      "work_units": 9344
+    },
+    {
+      "cpu_seconds": 8.0414e-05,
+      "cuda_seconds": 0.01798109,
+      "dev_bytes": 4096,
+      "host_bytes": 4096,
+      "n": 8,
+      "vram_ok": true,
+      "work_units": 49664
+    },
+    {
+      "cpu_seconds": 0.000438245,
+      "cuda_seconds": 0.015905893,
+      "dev_bytes": 16384,
+      "host_bytes": 16384,
+      "n": 10,
+      "vram_ok": true,
+      "work_units": 247808
+    },
+    {
+      "cpu_seconds": 0.000958361,
+      "cuda_seconds": 0.022656113,
+      "dev_bytes": 65536,
+      "host_bytes": 65536,
+      "n": 12,
+      "vram_ok": true,
+      "work_units": 1187840
+    },
+    {
+      "cpu_seconds": 0.004592147,
+      "cuda_seconds": 0.023157965,
+      "dev_bytes": 262144,
+      "host_bytes": 262144,
+      "n": 14,
+      "vram_ok": true,
+      "work_units": 5537792
+    },
+    {
+      "cpu_seconds": 0.022393671,
+      "cuda_seconds": 0.059586962,
+      "dev_bytes": 1048576,
+      "host_bytes": 1048576,
+      "n": 16,
+      "vram_ok": true,
+      "work_units": 25296896
+    },
+    {
+      "cpu_seconds": 0.061797513,
+      "cuda_seconds": 0.151149606,
+      "dev_bytes": 4194304,
+      "host_bytes": 4194304,
+      "n": 18,
+      "vram_ok": true,
+      "work_units": 113770496
+    },
+    {
+      "cpu_seconds": 0.15024584,
+      "cuda_seconds": 0.144786926,
+      "dev_bytes": 16777216,
+      "host_bytes": 16777216,
+      "n": 20,
+      "vram_ok": true,
+      "work_units": 505413632
+    },
+    {
+      "cpu_seconds": 0.749333154,
+      "cuda_seconds": 0.521245841,
+      "dev_bytes": 67108864,
+      "host_bytes": 67108864,
+      "n": 22,
+      "vram_ok": true,
+      "work_units": 2222981120
+    },
+    {
+      "cpu_seconds": 2.576829661,
+      "cuda_seconds": 1.814698395,
+      "dev_bytes": 268435456,
+      "host_bytes": 268435456,
+      "n": 24,
+      "vram_ok": true,
+      "work_units": 9697230848
+    },
+    {
+      "cpu_seconds": null,
+      "cuda_seconds": 5.331303997,
+      "dev_bytes": 1073741824,
+      "host_bytes": 1073741824,
+      "n": 26,
+      "vram_ok": true,
+      "work_units": 42010148864
+    },
+    {
+      "cpu_seconds": null,
+      "cuda_seconds": 24.472693256,
+      "dev_bytes": 4294967296,
+      "host_bytes": 4294967296,
+      "n": 28,
+      "vram_ok": true,
+      "work_units": 180925497344
+    }
+  ],
+  "gpu": {
+    "compute_capability": "8.9",
+    "free_memory_bytes": 7443841024,
+    "multiprocessors": 24,
+    "name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "total_memory_bytes": 8585216000
+  },
+  "schema_version": 1,
+  "statevector": [
+    {
+      "cpu_seconds": 5.339e-06,
+      "cuda_seconds": 0.00395156,
+      "dev_bytes": 256,
+      "host_bytes": 256,
+      "n": 4,
+      "vram_ok": true,
+      "work_units": 1568
+    },
+    {
+      "cpu_seconds": 1.772e-05,
+      "cuda_seconds": 0.005958246,
+      "dev_bytes": 1024,
+      "host_bytes": 1024,
+      "n": 6,
+      "vram_ok": true,
+      "work_units": 9344
+    },
+    {
+      "cpu_seconds": 7.3864e-05,
+      "cuda_seconds": 0.006551823,
+      "dev_bytes": 4096,
+      "host_bytes": 4096,
+      "n": 8,
+      "vram_ok": true,
+      "work_units": 49664
+    },
+    {
+      "cpu_seconds": 0.000225859,
+      "cuda_seconds": 0.010283313,
+      "dev_bytes": 16384,
+      "host_bytes": 16384,
+      "n": 10,
+      "vram_ok": true,
+      "work_units": 247808
+    },
+    {
+      "cpu_seconds": 0.000956466,
+      "cuda_seconds": 0.00897628,
+      "dev_bytes": 65536,
+      "host_bytes": 65536,
+      "n": 12,
+      "vram_ok": true,
+      "work_units": 1187840
+    },
+    {
+      "cpu_seconds": 0.004399012,
+      "cuda_seconds": 0.010698559,
+      "dev_bytes": 262144,
+      "host_bytes": 262144,
+      "n": 14,
+      "vram_ok": true,
+      "work_units": 5537792
+    },
+    {
+      "cpu_seconds": 0.024641181,
+      "cuda_seconds": 0.018389879,
+      "dev_bytes": 1048576,
+      "host_bytes": 1048576,
+      "n": 16,
+      "vram_ok": true,
+      "work_units": 25296896
+    },
+    {
+      "cpu_seconds": 0.080920725,
+      "cuda_seconds": 0.034776601,
+      "dev_bytes": 4194304,
+      "host_bytes": 4194304,
+      "n": 18,
+      "vram_ok": true,
+      "work_units": 113770496
+    },
+    {
+      "cpu_seconds": 0.154380123,
+      "cuda_seconds": 0.11419854,
+      "dev_bytes": 16777216,
+      "host_bytes": 16777216,
+      "n": 20,
+      "vram_ok": true,
+      "work_units": 505413632
+    },
+    {
+      "cpu_seconds": 0.705108237,
+      "cuda_seconds": 0.400810618,
+      "dev_bytes": 67108864,
+      "host_bytes": 67108864,
+      "n": 22,
+      "vram_ok": true,
+      "work_units": 2222981120
+    },
+    {
+      "cpu_seconds": 2.768159459,
+      "cuda_seconds": 1.584551657,
+      "dev_bytes": 268435456,
+      "host_bytes": 268435456,
+      "n": 24,
+      "vram_ok": true,
+      "work_units": 9697230848
+    },
+    {
+      "cpu_seconds": null,
+      "cuda_seconds": 7.079101133,
+      "dev_bytes": 1073741824,
+      "host_bytes": 1073741824,
+      "n": 26,
+      "vram_ok": true,
+      "work_units": 42010148864
+    },
+    {
+      "cpu_seconds": null,
+      "cuda_seconds": 31.699039757,
+      "dev_bytes": 4294967296,
+      "host_bytes": 4294967296,
+      "n": 28,
+      "vram_ok": true,
+      "work_units": 180925497344
+    }
+  ],
+  "timing": "end-to-end SimulationEngine::execute(), transfers included"
+}

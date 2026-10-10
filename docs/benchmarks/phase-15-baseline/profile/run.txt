@@ -1,0 +1,3 @@
+n=22 gates=201 wall=10.639s execute=10.558s backend=cpu
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.437 MB build/phase15-baseline/profile/perf.data (11213 samples) ]

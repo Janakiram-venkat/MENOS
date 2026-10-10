@@ -1,0 +1,57 @@
+environment: os=Linux arch=x86_64 compiler=GCC 13.4.0, Release (NDEBUG) cpu=Intel(R) Core(TM) Ultra 7 155H
+2026-10-07T15:49:07+00:00
+Running build/cuda12-release/benchmarks/menos_cuda_crossover_benchmark
+Run on (22 X 2995.2 MHz CPU s)
+CPU Caches:
+  L1 Data 48 KiB (x11)
+  L1 Instruction 64 KiB (x11)
+  L2 Unified 2048 KiB (x11)
+  L3 Unified 24576 KiB (x1)
+Load Average: 0.00, 0.18, 1.66
+***WARNING*** ASLR is enabled, the results may have unreproducible noise in them.
+
+=== MENOS CPU vs CUDA crossover ===
+GPU              : NVIDIA GeForce RTX 4060 Laptop GPU (compute capability 8.9, 24 SMs)
+device memory    : 8188 MiB total, 7099 MiB free
+calibration      : host 3.541e+08 work_units/s, device 6.551e+09 work_units/s
+                   H2D 3.112e+09 B/s, D2H 3.185e+09 B/s, launch 8.242e-05 s
+circuit          : 6 layers of (H on all qubits, T on q0, CX on alternating pairs)
+timing           : end-to-end SimulationEngine::execute(), transfers included
+
+== output mode: statevector ==
+  n   host_bytes    dev_bytes   work_units       CPU(s)      CUDA(s)    speedup   VRAM_ok
+  4          256          256         1568     0.000012     0.003767      0.00x       yes
+  6         1024         1024         9344     0.000032     0.005132      0.01x       yes
+  8         4096         4096        49664     0.000249     0.006591      0.04x       yes
+ 10        16384        16384       247808     0.000645     0.008901      0.07x       yes
+ 12        65536        65536      1187840     0.003294     0.009231      0.36x       yes
+ 14       262144       262144      5537792     0.018167     0.011592      1.57x       yes
+ 16      1048576      1048576     25296896     0.090744     0.024504      3.70x       yes
+ 18      4194304      4194304    113770496     0.475004     0.040747     11.66x       yes
+ 20     16777216     16777216    505413632     2.399200     0.116439     20.60x       yes
+ 22     67108864     67108864   2222981120    10.434090     0.397158     26.27x       yes
+ 24    268435456    268435456   9697230848    48.555647     1.579846     30.73x       yes
+ 26   1073741824   1073741824  42010148864    (skipped)     7.027898          -       yes
+ 28   4294967296   4294967296 180925497344    (skipped)    30.073587          -       yes
+
+== output mode: expectation ==
+  n   host_bytes    dev_bytes   work_units       CPU(s)      CUDA(s)    speedup   VRAM_ok
+  4          256          256         1568     0.000005     0.006747      0.00x       yes
+  6         1024         1024         9344     0.000022     0.009148      0.00x       yes
+  8         4096         4096        49664     0.000124     0.014147      0.01x       yes
+ 10        16384        16384       247808     0.000685     0.015105      0.05x       yes
+ 12        65536        65536      1187840     0.006317     0.018159      0.35x       yes
+ 14       262144       262144      5537792     0.019312     0.036010      0.54x       yes
+ 16      1048576      1048576     25296896     0.090788     0.070546      1.29x       yes
+ 18      4194304      4194304    113770496     0.478438     0.100934      4.74x       yes
+ 20     16777216     16777216    505413632     2.318370     0.167197     13.87x       yes
+ 22     67108864     67108864   2222981120    10.527957     0.339424     31.02x       yes
+ 24    268435456    268435456   9697230848    47.167461     1.295014     36.42x       yes
+ 26   1073741824   1073741824  42010148864    (skipped)     5.208400          -       yes
+ 28   4294967296   4294967296 180925497344    (skipped)    22.143561          -       yes
+
+JSON written     : build/phase15-baseline/run-c/crossover.json
+------------------------------------------------------------------------------
+Benchmark                                    Time             CPU   Iterations
+------------------------------------------------------------------------------
+BM_CudaCrossoverReport/iterations:1 ERROR OCCURRED: 'report-only benchmark: see the printed table'

@@ -1,0 +1,7 @@
+Generating SQLite file /tmp/p16-nsys-a.sqlite from /tmp/p16-nsys-a.nsys-rep
+Processing [/tmp/p16-nsys-a.sqlite] with [/opt/nvidia/nsight-systems/2026.1.3/target-linux-x64/reports/cuda_gpu_kern_sum.py] to [build/phase16-baseline/run-a/nsys_cuda_gpu_kern_sum.csv]... PROCESSED (EMPTY RESULTS)
+
+SKIPPED: /tmp/p16-nsys-a.sqlite does not contain CUDA kernel data.
+
+Processing [/tmp/p16-nsys-a.sqlite] with [/opt/nvidia/nsight-systems/2026.1.3/target-linux-x64/reports/cuda_api_sum.py] to [build/phase16-baseline/run-a/nsys_cuda_api_sum.csv]... PROCESSED
+

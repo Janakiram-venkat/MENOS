@@ -1,0 +1,28 @@
+// Scratch: FP64 DMUL/DADD issue rate on this GPU (8 independent chains/thread).
+#include <cstdio>
+#include <cuda_runtime.h>
+__global__ void k(double* out, double a, double b, int iters) {
+    double x[8];
+    for (int j = 0; j < 8; ++j) x[j] = threadIdx.x + j;
+    for (int i = 0; i < iters; ++i) {
+#pragma unroll
+        for (int j = 0; j < 8; ++j) { x[j] = x[j] * a; x[j] = x[j] + b; }
+    }
+    double s = 0; for (int j = 0; j < 8; ++j) s += x[j];
+    if (s == 12345.678) out[0] = s;
+}
+int main() {
+    double* out; cudaMalloc(&out, 8);
+    int blocks = 24 * 64, threads = 256, iters = 2000;
+    cudaEvent_t e0, e1; cudaEventCreate(&e0); cudaEventCreate(&e1);
+    for (int rep = 0; rep < 6; ++rep) {
+        cudaEventRecord(e0);
+        k<<<blocks, threads>>>(out, 0.999999, 1e-9, iters);
+        cudaEventRecord(e1); cudaEventSynchronize(e1);
+        float ms; cudaEventElapsedTime(&ms, e0, e1);
+        double ops = double(blocks) * threads * iters * 16;
+        printf("rep %d: %.2f ms, %.1f G FP64 instr/s\n", rep, ms, ops / (ms * 1e-3) / 1e9);
+    }
+    int clk; cudaDeviceGetAttribute(&clk, cudaDevAttrClockRate, 0);
+    printf("reported max clock %d MHz\n", clk / 1000);
+}

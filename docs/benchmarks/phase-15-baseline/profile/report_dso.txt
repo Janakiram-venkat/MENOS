@@ -1,0 +1,8 @@
+    90.80%  _core.cpython-314-x86_64-linux-gnu.so            
+     6.00%  libscipy_openblas64_-f48b354e.so                 
+     2.66%  python3.14                                       
+     0.43%  libc.so.6                                        
+     0.05%  ld-linux-x86-64.so.2                             
+     0.04%  _accelerate.abi3.so                              
+     0.02%  _multiarray_umath.cpython-314-x86_64-linux-gnu.so
+     0.01%  libstdc++.so.6.0.35                              
