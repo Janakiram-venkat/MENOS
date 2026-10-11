@@ -50,7 +50,7 @@ The C++ layers depend on each other in one direction (`api → runtime → engin
 
 ## Installation
 
-MENOS is on [PyPI](https://pypi.org/project/menos/) and needs **Python 3.14**:
+MENOS is on [PyPI](https://pypi.org/project/menos/) and needs **Python 3.10 or newer**:
 
 ```bash
 pip install menos
@@ -60,7 +60,7 @@ uv add menos
 
 Add the `qiskit` extra (`pip install "menos[qiskit]"` or `uv add "menos[qiskit]"`) to use `MENOSBackend`, `MENOSEstimator` and `MENOSSampler`; it pins Qiskit 2.5.2.
 
-The 0.2.0 wheel is prebuilt for CPython 3.14 on Linux x86-64 (manylinux 2.28) and is **CPU-only**. No source distribution is published, so on other platforms build from source.
+The 0.2.0 wheel is prebuilt for CPython > 3.10 on Linux x86-64 (manylinux 2.28) and is **CPU-only**. No source distribution is published, so on other platforms build from source.
 
 ### From source
 
@@ -68,7 +68,7 @@ Build from source for the CUDA backend, an unsupported platform, or development.
 
 ```bash
 sudo apt install build-essential cmake git liblapacke-dev liblapack-dev libblas-dev   # Ubuntu
-uv venv .venv --python 3.14
+uv venv .venv --python 3.12
 uv pip install --python .venv/bin/python ".[qiskit]"
 ```
 
