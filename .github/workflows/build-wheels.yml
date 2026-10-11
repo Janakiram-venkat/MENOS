@@ -88,12 +88,12 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
           CIBW_BUILD_VERBOSITY: "3"
           CIBW_DEBUG_KEEP_CONTAINER: "true"
-
           CIBW_BEFORE_BUILD_LINUX: >-
             set -eux;
             yum install -y openblas-devel lapack-devel cmake make gcc gcc-c++;
-            cd /tmp;
-            git clone --depth 1 --branch v3.12.1 https://github.com/Reference-LAPACK/lapack.git lapacke-src;
+            rm -rf /tmp/lapacke-src;
+             git clone --depth 1 --branch v3.12.1
+            https://github.com/Reference-LAPACK/lapack.git /tmp/lapacke-src;
             cmake -S /tmp/lapacke-src -B /tmp/lapacke-src/build
             -DCMAKE_BUILD_TYPE=Release
             -DCMAKE_INSTALL_PREFIX=/usr/local
@@ -106,7 +106,7 @@ jobs:
             echo '=== Verify LAPACKE header ===';
             find /usr/local /usr/include -name lapacke.h -print;
             test -f /usr/local/include/lapacke.h;
-            echo '=== Verify LAPACKE library ===';
+             echo '=== Verify LAPACKE library ===';
             ldconfig -p | grep -i lapacke
 
       - name: Inspect and validate generated wheels
