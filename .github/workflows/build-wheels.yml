@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   build:
-    name: Build and Diagnose MENOS
+    name: Build MENOS CPython Wheels
     runs-on: ubuntu-latest
 
     steps:
@@ -41,28 +41,54 @@ jobs:
             ! -path './.venv/*' \
             | sort | head -200
 
+      - name: Verify package compatibility metadata
+        run: |
+          python - <<'PY'
+          import tomllib
+
+          with open("pyproject.toml", "rb") as f:
+              config = tomllib.load(f)
+
+          project = config["project"]
+
+          print("Package:", project["name"])
+          print("Version:", project["version"])
+          print("Python requirement:", project.get("requires-python"))
+
+          assert project["name"].lower() == "menos"
+          assert project["version"] == "1.1.0", (
+              "Expected MENOS version 1.1.0. "
+              "Update this assertion if you intend to publish another version."
+          )
+          assert project.get("requires-python") == ">=3.10", (
+              "Expected requires-python = '>=3.10'. "
+              "Confirm your intended compatibility range."
+          )
+          PY
+
       - name: Install build tools
         run: |
           python -m pip install --upgrade pip
           python -m pip install cibuildwheel build
 
       - name: Check source distribution
-        continue-on-error: true
         run: |
           set -o pipefail
           python -m build --sdist --verbose 2>&1 | tee sdist-build.log
 
-      - name: Build MENOS manylinux wheel
+      - name: Build MENOS wheels for Python 3.10-3.14
         run: |
           set -o pipefail
           python -m cibuildwheel \
             --output-dir wheelhouse \
             --debug-traceback 2>&1 | tee cibuildwheel.log
         env:
-          CIBW_BUILD: "cp314-manylinux_x86_64"
+          CIBW_BUILD: "cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp314-manylinux_x86_64"
+          CIBW_ARCHS_LINUX: "x86_64"
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
           CIBW_BUILD_VERBOSITY: "3"
           CIBW_DEBUG_KEEP_CONTAINER: "true"
+
           CIBW_BEFORE_BUILD_LINUX: >-
             set -eux;
             yum install -y openblas-devel lapack-devel cmake make gcc gcc-c++;
@@ -82,6 +108,82 @@ jobs:
             test -f /usr/local/include/lapacke.h;
             echo '=== Verify LAPACKE library ===';
             ldconfig -p | grep -i lapacke
+
+      - name: Inspect and validate generated wheels
+        if: success()
+        run: |
+          set -eux
+
+          echo "===== Generated wheels ====="
+          ls -lh wheelhouse/
+
+          python -m pip install auditwheel packaging
+
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from packaging.utils import parse_wheel_filename
+
+          expected = {"cp310", "cp311", "cp312", "cp313", "cp314"}
+          found = set()
+
+          wheels = sorted(Path("wheelhouse").glob("*.whl"))
+
+          if not wheels:
+              raise SystemExit("ERROR: No wheels were generated.")
+
+          for wheel in wheels:
+              print(f"\nChecking: {wheel.name}")
+
+              name, version, build, tags = parse_wheel_filename(wheel.name)
+
+              if name != "menos":
+                  raise SystemExit(f"Unexpected package name: {name}")
+
+              if str(version) != "1.1.0":
+                  raise SystemExit(
+                      f"Expected version 1.1.0, got {version} in {wheel.name}"
+                  )
+
+              python_tags = {tag.interpreter for tag in tags}
+              supported = python_tags & expected
+
+              if not supported:
+                  raise SystemExit(
+                      f"Unexpected Python compatibility tags: {python_tags}"
+                  )
+
+              found.update(supported)
+
+              with ZipFile(wheel) as archive:
+                  wheel_metadata = [
+                      path for path in archive.namelist()
+                      if path.endswith(".dist-info/WHEEL")
+                  ]
+
+                  if len(wheel_metadata) != 1:
+                      raise SystemExit(
+                          f"Invalid WHEEL metadata in {wheel.name}: "
+                          f"{wheel_metadata}"
+                      )
+
+                  print("WHEEL metadata:", wheel_metadata[0])
+                  print("Python tags:", sorted(python_tags))
+
+          missing = expected - found
+
+          if missing:
+              raise SystemExit(
+                  f"Missing wheels for Python versions: {sorted(missing)}"
+              )
+
+          print("\nSUCCESS: Wheels for CPython 3.10-3.14 were generated.")
+          PY
+
+          for wheel in wheelhouse/*.whl; do
+            auditwheel show "$wheel"
+          done
+
       - name: Print build failure summary
         if: failure()
         run: |
@@ -100,17 +202,6 @@ jobs:
           if [ -f sdist-build.log ]; then
             tail -n 60 sdist-build.log
           fi
-
-      - name: Inspect generated wheels
-        if: success()
-        run: |
-          set -eux
-
-          echo "===== Generated wheels ====="
-          ls -lh wheelhouse/
-
-          python -m pip install auditwheel
-          auditwheel show wheelhouse/*.whl
 
       - name: Upload build logs and artifacts
         if: always()
