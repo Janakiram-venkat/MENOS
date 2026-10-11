@@ -2,7 +2,7 @@
 # The dev/release presets used by scripts/verify.sh's C++-only stages leave
 # this option OFF, so pure C++ development never needs Python or nanobind
 # installed.
-find_package(Python 3.14 COMPONENTS Interpreter Development.Module REQUIRED)
+find_package(Python 3.10 REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(nanobind CONFIG REQUIRED)
 
 nanobind_add_module(menos_core_ext bindings.cpp)
