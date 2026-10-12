@@ -100,6 +100,12 @@ Invariants:
 - Per-region CPU/CUDA selection applies to `Factorized` plans only, uses the planner's calibrated comparison with ties to the CPU, and counts stay bitwise identical. `CutAndRecombine` regions stay on the CPU (measured, not adopted).
 - Recalibrating to follow the GPU's run-to-run speed variation is not part of Phase 17.
 
+## Phase 18
+
+**Native Windows (MSVC).** Specification and gate: `docs/BUILD_PLAN.md`, Phase 18. Design: `docs/adr/0022`. The owner started the phase on 2026-10-13 as the next phase, renumbered the proposed interoperability roadmap to Phases 19–26, answered section 9 and approved the plan the same day. Branch `phase-18-windows-native`. **STARTED; gate not passed.**
+
+Scope decisions: Windows x64, MSVC, CPU only (CUDA on Windows is refused at configure time); wheels for CPython 3.10–3.14 `win_amd64`; MSVC ASan in the `windows-dev` preset, with UBSan/LSan coverage staying in the Linux `verify.sh`; LAPACK from the official OpenBLAS 0.3.34 x64 (LP64) release, pinned by SHA-256 and shipped in the wheel; any Windows-only last-bit numeric failure goes to the owner, never a tolerance change. Windows verification: `scripts/verify-windows.ps1`; Linux verification stays `scripts/verify.sh` in the WSL clone.
+
 ## Definition of done
 
 1. `scripts/verify.sh` exits 0 in the current session.
