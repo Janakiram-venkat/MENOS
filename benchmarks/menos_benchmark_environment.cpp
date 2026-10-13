@@ -19,6 +19,8 @@ std::string os_name() {
     return "macOS";
 #elif defined(__linux__)
     return "Linux";
+#elif defined(_WIN32)
+    return "Windows";
 #else
     return "unknown-os";
 #endif
@@ -40,6 +42,8 @@ std::string compiler_and_build_type() {
     oss << "Clang " << __clang_major__ << "." << __clang_minor__ << "." << __clang_patchlevel__;
 #elif defined(__GNUC__)
     oss << "GCC " << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__;
+#elif defined(_MSC_VER)
+    oss << "MSVC " << _MSC_FULL_VER;
 #else
     oss << "unknown-compiler";
 #endif
@@ -55,7 +59,9 @@ std::string compiler_and_build_type() {
 // identification: /proc/cpuinfo's "model name" on Linux,
 // sysctlbyname("machdep.cpu.brand_string") on macOS. Best-effort -- falls
 // back to a placeholder rather than failing the benchmark if unavailable
-// (e.g. a non-x86 Linux /proc/cpuinfo layout).
+// (e.g. a non-x86 Linux /proc/cpuinfo layout). Windows reports the
+// placeholder: CPU-name detection there is a Phase 18 deferral
+// (docs/adr/0022 section 7).
 std::string cpu_identification() {
 #if defined(__APPLE__)
     char buffer[256] = {};
