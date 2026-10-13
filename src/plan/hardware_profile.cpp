@@ -4,8 +4,16 @@
 #include <sys/sysctl.h>
 #elif defined(__linux__)
 #include <unistd.h>
+#elif defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
 #else
-#error "menos supports only Linux and macOS (CLAUDE.md toolchain section)"
+#error "menos supports only Linux, macOS and Windows (docs/adr/0022)"
 #endif
 
 #include <chrono>
@@ -211,6 +219,14 @@ HardwareProfile detect_hardware_profile() {
     common::ensure(pages > 0 && page_size > 0, "detect_hardware_profile: sysconf failed");
     return HardwareProfile{
         static_cast<std::uint64_t>(pages) * static_cast<std::uint64_t>(page_size), 0.0, 0.0};
+#elif defined(_WIN32)
+    // ullTotalPhys is the physical memory the OS can use: the same quantity
+    // as Linux's _SC_PHYS_PAGES * _SC_PAGE_SIZE (docs/adr/0022 section 2).
+    MEMORYSTATUSEX status{};
+    status.dwLength = sizeof(status);
+    common::ensure(GlobalMemoryStatusEx(&status) != 0,
+                   "detect_hardware_profile: GlobalMemoryStatusEx failed");
+    return HardwareProfile{static_cast<std::uint64_t>(status.ullTotalPhys), 0.0, 0.0};
 #endif
 }
 

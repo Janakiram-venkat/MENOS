@@ -3,7 +3,18 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <vector>
+
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
 
 namespace menos::plan {
 namespace {
@@ -12,6 +23,21 @@ TEST(DetectHardwareProfileTest, ReturnsAPositiveMemorySize) {
     const HardwareProfile hw = detect_hardware_profile();
     EXPECT_GT(hw.total_memory_bytes, 0U);
 }
+
+#ifdef _WIN32
+// The Windows probe (GlobalMemoryStatusEx) checked against an independent
+// source: the RAM installed in the machine, as the firmware reports it. The
+// memory the OS can use is a subset of what is installed, so it is positive
+// and never larger (docs/adr/0022 section 2).
+TEST(DetectHardwareProfileTest, WindowsTotalIsBoundedByInstalledMemory) {
+    ULONGLONG installed_kib = 0;
+    ASSERT_NE(GetPhysicallyInstalledSystemMemory(&installed_kib), 0);
+    const std::uint64_t installed_bytes = static_cast<std::uint64_t>(installed_kib) * 1024U;
+    const HardwareProfile hw = detect_hardware_profile();
+    EXPECT_GT(hw.total_memory_bytes, 0U);
+    EXPECT_LE(hw.total_memory_bytes, installed_bytes);
+}
+#endif
 
 // detect_ is the uncalibrated path, and the planner distinguishes the two by
 // exactly this: a zero in either figure means "never calibrated" and makes a
