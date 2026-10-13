@@ -110,6 +110,12 @@ Run "wheel smoke test" { & $WheelPython -m pytest python/tests/test_wheel_smoke.
 if ($Wheels) {
     Stage "cibuildwheel: CPython 3.10-3.14 win_amd64"
     if (Test-Path wheelhouse) { Remove-Item -Recurse -Force wheelhouse }
+    $CacheDefines = Get-CacheDefines
+    if ($CacheDefines.Count -gt 0) {
+        # scikit-build-core's form of the same FetchContent cache reuse.
+        $env:SKBUILD_CMAKE_DEFINE = ($CacheDefines | ForEach-Object { $_.Substring(2) }) -join ";"
+        $env:CIBW_ENVIRONMENT_PASS_WINDOWS = "SKBUILD_CMAKE_DEFINE"
+    }
     Run "cibuildwheel" { uvx --python 3.14 cibuildwheel==4.2.1 --platform windows --output-dir wheelhouse }
     $Built = @(Get-ChildItem wheelhouse\*.whl | ForEach-Object { $_.Name })
     $Built | ForEach-Object { Write-Output $_ }
