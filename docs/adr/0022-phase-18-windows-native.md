@@ -45,6 +45,7 @@ The thread pool's fork guard is compiled only where `fork` exists. Windows has n
 - **Floating point.** `/fp:precise`, which does not contract `a*b+c` into an FMA. `/fp:contract` and `/fp:fast` are never used. This is the MSVC counterpart of `-ffp-contract=off`, and keeps the specialised kernels bitwise identical to the generic kernel (Phase 15 invariant).
 - **Presets.** `windows-dev` (Ninja, `cl`, Debug, `/fsanitize=address`, with the runtime checks `/RTC1` and incremental linking turned off, both incompatible with ASan) and `windows-release` (Ninja, `cl`, Release). Both carry a `hostSystemName == Windows` condition and need a Visual Studio developer environment, which `scripts/verify-windows.ps1` enters.
 - **CUDA.** `MENOS_ENABLE_CUDA=ON` with MSVC is a configure-time `FATAL_ERROR` naming this deferral. It is never silently turned off.
+- **MSVC only.** On Windows any other compiler is a configure-time `FATAL_ERROR`. **[MEASURED]** on 2026-10-13: a `cibuildwheel` run outside the developer environment picked up MinGW's CMake and GCC 15.2 from `C:\mingw64\bin`, configured and built without complaint, and the resulting cp310 extension then failed 9 of 260 Python tests (an `InternalError` in `append_batch`, a memory budget read as 0 bytes, different seeded counts). GitHub's Windows runners also have MinGW on `PATH`, so the wheel build pins `CMAKE_GENERATOR=Ninja` and `CC`/`CXX=cl` and runs inside the developer environment.
 
 ## 4. LAPACK on Windows — [MENOS]
 
@@ -62,7 +63,7 @@ OpenBLAS runs its own threads for BLAS calls. MENOS still does not set `OPENBLAS
 ## 5. Python package and wheels — [MENOS]
 
 - On Windows the build installs `libopenblas.dll` and its licence next to `_core.pyd` in the `menos` package. Python loads extension modules with the module's own directory on the DLL search path, so the extension finds OpenBLAS in an editable install and in a wheel alike.
-- Wheels: `cibuildwheel` with `[tool.cibuildwheel.windows]`, CPython 3.10–3.14, `AMD64`. `delvewheel repair` bundles the MSVC C++ runtime (`msvcp140.dll`), which Python itself does not ship, and fails on any dependency it cannot resolve. The test command runs the Python suite against each installed wheel.
+- Wheels: `cibuildwheel` with `[tool.cibuildwheel.windows]`, CPython 3.10–3.14, `AMD64`. `delvewheel repair --exclude libopenblas.dll` bundles the MSVC C++ runtime, which Python itself does not ship, and fails on any dependency it cannot resolve; OpenBLAS is excluded because CMake already installs it beside `_core.pyd`, so the wheel carries exactly one copy. **[MEASURED]** `delvewheel show` on the cp314 wheel: it vendors `msvcp140.dll` and `msvcp140_atomic_wait.dll` (the thread pool's `std::atomic::wait`); every other import is a system, UCRT or Python DLL. The test command runs the Python suite against each installed wheel.
 - `.github/workflows/build-wheels.yml` gains a `windows` job; the Linux job is unchanged.
 
 ## 6. Order of work

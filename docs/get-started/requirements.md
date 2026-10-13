@@ -14,23 +14,23 @@ Each requirement is labelled by how much you need it.
 
 | | Requirement | Label |
 |---|---|---|
-| OS | Linux | **Required** (macOS and aarch64 are [unverified](/introduction/supported-platforms); Windows is unsupported) |
-| CPU | x86-64 | **Required** for what has been verified |
+| OS | Linux or Windows | **Required** (macOS and aarch64 are [unverified](/introduction/supported-platforms); Windows is CPU-only) |
+| CPU | x86-64 (x64) | **Required** for what has been verified |
 | Memory | See [Memory](#memory) below | **Required** |
 
 ## Software
 
-The **Required to build** rows apply only to a source install. The [PyPI wheel](/get-started/installation#install-from-pypi) (CPython 3.14, Linux x86-64) needs none of them.
+The **Required to build** rows apply only to a source install. The [PyPI wheels](/get-started/installation#install-from-pypi) (CPython 3.10–3.14, Linux x86-64) and the Windows wheels need none of them.
 
 | | Version | Label | Notes |
 |---|---|---|---|
-| Python | **3.14** | **Required** | `requires-python >=3.14`; the only version tested |
-| NumPy | any compatible with Python 3.14 | **Required** | Installed automatically |
+| Python | **3.10–3.14** | **Required** | `requires-python >=3.10` |
+| NumPy | any compatible with your Python | **Required** | Installed automatically |
 | Qiskit | **2.5.2** | **Required** for `MENOSBackend` and `MENOSEstimator` | Pinned exactly by the `qiskit` extra; other versions are untested |
-| C++ compiler | GCC 12+, Clang 16+ or AppleClang 15+ (C++20) | **Required** to build | GCC 15.2 was used |
+| C++ compiler | GCC 12+, Clang 16+ or AppleClang 15+ (C++20); on Windows, MSVC from Visual Studio 2026 (Build Tools are enough) | **Required** to build | GCC 15.2 and MSVC 14.50 were used |
 | CMake | 3.25 or newer | **Required** to build | 4.2.3 was used |
 | `git` | any | **Required** to build | CMake fetches test dependencies from GitHub |
-| LAPACK, LAPACKE, BLAS (development packages) | any | **Required** to build | On Ubuntu: `liblapacke-dev liblapack-dev libblas-dev` |
+| LAPACK, LAPACKE, BLAS (development packages) | any | **Required** to build | On Ubuntu: `liblapacke-dev liblapack-dev libblas-dev`. On Windows, `scripts/fetch-openblas-windows.ps1` downloads the pinned OpenBLAS 0.3.34 release |
 | Network access to github.com | | **Required** to build | For GoogleTest and nlohmann/json, pinned |
 | `scikit-build-core` 1.0.3, `nanobind` 3.1.0 | exact | **Required** to build | Fetched by the package installer |
 | `uv` | any | **Recommended** | `uv add menos`, and used by the project's scripts; `pip` also works |
@@ -50,7 +50,8 @@ GPUs of other compute capabilities can be targeted by overriding the architectur
 
 | | Label |
 |---|---|
-| `clang-format`, `clang-tidy` | **Development-only**: required by `scripts/verify.sh` |
+| `clang-format`, `clang-tidy` | **Development-only**: required by `scripts/verify.sh` (Linux) |
+| Visual Studio 2026 C++ tools, CMake and Ninja (both ship with Visual Studio) | **Development-only**: used by `scripts/verify-windows.ps1` |
 | `pytest` 9.1.1 | **Development-only**: installed by the `test` extra |
 | Node.js and npm | **Development-only**: to build this documentation |
 

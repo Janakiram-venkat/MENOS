@@ -27,7 +27,8 @@ Both compilers exceed the stated minimums.
 ## Platforms
 
 Per `CLAUDE.md`: Linux (x86_64, aarch64) and macOS (arm64). Windows is not
-supported.
+supported. *Superseded in part by `docs/adr/0022` (2026-10-13): Windows x64
+with MSVC, CPU only, is supported from Phase 18.*
 
 `scripts/verify.sh` was run in this session only on **Linux x86_64**
 (Ubuntu, kernel 7.0.0-31-generic). **macOS arm64 has not been verified** —

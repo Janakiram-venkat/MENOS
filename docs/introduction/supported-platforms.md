@@ -7,14 +7,16 @@ This page states what the project has actually been verified on. "Intended to wo
 | Component | Platform | Status |
 |---|---|---|
 | CPU engines, planner, runtime | Linux, x86-64 | **Verified.** The full verification script (`scripts/verify.sh`) passes: C++ unit and integration tests in Debug (with sanitizers) and Release, the Python suite, a wheel build, and a clean-environment wheel smoke test. |
+| CPU engines, planner, runtime, CLI, Python package | **Windows, x64, MSVC** | **Verified** (Phase 18). `scripts/verify-windows.ps1` passes: C++ tests in Debug (with AddressSanitizer) and Release built with MSVC 14.50 (Visual Studio Build Tools 2026), the Python suite, a wheel build and a clean-environment smoke test, and `cibuildwheel` wheels for CPython 3.10–3.14, each running the Python suite. |
 | CUDA dense backend | Linux, x86-64, NVIDIA GPU, CUDA toolkit **12.0 or newer** | **Verified** with CUDA toolkit 13.4 and driver 595.91.07 (RTX 3050 Laptop, compute capability 8.6), and with CUDA toolkit 12.4 and driver 566.14 under WSL (RTX 4060 Laptop, compute capability 8.9, built for 8.6). CUDA 12.0 to 12.3 are not tested. |
 
 ## Distribution
 
 | Channel | What it covers |
 |---|---|
-| PyPI (`pip install menos`, `uv add menos`) | Version 0.2.0: one prebuilt wheel for **CPython 3.14, Linux x86-64** (manylinux 2.28), **CPU-only**. No source distribution is published |
-| Source build | Everything on this page, including the CUDA backend |
+| PyPI (`pip install menos`, `uv add menos`) | Version 1.1.0: prebuilt wheels for **CPython 3.10–3.14, Linux x86-64** (manylinux 2.28), **CPU-only**. No source distribution is published |
+| Windows wheels | CPython 3.10–3.14, `win_amd64`, **CPU-only**, with OpenBLAS inside. Built by the wheel workflow (`.github/workflows/build-wheels.yml`) or `cibuildwheel --platform windows`; not yet published to PyPI |
+| Source build | Everything on this page, including the CUDA backend (Linux only) |
 
 ## Intended but not verified
 
@@ -25,7 +27,8 @@ This page states what the project has actually been verified on. "Intended to wo
 
 ## Not supported
 
-- **Windows.** The source deliberately refuses to build on anything other than Linux and macOS.
+- **CUDA on Windows.** Configuring with MSVC and `MENOS_ENABLE_CUDA=ON` stops with an error. On a Windows machine, use the CUDA backend through WSL.
+- **Windows on ARM64, and MinGW or clang-cl toolchains.** Only x64 with MSVC is built and tested.
 - **AMD (ROCm) and Apple (Metal) GPUs.** Not implemented. Only NVIDIA CUDA is supported.
 - **Multiple GPUs.** One CUDA device is used.
 
@@ -33,9 +36,9 @@ This page states what the project has actually been verified on. "Intended to wo
 
 | | Version | Basis |
 |---|---|---|
-| Python | **3.14** | The package requires `>=3.14`; 3.14 is the only version tested. |
+| Python | **3.10–3.14** | The package requires `>=3.10`. Every version is tested by the Windows wheel suite; the Linux gate (`scripts/verify.sh`) runs on 3.14. |
 | Qiskit | **2.5.2** | Pinned exactly by the `qiskit` and `test` extras. Other versions are untested. |
-| C++ | C++20 | GCC 12+, Clang 16+ or AppleClang 15+ is the stated minimum; GCC 15.2 is what was used. |
+| C++ | C++20 | GCC 12+, Clang 16+ or AppleClang 15+ is the stated minimum; GCC 15.2 is what was used. On Windows, MSVC 14.50 (Visual Studio Build Tools 2026) is the only compiler tested. |
 | CMake | 3.25+ | 4.2.3 was used. |
 
 See [Requirements](/get-started/requirements) for the complete list and [Compatibility](/reference/compatibility) for the reference table.
