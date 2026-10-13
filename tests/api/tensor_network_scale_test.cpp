@@ -319,11 +319,20 @@ TEST(TensorNetworkScaleTest, ContractionIsBitIdenticalAcrossBuildConfigurations)
     ASSERT_EQ(result.plan().strategy, Strategy::DirectTensorNetwork);
     ASSERT_TRUE(result.expectation_value().has_value());
     // NOLINTBEGIN(bugprone-unchecked-optional-access)
+#ifdef _WIN32
+    // Pinned per platform by owner ruling (2026-10-13, docs/adr/0022 section
+    // 10): the MSVC runtime's cos/sin differ from glibc's by 1 ulp on some of
+    // this circuit's rotation angles, so Windows reaches a different, equally
+    // deterministic last bit. Debug+ASan and Release agree on it exactly.
+    EXPECT_DOUBLE_EQ(result.expectation_value()->real(), -3.0658775544080871e-07);
+    EXPECT_DOUBLE_EQ(result.expectation_value()->imag(), 0.0);
+#else
     EXPECT_DOUBLE_EQ(result.expectation_value()->real(), -3.0658775544080971e-07);
     // Pinned exactly rather than compared against zero with a tolerance: the
     // imaginary part is a 1e-23 floating-point residual, and reproducing it
     // bit for bit is precisely the determinism claim this test makes.
     EXPECT_DOUBLE_EQ(result.expectation_value()->imag(), 1.321820786506289e-23);
+#endif
     // NOLINTEND(bugprone-unchecked-optional-access)
 }
 

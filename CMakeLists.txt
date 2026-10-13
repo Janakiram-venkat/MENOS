@@ -23,6 +23,14 @@ option(MENOS_ENABLE_CUDA "Build the CUDA dense backend" OFF)
 # runs on MENOS's own thread pool, built on the platform thread library.
 find_package(Threads REQUIRED)
 
+# Windows is supported for the CPU build only (docs/adr/0022). Refuse a CUDA
+# request outright rather than silently building without CUDA.
+if(MSVC AND MENOS_ENABLE_CUDA)
+    message(FATAL_ERROR "menos: MENOS_ENABLE_CUDA is not supported with MSVC. "
+                        "CUDA on Windows is a recorded Phase 18 deferral "
+                        "(docs/adr/0022 section 7); configure with MENOS_ENABLE_CUDA=OFF")
+endif()
+
 if(MENOS_ENABLE_CUDA)
     enable_language(CUDA)
     find_package(CUDAToolkit REQUIRED)
@@ -74,19 +82,30 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Warning set from CLAUDE.md, applied to menos targets only (not to
-# FetchContent'd third-party code, which is not held to this bar).
-set(MENOS_WARNING_FLAGS
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Wconversion
-    -Wsign-conversion
-    -Wshadow
-    -Wold-style-cast
-    -Wnon-virtual-dtor
-    -Woverloaded-virtual
-    -Werror
-)
+# FetchContent'd third-party code, which is not held to this bar). MSVC gets
+# its own equivalent (docs/adr/0022 section 3).
+if(MSVC)
+    set(MENOS_WARNING_FLAGS
+        /W4
+        /WX
+        /permissive-
+        /Zc:__cplusplus
+        /utf-8
+    )
+else()
+    set(MENOS_WARNING_FLAGS
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Wconversion
+        -Wsign-conversion
+        -Wshadow
+        -Wold-style-cast
+        -Wnon-virtual-dtor
+        -Woverloaded-virtual
+        -Werror
+    )
+endif()
 
 include(FetchContent)
 FetchContent_Declare(
@@ -177,4 +196,35 @@ endif()
 
 if(MENOS_BUILD_BENCHMARKS)
     add_subdirectory(benchmarks)
+endif()
+
+# Windows has no rpath: an executable finds a DLL in its own directory. Copy
+# the OpenBLAS DLL (src/common) next to every menos executable, at configure
+# time so that gtest_discover_tests can already run them when they are first
+# built (docs/adr/0022 section 4). A single-config generator (the windows-*
+# presets use Ninja) puts each executable in its directory's binary dir; a
+# multi-config one (Visual Studio, scikit-build-core's default) in a
+# per-configuration subdirectory of it.
+if(WIN32)
+    function(menos_copy_openblas_dll directory)
+        get_property(targets DIRECTORY "${directory}" PROPERTY BUILDSYSTEM_TARGETS)
+        foreach(target IN LISTS targets)
+            get_target_property(type ${target} TYPE)
+            if(type STREQUAL "EXECUTABLE")
+                get_target_property(binary_dir ${target} BINARY_DIR)
+                if(CMAKE_CONFIGURATION_TYPES)
+                    foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
+                        file(COPY "${MENOS_OPENBLAS_DLL}" DESTINATION "${binary_dir}/${config}")
+                    endforeach()
+                else()
+                    file(COPY "${MENOS_OPENBLAS_DLL}" DESTINATION "${binary_dir}")
+                endif()
+            endif()
+        endforeach()
+        get_property(subdirectories DIRECTORY "${directory}" PROPERTY SUBDIRECTORIES)
+        foreach(subdirectory IN LISTS subdirectories)
+            menos_copy_openblas_dll("${subdirectory}")
+        endforeach()
+    endfunction()
+    menos_copy_openblas_dll("${CMAKE_SOURCE_DIR}")
 endif()
