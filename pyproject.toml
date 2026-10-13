@@ -18,7 +18,12 @@ dependencies = [
 
 [project.optional-dependencies]
 qiskit = ["qiskit==2.5.2"]
-test = ["pytest==9.1.1", "qiskit==2.5.2"]
+# Noise models (Phase 12, docs/adr/0016): Qiskit Aer's NoiseModel is the input
+# format. Pinned like Qiskit; qiskit-aer 0.17.2 was checked against qiskit 2.5.2.
+# Restored on 2026-10-13 (Phase 18, owner decision) after it went missing from
+# this tree.
+noise = ["qiskit==2.5.2", "qiskit-aer==0.17.2"]
+test = ["pytest==9.1.1", "qiskit==2.5.2", "qiskit-aer==0.17.2"]
 
 [tool.scikit-build]
 minimum-version = "build-system.requires"
@@ -39,4 +44,17 @@ rebuild = false
 
 [tool.cibuildwheel]
 build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
-skip = "*-musllinux_*"  
+skip = "*-musllinux_*"
+
+# Native Windows wheels (docs/adr/0022 section 5): CPU only, LP64 OpenBLAS
+# fetched and hash-checked once, installed beside _core.pyd by CMake. delvewheel
+# vendors the MSVC C++ runtime and fails on any unresolved dependency; it skips
+# libopenblas.dll, which the wheel already carries. Each wheel runs the full
+# Python suite.
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
+before-all = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fetch-openblas-windows.ps1"
+before-build = "pip install delvewheel==1.13.1"
+repair-wheel-command = "delvewheel repair --exclude libopenblas.dll --wheel-dir {dest_dir} {wheel}"
+test-extras = ["test"]
+test-command = "pytest {project}/python/tests -q"
