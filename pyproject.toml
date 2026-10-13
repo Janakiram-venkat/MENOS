@@ -50,9 +50,12 @@ skip = "*-musllinux_*"
 # fetched and hash-checked once, installed beside _core.pyd by CMake. delvewheel
 # vendors the MSVC C++ runtime and fails on any unresolved dependency; it skips
 # libopenblas.dll, which the wheel already carries. Each wheel runs the full
-# Python suite.
+# Python suite. Must run inside a Visual Studio x64 developer environment:
+# Ninja with cl is pinned here so that no other compiler on PATH (a MinGW GCC,
+# for example) can be picked up; CMake refuses anything but MSVC.
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
+environment = { CMAKE_GENERATOR = "Ninja", CC = "cl", CXX = "cl" }
 before-all = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fetch-openblas-windows.ps1"
 before-build = "pip install delvewheel==1.13.1"
 repair-wheel-command = "delvewheel repair --exclude libopenblas.dll --wheel-dir {dest_dir} {wheel}"

@@ -23,6 +23,15 @@ option(MENOS_ENABLE_CUDA "Build the CUDA dense backend" OFF)
 # runs on MENOS's own thread pool, built on the platform thread library.
 find_package(Threads REQUIRED)
 
+# Windows is supported with MSVC only (docs/adr/0022). A MinGW build of the
+# Python extension was observed to configure, build and then misbehave at run
+# time, so any other compiler is refused here rather than half-working.
+if(WIN32 AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    message(FATAL_ERROR "menos: on Windows only MSVC is supported (found "
+                        "${CMAKE_CXX_COMPILER_ID} at ${CMAKE_CXX_COMPILER}); build from a "
+                        "Visual Studio x64 developer environment (docs/adr/0022 section 3)")
+endif()
+
 # Windows is supported for the CPU build only (docs/adr/0022). Refuse a CUDA
 # request outright rather than silently building without CUDA.
 if(MSVC AND MENOS_ENABLE_CUDA)
@@ -114,6 +123,9 @@ FetchContent_Declare(
     GIT_TAG 063de7e9578f82b369302001269680b4b1553359 # v1.18.0, see docs/adr/0001-toolchain-and-dependencies.md
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# GoogleTest is test-only: without this its install rules put gtest headers
+# and libraries into every Python wheel (seen in the Phase 18 wheel builds).
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 # Test-only: the tests/ir fixture loader parses Qiskit-generated JSON.

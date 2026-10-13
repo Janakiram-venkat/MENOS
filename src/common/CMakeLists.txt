@@ -25,7 +25,7 @@ if(WIN32)
     # svd.cpp casts sizes to a 32-bit lapack_int; an ILP64 build would
     # misread every integer argument.
     file(STRINGS "${LAPACKE_INCLUDE_DIR}/openblas_config.h" menos_openblas_ilp64
-         REGEX "^#define[ 	]+OPENBLAS_USE64BITINT")
+         REGEX "^#define[ \t]+OPENBLAS_USE64BITINT")
     if(menos_openblas_ilp64)
         message(FATAL_ERROR "menos: ${LAPACKE_INCLUDE_DIR} is an ILP64 OpenBLAS; "
                             "use the LP64 (OpenBLAS-<version>-x64.zip) release")
