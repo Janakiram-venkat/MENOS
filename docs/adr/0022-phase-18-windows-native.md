@@ -121,4 +121,28 @@ OpenBLAS runs its own threads for BLAS calls. MENOS still does not set `OPENBLAS
 
 ## 10. Gate evidence
 
-To be recorded at the end of the phase.
+Recorded on 2026-10-14. Every run below is on commit `916d98f`; this section is the only change after it. **The owner has not yet confirmed the gate.**
+
+### 10.1 Runs
+
+- **Windows.** `scripts\verify-windows.ps1 -Wheels`, exit 0 (`verify-windows: all stages passed`). MSVC 14.50.35717 (`cl.exe` from Visual Studio Build Tools 2026), CMake 4.2.3-msvc3, Ninja 1.12.1, uv 0.12.21, cibuildwheel 4.2.1, delvewheel 1.13.1, Windows 11 x64. An earlier attempt of the same run failed on a DNS error reaching `pypi.org` after both `ctest` stages had passed; the run was repeated unchanged.
+- **Linux.** `scripts/verify.sh` in a fresh WSL clone (`~/MENOS-phase18`), `UV_PYTHON_PREFERENCE=only-managed`, exit 0 (`verify.sh: all stages passed`). The documentation stage was skipped (no Node.js in WSL), as the script reports. Build parallelism was capped at 8 jobs (a `nproc` on `PATH` that prints 8; `verify.sh` uses `nproc` only for `cmake --build -j`), because the previous attempt at 22 jobs was stopped for host memory pressure during the `cuda12-dev` build. Tests ran as usual.
+
+### 10.2 Criteria
+
+| # | Criterion | Evidence |
+|---|---|---|
+| 1 | Native build | `windows-dev` (MSVC, `/fsanitize=address`, Debug) and `windows-release` configure and build at `/W4 /WX`; `ctest` 632/632 on each. Skipped: `WallTimeReportTest.TwentyFourQubitsTwoHundredOperations` in `windows-dev` only, which skips by design outside optimised builds, as in the Linux `dev` preset. No other test skipped. |
+| 2 | Memory probe | `GlobalMemoryStatusEx` in `src/plan/hardware_profile.cpp`. `DetectHardwareProfileTest.WindowsTotalIsBoundedByInstalledMemory` passes in both presets; the planner's default-budget tests pass unchanged. |
+| 3 | LAPACK | OpenBLAS 0.3.34 x64, SHA-256 checked by `scripts/fetch-openblas-windows.ps1` (section 4); CMake finds it through `MENOS_OPENBLAS_ROOT` and fails if `openblas_config.h` defines `OPENBLAS_USE64BITINT`. Every `SvdTest`, MPS and Schmidt-rank test passes in both presets, with no tolerance or expected value changed. The one Windows-specific expectation is the owner-approved per-platform exact pin in `TensorNetworkScaleTest.ContractionIsBitIdenticalAcrossBuildConfigurations` (MSVC `cos`/`sin` differ from glibc by 1 ulp on 8 of 124 RY half-angles); it passes. |
+| 4 | Python (editable) | CPython 3.14: 259 passed, 1 deselected (`test_wheel_smoke.py`, as in `verify.sh`). The wheel built from the same tree passes the smoke test in a clean venv (1 passed). |
+| 5 | Wheels | `cibuildwheel` builds `menos-1.1.0-cp310`…`cp314-win_amd64.whl`. Each, installed in cibuildwheel's clean test environment, passes `pytest python/tests`: 260 passed for each of cp310, cp311, cp312, cp313 and cp314. `delvewheel repair` succeeds for all five (it fails on an unresolved dependency) and vendors only `msvcp140.dll` and `msvcp140_atomic_wait.dll`. Each wheel contains `menos/libopenblas.dll` and `OPENBLAS_LICENSE`, and no GoogleTest file. |
+| 6 | CUDA refusal | `cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DMENOS_ENABLE_CUDA=ON` fails at `CMakeLists.txt:38`: "menos: MENOS_ENABLE_CUDA is not supported with MSVC. CUDA on Windows is a recorded Phase 18 deferral (docs/adr/0022 section 7); configure with MENOS_ENABLE_CUDA=OFF". A non-MSVC compiler on Windows is refused likewise (section 3). |
+| 7 | Linux unchanged | `verify.sh` exit 0: format and clang-tidy (all targets) clean; dev and release 631/631; benchmarks build; pytest 259 passed, 1 deselected; wheel smoke test 1 passed; `cuda-dev`/`cuda-release` 686/686 each (CUDA 13, GPU tests skipping); `cuda12-dev`/`cuda12-release` 686/686 each (CUDA 12.4, GPU tests executing). These equal the Phase 17 counts (`docs/adr/0021` section 11): the only test this phase adds is compiled on Windows only. |
+| 8 | Documentation and CI | README and the platform, requirements, installation, compatibility, limitations, troubleshooting and changelog pages describe Windows support and its limits; `docs/BUILD_PLAN.md` and this ADR record the phase. `.github/workflows/build-wheels.yml` has a `windows` job (not yet run on GitHub). New symbols: the Windows memory branch is called by `detect_hardware_profile()` and tested; `menos_copy_openblas_dll` is called by the root `CMakeLists.txt`. |
+
+### 10.3 Not verified
+
+- The GitHub Actions `windows` job has not run; it needs a push, which is the owner's step.
+- The documentation site was not built in either run (no Node.js in WSL).
+- A Windows machine without Visual Studio installed was not used to test a wheel: delvewheel's vendoring of the C++ runtime is the mechanism, and its output was inspected rather than run on such a machine.
