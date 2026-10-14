@@ -23,7 +23,7 @@
 | 16 | Specialised CUDA kernels | **COMPLETE — acceptance gate passed 2026-10-09 (evidence: `docs/adr/0020` section 13; merged to `main` in `c6b9c87`)** |
 | 17 | API surface: recorded deferrals | **COMPLETE — acceptance gate passed 2026-10-10 (evidence: `docs/adr/0021` section 11; `scripts/verify.sh` exit 0 on `1041893`)** |
 | 18 | Native Windows (MSVC) | Started 2026-10-13 — ADR `docs/adr/0022` |
-| 19 | OpenQASM 3 import (frontend) | Proposed (2026-10-07) — not approved |
+| 19 | OpenQASM 3 import (frontend) | Started 2026-10-14, in parallel with Phase 18 (native Windows) — `docs/adr/0023` first |
 | 20 | PennyLane device (frontend) | Proposed (2026-10-07) — not approved |
 | 21 | Stim engine for noisy Clifford circuits (backend) | Proposed (2026-10-07) — not approved |
 | 22 | Cirq frontend | Proposed (2026-10-07) — not approved |
@@ -480,16 +480,18 @@ MENOS's distinguishing feature is not a single fast engine. It is the planner: a
 - **Jobs that do not use an integration are unchanged.** Plans, results, `explain()` output and CLI golden files stay the same, unless a new engine wins a plan on cost. Any such planner change is measured and recorded, never left implicit.
 - **Abstractions follow the second implementation.** The Qiskit adapter is the first frontend. Shared frontend code (a common conversion layer, a plugin registry) may be extracted only when the second frontend (proposed: PennyLane) shows what is truly shared, not before.
 
-### Phase 19: OpenQASM 3 import (frontend) — PROPOSED
+### Phase 19: OpenQASM 3 import (frontend) — STARTED 2026-10-14
+
+*The owner started this phase on 2026-10-14 as the first interoperability phase, in parallel with Phase 18 (native Windows, branch `phase-18-windows-native`), whose gate was still open; the owner's instruction set aside "current phase only" for this one case. Design: `docs/adr/0023`. Branch: `phase-19-openqasm3-import`.*
 
 **Goal.** Accept OpenQASM 3 programs in the CLI and the C++/Python APIs. OpenQASM 3 is the common exchange format of Qiskit, Braket, tket and others, so one importer gives MENOS the widest reach per unit of work.
 
 **Required behavior.**
-1. Import the static-circuit subset: `qubit`/`bit` declarations, the standard gate library (`stdgates.inc`), user `gate` definitions, gate modifiers that are exact (`inv`, `pow` with integer exponent, `ctrl`), constant parameter expressions, `measure`, `reset`, `barrier`, and `input` parameters bound at submission.
-2. Everything else is refused with its source location: classical control flow, `while`, subroutines with classical return values, timing and `delay` semantics, `defcal`/pulse grammar, and `extern`. Dynamic circuits are Phase 24.
+1. Import the static-circuit subset: `qubit`/`bit` declarations, the standard gate library (`stdgates.inc`), user `gate` definitions, gate modifiers that are exact (`inv`, `pow` with integer exponent, `ctrl`, `negctrl`), constant parameter expressions, `measure`, `barrier`, and `input` parameters bound at submission. The exact scope is `docs/adr/0023` section 2.
+2. Everything else is refused with its source location: `reset`, classical control flow, `while`, subroutines with classical return values, timing and `delay` semantics, `defcal`/pulse grammar, and `extern`. Dynamic circuits, `reset` included, are Phase 24 (old numbering 23).
 3. A program that is also valid OpenQASM 2 gives the same KIR circuit through both importers.
 
-**Owner decisions needed.** A hand-rolled parser (as in Phase 7) or the reference ANTLR grammar (a new dependency); whether `reset` is in scope before Phase 24; whether `input` parameters are in scope.
+**Owner decisions (2026-10-14).** A hand-rolled parser; `reset` refused and deferred to Phase 24; `input` parameters in scope; a modifier with no exact gate-table equivalent becomes an exact `UnitaryOp` of at most `kMaxUnitaryQubits` qubits. Still open: `docs/adr/0023` section 9, Q5–Q9.
 
 **Acceptance gate (proposed).** The OpenQASM 2/3 equivalence fixtures give identical KIR; circuits exported with `qiskit.qasm3.dumps` give statevectors equal to Qiskit's within tolerance; each refused construct has a test naming it; existing OpenQASM 2 and CLI golden files pass unmodified; `scripts/verify.sh` passes.
 
