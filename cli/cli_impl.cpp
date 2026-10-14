@@ -142,11 +142,12 @@ Flags parse_flags(const std::vector<std::string>& args, std::size_t start, bool 
                     throw std::invalid_argument("trailing characters");
                 }
             } catch (const std::exception&) {
-                throw UsageError("--input " + name + " requires a number, got '" + value + "'");
+                throw UsageError(
+                    std::format("--input {} requires a number, got '{}'", name, value));
             }
             if (!std::isfinite(parsed)) {
-                throw UsageError("--input " + name + " requires a finite number, got '" + value +
-                                 "'");
+                throw UsageError(
+                    std::format("--input {} requires a finite number, got '{}'", name, value));
             }
             if (!flags.inputs.emplace(name, parsed).second) {
                 throw UsageError("--input " + name + " is given more than once");
