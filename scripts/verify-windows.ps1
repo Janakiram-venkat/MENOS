@@ -32,8 +32,13 @@ $VsPath = & vswhere.exe -latest -products * `
     -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 if (-not $VsPath) { Fail "no Visual Studio installation with the x64 C++ tools" }
 Import-Module (Join-Path $VsPath "Common7\Tools\Microsoft.VisualStudio.DevShell.dll")
+# The 14.50 toolset is pinned: 14.51 miscompiles MENOS and CMake refuses it
+# (docs/adr/0022 section 3.1).
+if (-not (Test-Path (Join-Path $VsPath "VC\Tools\MSVC\14.50.*"))) {
+    Fail "the MSVC 14.50 toolset is not installed (Visual Studio Installer component Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64)"
+}
 Enter-VsDevShell -VsInstallPath $VsPath -SkipAutomaticLocation `
-    -DevCmdArguments "-arch=x64 -host_arch=x64" | Out-Null
+    -DevCmdArguments "-arch=x64 -host_arch=x64 -vcvars_ver=14.50" | Out-Null
 # Prefer the CMake and Ninja that ship with Visual Studio over any others on PATH.
 $VsCMake = Join-Path $VsPath "Common7\IDE\CommonExtensions\Microsoft\CMake"
 if (Test-Path $VsCMake) { $env:PATH = "$VsCMake\CMake\bin;$VsCMake\Ninja;$env:PATH" }

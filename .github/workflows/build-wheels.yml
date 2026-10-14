@@ -263,77 +263,49 @@ jobs:
         run: python -m pip install cibuildwheel==4.2.1 packaging
 
       # The runner also has MinGW on PATH; MENOS builds with MSVC only, so enter
-      # the Visual Studio x64 developer environment for every later step.
-      - name: Enter the Visual Studio developer environment
+      # the Visual Studio x64 developer environment for every later step. The
+      # 14.50 toolset is pinned: 14.51 miscompiles MENOS and CMake refuses it
+      # (docs/adr/0022 section 3.1).
+      - name: Enter the Visual Studio developer environment (MSVC 14.50)
         shell: pwsh
         run: |
           $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
             -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
             -property installationPath
+          if (-not (Test-Path "$vs\VC\Tools\MSVC\14.50.*")) {
+            $setup = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"
+            Start-Process -Wait -FilePath $setup -ArgumentList @("modify", "--installPath", "`"$vs`"",
+              "--add", "Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64",
+              "--quiet", "--norestart", "--nocache")
+          }
+          if (-not (Test-Path "$vs\VC\Tools\MSVC\14.50.*")) {
+            Get-ChildItem "$vs\VC\Tools\MSVC" | ForEach-Object Name
+            throw "the MSVC 14.50 toolset is not available"
+          }
           Import-Module "$vs\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
-          Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
+          Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation `
+            -DevCmdArguments "-arch=x64 -host_arch=x64 -vcvars_ver=14.50"
           $cmake = "$vs\Common7\IDE\CommonExtensions\Microsoft\CMake"
           $env:PATH = "$cmake\CMake\bin;$cmake\Ninja;$env:PATH"
+          (Get-Command cl).Source
           # PSModulePath is left out: this step's PowerShell 7 value puts PowerShell
           # 7's modules first, and Windows PowerShell 5.1 (which runs
           # scripts/fetch-openblas-windows.ps1) then cannot load Get-FileHash.
           Get-ChildItem env: | Where-Object Name -ne "PSModulePath" |
             ForEach-Object { "$($_.Name)=$($_.Value)" } | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
 
-      # Temporary diagnostic for the Windows wheel crash (docs/adr/0022): a
-      # cp314 wheel with the release flags plus debug information, the crash
-      # reproduced in three variants, and its stack under cdb.
-      - name: "Diagnostic: build a wheel with debug information"
-        continue-on-error: true
+      # The C++ suite with the same compiler as the wheels, so a miscompile is
+      # caught here too, not only through the Python tests.
+      - name: Build and test the C++ suite (windows-release)
         shell: powershell
         run: |
           & .\scripts\fetch-openblas-windows.ps1 | Out-Null
-          $env:CMAKE_GENERATOR = "Ninja"; $env:CC = "cl"; $env:CXX = "cl"
-          python -m pip install delvewheel==1.13.1
-          python -m pip wheel . --no-deps -w diag-dist -C build-dir=D:/menos-diag-build `
-            "-Ccmake.define.CMAKE_CXX_FLAGS=/DWIN32 /D_WINDOWS /EHsc /Z7" `
-            "-Ccmake.define.CMAKE_MODULE_LINKER_FLAGS=/DEBUG /OPT:REF /OPT:ICF" `
-            "-Ccmake.define.CMAKE_SHARED_LINKER_FLAGS=/DEBUG /OPT:REF /OPT:ICF"
+          cmake --preset windows-release
           if ($LASTEXITCODE -ne 0) { exit 1 }
-          $whl = (Get-ChildItem diag-dist\*.whl).FullName
-          cmd /c "delvewheel repair -v --add-path ""%VCToolsRedistDir%x64\Microsoft.VC145.CRT"" --exclude libopenblas.dll --wheel-dir diag-wheel $whl"
-          $repaired = (Get-ChildItem diag-wheel\*.whl).FullName
-          python -m venv D:\diag-venv
-          D:\diag-venv\Scripts\python -m pip install "$repaired[test]"
-          New-Item -ItemType Directory -Force diag-pdb | Out-Null
-          Get-ChildItem D:\menos-diag-build -Recurse -Filter *.pdb | Copy-Item -Destination diag-pdb
-
-      - name: "Diagnostic: reproduce the crash"
-        continue-on-error: true
-        shell: powershell
-        run: D:\diag-venv\Scripts\python scripts\windows-crash-repro.py
-
-      - name: "Diagnostic: crash stack under cdb"
-        continue-on-error: true
-        shell: powershell
-        run: |
-          $cdb = "${env:ProgramFiles(x86)}\Windows Kits\10\Debuggers\x64\cdb.exe"
-          if (-not (Test-Path $cdb)) { "cdb not found"; exit 0 }
-          Set-Content -Encoding ascii diag-cdb.txt @(
-            'sxd -c2 ".ecxr; kn 60; ~*kn 30; lm; q" av',
-            'g',
-            'q'
-          )
-          $pdb = (Resolve-Path diag-pdb).Path
-          & $cdb -o -g -G -lines -y "$pdb;srv*D:\symcache*https://msdl.microsoft.com/download/symbols" `
-            -cf diag-cdb.txt D:\diag-venv\Scripts\python.exe scripts\windows-crash-repro.py child 0
-
-      - name: "Diagnostic: upload the debug wheel and symbols"
-        if: always()
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: menos-windows-diagnostic
-          path: |
-            diag-wheel/
-            diag-pdb/
-          if-no-files-found: warn
-          retention-days: 14
+          cmake --build --preset windows-release
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          ctest --preset windows-release -j 4 --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit 1 }
 
       - name: Build MENOS wheels for Python 3.10-3.14
         shell: bash

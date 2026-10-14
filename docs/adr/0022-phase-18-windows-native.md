@@ -47,6 +47,21 @@ The thread pool's fork guard is compiled only where `fork` exists. Windows has n
 - **CUDA.** `MENOS_ENABLE_CUDA=ON` with MSVC is a configure-time `FATAL_ERROR` naming this deferral. It is never silently turned off.
 - **MSVC only.** On Windows any other compiler is a configure-time `FATAL_ERROR`. **[MEASURED]** on 2026-10-13: a `cibuildwheel` run outside the developer environment picked up MinGW's CMake and GCC 15.2 from `C:\mingw64\bin`, configured and built without complaint, and the resulting cp310 extension then failed 9 of 260 Python tests (an `InternalError` in `append_batch`, a memory budget read as 0 bytes, different seeded counts). GitHub's Windows runners also have MinGW on `PATH`, so the wheel build pins `CMAKE_GENERATOR=Ninja` and `CC`/`CXX=cl` and runs inside the developer environment.
 
+### 3.1 MSVC 14.51 miscompiles MENOS — [MEASURED] 2026-10-14
+
+Every Windows wheel built on GitHub Actions crashed or hung in the first simulation of its Python suite, while the same commit built here passed 632/632 C++ and 260/260 Python tests. The runner compiles with MSVC 19.51.36260 (toolset 14.51.36231); this machine with 19.50.35726 (toolset 14.50.35717).
+
+Measured, in order:
+- Not the runtime DLL: with `msvcp140.dll` from the compiler's own redist directory the crash was unchanged.
+- Not OpenBLAS: on the runner (AMD EPYC 9V45, OpenBLAS selecting its Cooperlake kernels) `LAPACKE_zgesdd` called directly ran cleanly and matched the Haswell kernels.
+- The build, not the runner: the GitHub-built wheel, downloaded and run on this machine, hangs or crashes here too, intermittently.
+- The stack of a hung run, symbolized with the uploaded PDB: an access violation at `src/analysis/schmidt_rank_bound.cpp:101`, the store into `m` in `operator_schmidt_rank`, followed by a nested fault in the exception dispatcher (hence a hang rather than a crash in some runs).
+- The disassembly of `operator_schmidt_rank` in the GitHub-built `_core.pyd` reads the bound of the `j_l` loop from the stack slot `[rsp+20h]` on the first pass of the `i_l` loop before anything writes it (`mov rcx, qword ptr [rsp+20h]` at RVA `0x6f38f`; the slot is first written at `0x6f3aa`). The 14.50 build of the same source and flags writes the slot (`0x6f4b3`) before reading it (`0x6f4c6`).
+
+The loop therefore runs over an uninitialised bound: a large value writes past `m` (the crash), a small one silently computes a wrong Schmidt-rank bound. The source has no undefined behaviour the analysis found (every index is below its buffer's size; AddressSanitizer and UndefinedBehaviorSanitizer pass on it). This is a compiler defect.
+
+Owner decision (2026-10-14): CMake refuses MSVC 19.51.x with a message naming this section, as it refuses MinGW. CI and `scripts/verify-windows.ps1` pin the 14.50 toolset (`-vcvars_ver=14.50`; CI installs component `Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64` when the runner lacks it). The Windows CI job also builds and runs the C++ suite with the wheel compiler, so a miscompile is caught outside the Python tests. A report to Microsoft is drafted for the owner to file.
+
 ## 4. LAPACK on Windows — [MENOS]
 
 MENOS calls one LAPACK routine, `LAPACKE_zgesdd` (`src/common/svd.cpp`). MSVC has no Fortran compiler, so the Linux wheel job's approach (building reference LAPACK from source) is not available.
@@ -63,7 +78,7 @@ OpenBLAS runs its own threads for BLAS calls. MENOS still does not set `OPENBLAS
 ## 5. Python package and wheels — [MENOS]
 
 - On Windows the build installs `libopenblas.dll` and its licence next to `_core.pyd` in the `menos` package. Python loads extension modules with the module's own directory on the DLL search path, so the extension finds OpenBLAS in an editable install and in a wheel alike.
-- Wheels: `cibuildwheel` with `[tool.cibuildwheel.windows]`, CPython 3.10–3.14, `AMD64`. `delvewheel repair --exclude libopenblas.dll` bundles the MSVC C++ runtime, which Python itself does not ship, and fails on any dependency it cannot resolve; OpenBLAS is excluded because CMake already installs it beside `_core.pyd`, so the wheel carries exactly one copy. **[MEASURED]** `delvewheel show` on the cp314 wheel: it vendors `msvcp140.dll` and `msvcp140_atomic_wait.dll` (the thread pool's `std::atomic::wait`); every other import is a system, UCRT or Python DLL. The test command runs the Python suite against each installed wheel. delvewheel takes the C++ runtime from the compiler's own redist directory (`%VCToolsRedistDir%x64\Microsoft.VC145.CRT`) rather than the first `msvcp140.dll` on `PATH`: on the first GitHub Actions run with a working build, the cp310 wheel crashed with an access violation in its first simulation, although the same wheel passed locally, and the runner's `PATH` lists several third-party directories before `System32`.
+- Wheels: `cibuildwheel` with `[tool.cibuildwheel.windows]`, CPython 3.10–3.14, `AMD64`. `delvewheel repair --exclude libopenblas.dll` bundles the MSVC C++ runtime, which Python itself does not ship, and fails on any dependency it cannot resolve; OpenBLAS is excluded because CMake already installs it beside `_core.pyd`, so the wheel carries exactly one copy. **[MEASURED]** `delvewheel show` on the cp314 wheel: it vendors `msvcp140.dll` and `msvcp140_atomic_wait.dll` (the thread pool's `std::atomic::wait`); every other import is a system, UCRT or Python DLL. The test command runs the Python suite against each installed wheel. delvewheel takes the C++ runtime from the compiler's own redist directory (`%VCToolsRedistDir%x64\Microsoft.VC145.CRT`) rather than the first `msvcp140.dll` on `PATH`, so the bundled runtime always matches the compiler. This was first adopted as the suspected cause of the GitHub Actions crash; section 3.1 measured the real cause, and the change is kept on its own merits.
 - `.github/workflows/build-wheels.yml` gains a `windows` job; the Linux job is unchanged.
 
 ## 6. Order of work
@@ -121,7 +136,7 @@ OpenBLAS runs its own threads for BLAS calls. MENOS still does not set `OPENBLAS
 
 ## 10. Gate evidence
 
-Recorded on 2026-10-14. Every run below is on commit `916d98f`; this section is the only change after it. **The owner has not yet confirmed the gate.**
+Recorded on 2026-10-14 on commit `916d98f`. **Superseded for the Windows criteria:** section 3.1 found that wheels built with MSVC 14.51 are miscompiled, and the fix (toolset pin, refusal, C++ suite in CI) changes the Windows build; criteria 1, 5 and 6 are to be re-run on the fix commit and on GitHub Actions. The Linux run stands for criterion 7 until the final commit. **The owner has not yet confirmed the gate.**
 
 ### 10.1 Runs
 

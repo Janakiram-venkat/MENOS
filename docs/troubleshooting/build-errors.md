@@ -26,6 +26,14 @@ Each entry is a **symptom**, its **cause**, and a **solution**. The exact wordin
 | **Cause** | Native Windows builds are CPU-only; CUDA on Windows is a recorded deferral (`docs/adr/0022`) |
 | **Solution** | Configure without `MENOS_ENABLE_CUDA`, or build the CUDA backend under WSL |
 
+## MSVC 14.51 refused
+
+| | |
+|---|---|
+| **Symptom** | CMake stops with `MSVC 19.51... (toolset 14.51) miscompiles MENOS` |
+| **Cause** | The 14.51 toolset's optimizer reads an uninitialised loop bound in MENOS's planner code, so runs crash, hang or compute a wrong result (measured, `docs/adr/0022` section 3.1). The 14.50 toolset compiles it correctly |
+| **Solution** | Install the "MSVC v14.50" toolset in the Visual Studio Installer (component `Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64`) and enter the developer environment with `-vcvars_ver=14.50`; `scripts\verify-windows.ps1` does this |
+
 ## `cl`, `ninja` or the Windows SDK not found
 
 | | |

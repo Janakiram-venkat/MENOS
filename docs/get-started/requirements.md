@@ -27,7 +27,7 @@ The **Required to build** rows apply only to a source install. The [PyPI wheels]
 | Python | **3.10–3.14** | **Required** | `requires-python >=3.10` |
 | NumPy | any compatible with your Python | **Required** | Installed automatically |
 | Qiskit | **2.5.2** | **Required** for `MENOSBackend` and `MENOSEstimator` | Pinned exactly by the `qiskit` extra; other versions are untested |
-| C++ compiler | GCC 12+, Clang 16+ or AppleClang 15+ (C++20); on Windows, MSVC from Visual Studio 2026 (Build Tools are enough) | **Required** to build | GCC 15.2 and MSVC 14.50 were used |
+| C++ compiler | GCC 12+, Clang 16+ or AppleClang 15+ (C++20); on Windows, the MSVC 14.50 toolset from Visual Studio 2026 (Build Tools are enough; 14.51 is refused because it miscompiles MENOS) | **Required** to build | GCC 15.2 and MSVC 14.50 were used |
 | CMake | 3.25 or newer | **Required** to build | 4.2.3 was used |
 | `git` | any | **Required** to build | CMake fetches test dependencies from GitHub |
 | LAPACK, LAPACKE, BLAS (development packages) | any | **Required** to build | On Ubuntu: `liblapacke-dev liblapack-dev libblas-dev`. On Windows, `scripts/fetch-openblas-windows.ps1` downloads the pinned OpenBLAS 0.3.34 release |

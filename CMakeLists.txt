@@ -32,6 +32,19 @@ if(WIN32 AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
                         "Visual Studio x64 developer environment (docs/adr/0022 section 3)")
 endif()
 
+# MSVC 19.51 (toolset 14.51) miscompiles operator_schmidt_rank in
+# src/analysis/schmidt_rank_bound.cpp: the optimised code reads a loop bound
+# from a stack slot it never initialised, so a run crashes, hangs or silently
+# computes a wrong rank bound (measured, docs/adr/0022 section 3.1). MSVC 19.50
+# compiles the same source correctly. Refused rather than half-working.
+if(MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.51
+   AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.52)
+    message(FATAL_ERROR "menos: MSVC ${CMAKE_CXX_COMPILER_VERSION} (toolset 14.51) miscompiles "
+                        "MENOS (docs/adr/0022 section 3.1); use the 14.50 toolset, e.g. "
+                        "Enter-VsDevShell -DevCmdArguments \"-arch=x64 -host_arch=x64 "
+                        "-vcvars_ver=14.50\"")
+endif()
+
 # Windows is supported for the CPU build only (docs/adr/0022). Refuse a CUDA
 # request outright rather than silently building without CUDA.
 if(MSVC AND MENOS_ENABLE_CUDA)
