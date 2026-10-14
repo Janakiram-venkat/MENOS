@@ -274,7 +274,11 @@ jobs:
           Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments "-arch=x64 -host_arch=x64"
           $cmake = "$vs\Common7\IDE\CommonExtensions\Microsoft\CMake"
           $env:PATH = "$cmake\CMake\bin;$cmake\Ninja;$env:PATH"
-          Get-ChildItem env: | ForEach-Object { "$($_.Name)=$($_.Value)" } | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          # PSModulePath is left out: this step's PowerShell 7 value puts PowerShell
+          # 7's modules first, and Windows PowerShell 5.1 (which runs
+          # scripts/fetch-openblas-windows.ps1) then cannot load Get-FileHash.
+          Get-ChildItem env: | Where-Object Name -ne "PSModulePath" |
+            ForEach-Object { "$($_.Name)=$($_.Value)" } | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
 
       - name: Build MENOS wheels for Python 3.10-3.14
         shell: bash
