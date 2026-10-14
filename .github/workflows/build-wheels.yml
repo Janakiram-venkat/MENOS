@@ -280,6 +280,14 @@ jobs:
           Get-ChildItem env: | Where-Object Name -ne "PSModulePath" |
             ForEach-Object { "$($_.Name)=$($_.Value)" } | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
 
+      # Temporary diagnostic for the Windows wheel crash (docs/adr/0022).
+      - name: Probe OpenBLAS on this runner
+        continue-on-error: true
+        shell: powershell
+        run: |
+          $root = & .\scripts\fetch-openblas-windows.ps1 | Select-Object -Last 1
+          python scripts/openblas-probe-windows.py "$root\bin\libopenblas.dll"
+
       - name: Build MENOS wheels for Python 3.10-3.14
         shell: bash
         run: |
