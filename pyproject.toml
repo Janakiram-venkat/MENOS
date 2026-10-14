@@ -58,6 +58,9 @@ archs = ["AMD64"]
 environment = { CMAKE_GENERATOR = "Ninja", CC = "cl", CXX = "cl" }
 before-all = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fetch-openblas-windows.ps1"
 before-build = "pip install delvewheel==1.13.1"
-repair-wheel-command = "delvewheel repair --exclude libopenblas.dll --wheel-dir {dest_dir} {wheel}"
+# The C++ runtime is taken from the compiler's own redist directory, not the
+# first msvcp140.dll on PATH, which on CI runners can be an older copy. -v logs
+# where each vendored DLL came from.
+repair-wheel-command = "delvewheel repair -v --add-path \"%VCToolsRedistDir%x64\\Microsoft.VC145.CRT\" --exclude libopenblas.dll --wheel-dir {dest_dir} {wheel}"
 test-extras = ["test"]
 test-command = "pytest {project}/python/tests -q"
