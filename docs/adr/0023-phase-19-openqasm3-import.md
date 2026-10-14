@@ -2,7 +2,7 @@
 
 ## Status
 
-**Proposed (2026-10-14); section 9 partly answered.** The owner started Phase 19 on 2026-10-14, in parallel with Phase 18, whose gate is still open (`docs/adr/0022`, on branch `phase-18-windows-native`). The owner chose OpenQASM 3 import as the first phase of the interoperability roadmap and answered Q1–Q4 of section 9 the same day. Branch `phase-19-openqasm3-import`, from `main` at `ff74397`. ADR number 0022 belongs to Phase 18.
+**Proposed (2026-10-14); section 9 answered except Q9 (the gate).** The owner started Phase 19 on 2026-10-14, in parallel with Phase 18, whose gate is still open (`docs/adr/0022`, on branch `phase-18-windows-native`). The owner chose OpenQASM 3 import as the first phase of the interoperability roadmap and answered Q1–Q8 of section 9 the same day. Branch `phase-19-openqasm3-import`, from `main` at `ff74397`. ADR number 0022 belongs to Phase 18.
 
 Labels follow `docs/adr/0014`–`0022`: **[MEASURED]**, **[DERIVED]**, **[MENOS]** (a proposed design decision) and **[OPEN]** (an owner decision, section 9).
 
@@ -127,7 +127,11 @@ OpenQASM 3 is the exchange format of Qiskit (`qiskit.qasm3.dumps`), Braket, tket
 2. **Q2:** refused, deferred to Phase 24.
 3. **Q3:** in scope.
 4. **Q4:** exact `UnitaryOp`, up to `kMaxUnitaryQubits`.
-5. **Q5–Q9:** open.
+5. **Q5:** as proposed: `qasm2::parse` keeps source order.
+6. **Q6:** as proposed: by header, header required.
+7. **Q7:** as proposed: `menos.from_qasm3(text, inputs=None)`.
+8. **Q8:** as proposed: embedded verbatim with its licence notice, after the licence is checked.
+9. **Q9:** open, with the implementation plan.
 
 ---
 
