@@ -280,13 +280,60 @@ jobs:
           Get-ChildItem env: | Where-Object Name -ne "PSModulePath" |
             ForEach-Object { "$($_.Name)=$($_.Value)" } | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
 
-      # Temporary diagnostic for the Windows wheel crash (docs/adr/0022).
-      - name: Probe OpenBLAS on this runner
+      # Temporary diagnostic for the Windows wheel crash (docs/adr/0022): a
+      # cp314 wheel with the release flags plus debug information, the crash
+      # reproduced in three variants, and its stack under cdb.
+      - name: "Diagnostic: build a wheel with debug information"
         continue-on-error: true
         shell: powershell
         run: |
-          $root = & .\scripts\fetch-openblas-windows.ps1 | Select-Object -Last 1
-          python scripts/openblas-probe-windows.py "$root\bin\libopenblas.dll"
+          & .\scripts\fetch-openblas-windows.ps1 | Out-Null
+          $env:CMAKE_GENERATOR = "Ninja"; $env:CC = "cl"; $env:CXX = "cl"
+          python -m pip install delvewheel==1.13.1
+          python -m pip wheel . --no-deps -w diag-dist -C build-dir=D:/menos-diag-build `
+            "-Ccmake.define.CMAKE_CXX_FLAGS=/DWIN32 /D_WINDOWS /EHsc /Z7" `
+            "-Ccmake.define.CMAKE_MODULE_LINKER_FLAGS=/DEBUG /OPT:REF /OPT:ICF" `
+            "-Ccmake.define.CMAKE_SHARED_LINKER_FLAGS=/DEBUG /OPT:REF /OPT:ICF"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          $whl = (Get-ChildItem diag-dist\*.whl).FullName
+          cmd /c "delvewheel repair -v --add-path ""%VCToolsRedistDir%x64\Microsoft.VC145.CRT"" --exclude libopenblas.dll --wheel-dir diag-wheel $whl"
+          $repaired = (Get-ChildItem diag-wheel\*.whl).FullName
+          python -m venv D:\diag-venv
+          D:\diag-venv\Scripts\python -m pip install "$repaired[test]"
+          New-Item -ItemType Directory -Force diag-pdb | Out-Null
+          Get-ChildItem D:\menos-diag-build -Recurse -Filter *.pdb | Copy-Item -Destination diag-pdb
+
+      - name: "Diagnostic: reproduce the crash"
+        continue-on-error: true
+        shell: powershell
+        run: D:\diag-venv\Scripts\python scripts\windows-crash-repro.py
+
+      - name: "Diagnostic: crash stack under cdb"
+        continue-on-error: true
+        shell: powershell
+        run: |
+          $cdb = "${env:ProgramFiles(x86)}\Windows Kits\10\Debuggers\x64\cdb.exe"
+          if (-not (Test-Path $cdb)) { "cdb not found"; exit 0 }
+          Set-Content -Encoding ascii diag-cdb.txt @(
+            'sxd -c2 ".ecxr; kn 60; ~*kn 30; lm; q" av',
+            'g',
+            'q'
+          )
+          $pdb = (Resolve-Path diag-pdb).Path
+          & $cdb -o -g -G -lines -y "$pdb;srv*D:\symcache*https://msdl.microsoft.com/download/symbols" `
+            -cf diag-cdb.txt D:\diag-venv\Scripts\python.exe scripts\windows-crash-repro.py child 0
+
+      - name: "Diagnostic: upload the debug wheel and symbols"
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: menos-windows-diagnostic
+          path: |
+            diag-wheel/
+            diag-pdb/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Build MENOS wheels for Python 3.10-3.14
         shell: bash
