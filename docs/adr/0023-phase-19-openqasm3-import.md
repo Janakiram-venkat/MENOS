@@ -2,7 +2,7 @@
 
 ## Status
 
-**Accepted for implementation (2026-10-14); gate not yet passed.** The owner started Phase 19 on 2026-10-14, in parallel with Phase 18, whose gate is still open (`docs/adr/0022`, on branch `phase-18-windows-native`). The owner chose OpenQASM 3 import as the first phase of the interoperability roadmap answered section 9 the same day and approved the implementation plan. Branch `phase-19-openqasm3-import`, from `main` at `ff74397`. ADR number 0022 belongs to Phase 18.
+**Accepted for implementation (2026-10-14); gate not yet passed.** The owner started Phase 19 on 2026-10-14, in parallel with Phase 18, whose gate is still open (`docs/adr/0022`, on branch `phase-18-windows-native`). The owner chose OpenQASM 3 import as the first phase of the interoperability roadmap answered section 9 the same day and approved the implementation plan. Branch `phase-19-openqasm3-import`, started from `main` at `ff74397` and rebased on 2026-10-14, at the owner's decision, onto `phase-18-windows-native` at `7fa38ce`, so that it carries Phase 18's fixes (`menos.__version__`, the `noise` and `test` extras) and builds natively on Windows too. ADR number 0022 belongs to Phase 18.
 
 Labels follow `docs/adr/0014`–`0022`: **[MEASURED]**, **[DERIVED]**, **[MENOS]** (a proposed design decision) and **[OPEN]** (an owner decision, section 9).
 
