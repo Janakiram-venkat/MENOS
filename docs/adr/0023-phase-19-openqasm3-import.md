@@ -2,7 +2,7 @@
 
 ## Status
 
-**Proposed (2026-10-14); section 9 answered except Q9 (the gate).** The owner started Phase 19 on 2026-10-14, in parallel with Phase 18, whose gate is still open (`docs/adr/0022`, on branch `phase-18-windows-native`). The owner chose OpenQASM 3 import as the first phase of the interoperability roadmap and answered Q1–Q8 of section 9 the same day. Branch `phase-19-openqasm3-import`, from `main` at `ff74397`. ADR number 0022 belongs to Phase 18.
+**Accepted for implementation (2026-10-14); gate not yet passed.** The owner started Phase 19 on 2026-10-14, in parallel with Phase 18, whose gate is still open (`docs/adr/0022`, on branch `phase-18-windows-native`). The owner chose OpenQASM 3 import as the first phase of the interoperability roadmap answered section 9 the same day and approved the implementation plan. Branch `phase-19-openqasm3-import`, from `main` at `ff74397`. ADR number 0022 belongs to Phase 18.
 
 Labels follow `docs/adr/0014`–`0022`: **[MEASURED]**, **[DERIVED]**, **[MENOS]** (a proposed design decision) and **[OPEN]** (an owner decision, section 9).
 
@@ -143,7 +143,7 @@ No reading makes every body agree with its name. Under the specification's own m
 6. **Q6:** as proposed: by header, header required.
 7. **Q7:** as proposed: `menos.from_qasm3(text, inputs=None)`.
 8. **Q8:** first answered "embed verbatim"; revised the same day after the section 4.1 measurement: the 32 names are built-in gates with Qiskit's matrices, `U` is Qiskit's `UGate`, and the file is not shipped.
-9. **Q9:** open, with the implementation plan.
+9. **Q9:** the gate in `docs/BUILD_PLAN.md`, Phase 19, approved with the implementation plan. The differential oracle is Qiskit's own import (`qiskit.qasm3.loads`, from the pinned test-only package `qiskit-qasm3-import`), compared exactly, because `qiskit.qasm3.dumps` drops a circuit's global phase.
 
 ---
 

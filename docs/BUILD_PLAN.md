@@ -493,7 +493,19 @@ MENOS's distinguishing feature is not a single fast engine. It is the planner: a
 
 **Owner decisions (2026-10-14).** A hand-rolled parser; `reset` refused and deferred to Phase 24; `input` parameters in scope; a modifier with no exact gate-table equivalent becomes an exact `UnitaryOp` of at most `kMaxUnitaryQubits` qubits. Q5–Q8 (same day): the OpenQASM 2 importer keeps source order; the CLI chooses the importer from the header; Python `menos.from_qasm3(text, inputs=None)`; the `stdgates.inc` names as built-in gates with Qiskit's matrices (first answered "embed verbatim", revised after `docs/adr/0023` section 4.1 measured that the file's bodies, taken literally, disagree with the gates they name). Q9, the gate, is settled with the implementation plan.
 
-**Acceptance gate (proposed).** The OpenQASM 2/3 equivalence fixtures give identical KIR; circuits exported with `qiskit.qasm3.dumps` give statevectors equal to Qiskit's within tolerance; each refused construct has a test naming it; existing OpenQASM 2 and CLI golden files pass unmodified; `scripts/verify.sh` passes.
+### Phase 19 acceptance gate
+
+Approved by the owner with the implementation plan on 2026-10-14 (`docs/adr/0023` section 9, Q9). It refines the proposal above it ("statevectors equal to Qiskit's within tolerance") after `qiskit.qasm3.dumps` was measured to drop a circuit's global phase: the oracle is Qiskit's own import of the same text.
+
+1. **Subset.** Every construct in `docs/adr/0023` section 2.1 is imported; each has a C++ test.
+2. **Refusals.** Every construct in section 2.2 is refused with `UnsupportedFeature` naming it, its line and its column; each has a test.
+3. **Built-in gates.** All 32 `stdgates.inc` names and `U` equal Qiskit's matrices entrywise within 1e-12, global phase included.
+4. **Modifiers.** Every `inv`/`pow`/`ctrl`/`negctrl` rule is exact, entrywise within 1e-12, including the `UnitaryOp` path and the refusal above 5 qubits.
+5. **Differential.** For every fixture exported with `qiskit.qasm3.dumps`, MENOS's statevector equals that of `qiskit.qasm3.loads` of the same text within 1e-12, global phase included, and equals the original circuit's up to one global phase factor; seeded counts equal `MENOSBackend`'s exactly.
+6. **OpenQASM 2/3 equivalence.** The paired fixtures give identical circuits.
+7. **OpenQASM 2 measure order.** `qasm2::parse` keeps source order, with a regression test; the existing OpenQASM 2 tests and CLI golden tests pass unmodified.
+8. **Entry points.** CLI header dispatch and `--input`, and Python `from_qasm3`, each tested.
+9. **Verification.** `scripts/verify.sh` exits 0 in the WSL clone on the final commit; documentation updated; every new symbol has a production caller and tests.
 
 ### Phase 20: PennyLane device (frontend) — PROPOSED
 
