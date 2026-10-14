@@ -52,7 +52,7 @@ OpenQASM 3 is the exchange format of Qiskit (`qiskit.qasm3.dumps`), Braket, tket
   ```
   Like `qasm2::parse`, it does not call `ir::validate`; the caller does.
 - **Parser.** Hand-rolled (Q1): a lexer to tokens with line and column, then recursive descent. It shares nothing with `src/qasm2` in this phase. Shared code waits for the second implementation (BUILD_PLAN invariants), and the two grammars differ in most productions.
-- **`stdgates.inc`.** Built in as text and parsed by the same `gate`-definition path, so its semantics are the specification's own definitions. A gate whose expansion equals a gate-table entry exactly, global phase included, is emitted as that entry (section 4 test), so stabilizer detection and the specialised kernels still see `cx`, `h`, `s` and so on. The text is from the OpenQASM specification repository; its licence (expected Apache-2.0) is recorded in the source and checked before the file is added.
+- **`stdgates.inc` (Q8, revised).** The 32 names are built-in gates, not definitions read from the file: section 4.1 measured that the file's bodies, taken literally, do not denote the gates their names stand for. Each name's matrix equals Qiskit's gate of that name, global phase included. A name with a gate-table entry is emitted as that entry, so stabilizer detection and the specialised kernels still see `cx`, `h`, `s` and so on. `phase`, `u1`, `cphase` and `CX` map to `p`, `p`, `cp` and `cx`; `id` produces no operation. The others (`cy`, `ch`, `crx`, `cry`, `crz`, `cswap`, `cu`, `u2`, `u3`) are emitted as exact decompositions into gate-table gates, each checked entrywise against Qiskit's matrix, global phase included. `include "stdgates.inc";` makes the names available; the file itself is not shipped.
 - **Modifiers (Q4).** Applied exactly:
   - `inv`: the body in reverse order with each gate inverted. Every gate-table entry has an exact inverse in the table (`s`↔`sdg`, `rx(θ)`→`rx(−θ)`, `u(θ,φ,λ)`→`u(−θ,−λ,−φ)`, …), and `gphase(a)`→`gphase(−a)`.
   - `pow(k)`: the body repeated `k` times.
@@ -70,17 +70,29 @@ OpenQASM 3 is the exchange format of Qiskit (`qiskit.qasm3.dumps`), Braket, tket
 |---|---|
 | Qubit order | Registers flattened in declaration order; index `i` of a register is `offset + i`. |
 | Classical bit order | Same rule; bit `k` of the flattened bits is bit `k` of the counts bitstring, as in Qiskit and the existing frontends. |
-| `U(θ,φ,λ)` | **[OPEN] until checked:** the specification's matrix, believed equal to the gate table's `u` (Qiskit's `UGate`, no extra global phase). Measured against the specification text and `qiskit.qasm3` before code depends on it. |
-| `stdgates.inc` names | Each name's MENOS expansion equals the matrix of the specification's definition, global phase included, entrywise within `kDefaultAbsTol` = 1e-12; and equals Qiskit's gate of that name. |
+| `U(θ,φ,λ)` | The gate table's `u`, which is Qiskit's `UGate`: [[cos θ/2, −e^{iλ} sin θ/2], [e^{iφ} sin θ/2, e^{i(φ+λ)} cos θ/2]], no extra global phase. Under this reading `CX = ctrl @ U(π,0,π)` is exactly CNOT (section 4.1). |
+| `stdgates.inc` names | Each name's emitted operations equal Qiskit's gate of that name, global phase included, entrywise within `kDefaultAbsTol` = 1e-12. |
 | `gphase` | Added to `Circuit::global_phase`; under `ctrl` it is `p` on the control. |
 | Angles | Radians. `angle` inputs are treated as real numbers, not reduced modulo 2π. |
 | `measure` | Terminal only, as everywhere in MENOS; source order kept. |
 | `barrier`, `id` | No operation. |
 
+### 4.1 The `stdgates.inc` bodies — [MEASURED] 2026-10-14
+
+The file is the one Qiskit 2.5.2 vendors (`qiskit/qasm/libs/stdgates.inc`, from OpenQASM commit `4ca1d793833b24a1`, Apache-2.0). Each body was evaluated literally — `ctrl @ G` = |0⟩⟨0|⊗I + |1⟩⟨1|⊗G with G's global phase, `gphase(a)` = e^{ia}, `pow(r)` the principal power, `inv` the adjoint — and compared with Qiskit's gate of the same name at angles (0.37, −1.21, 2.05, 0.83), under three readings of `U`:
+
+| Reading of `U` | Exactly Qiskit's gate | Differs beyond global phase |
+|---|---|---|
+| Qiskit `UGate` | p z s sdg t tdg rz cz cp crz CX phase cphase id u1 | cx cy crx cry ch swap ccx cswap cu |
+| `UGate` × e^{i(φ+λ)/2} | p x y z s sdg t tdg sx cx cy cz cp swap ccx cswap id | crx cry crz ch cu CX cphase |
+| `UGate` × e^{−i(φ+λ)/2} | p z s sdg t tdg cz cp swap cswap id | cx cy crx cry crz ch ccx cu CX cphase |
+
+No reading makes every body agree with its name. Under the specification's own matrix (the first row), the `gphase` terms give `x`, `y`, `h`, `sx`, `rx`, `ry`, `u2` and `u3` extra global phases, and the controlled gates built on them (`cx = ctrl @ x` is a controlled −iX) differ from the gates they name, while `CX = ctrl @ U(π, 0, π)` is CNOT. `qiskit.qasm3.dumps` writes `cx` for CNOT. The owner therefore chose built-in gates with Qiskit's matrices (Q8, revised).
+
 ## 5. Testing — [MENOS]
 
 1. **Unit tests (C++).** Each accepted construct; each refused construct, asserting the exception type and that the message names the construct, line and column; each `InvalidCircuit` case; every input-binding error.
-2. **`stdgates.inc` conformance (C++).** For each gate and each modifier rule in section 3, the emitted operations' matrix against the specification definition's matrix, entrywise within 1e-12, global phase included.
+2. **`stdgates.inc` conformance.** For each of the 32 names, the emitted operations' matrix against Qiskit's gate of that name (Python), and for each modifier rule in section 3 against the matrix computed from its definition (C++), entrywise within 1e-12, global phase included. The section 4.1 measurement is kept as a Python test, so a change in Qiskit's vendored file is noticed.
 3. **OpenQASM 2/3 equivalence.** Fixtures written in both languages give identical circuits from `qasm2::parse` and `qasm3::parse` (depends on Q5).
 4. **Differential against Qiskit (Python).** The `tools/gen_fixtures.py` random circuits and a hand-written set covering `stdgates.inc`, user gates and modifiers are exported with `qiskit.qasm3.dumps`, imported with `menos.from_qasm3`, and their statevectors compared with Qiskit's `Statevector` within 1e-12. Seeded counts agree exactly with the same circuit run through `MENOSBackend`.
 5. **Unchanged behaviour.** The existing OpenQASM 2 tests and the CLI golden test pass unmodified, except as Q5 decides.
@@ -88,7 +100,7 @@ OpenQASM 3 is the exchange format of Qiskit (`qiskit.qasm3.dumps`), Braket, tket
 ## 6. Order of work
 
 1. This ADR, the `docs/BUILD_PLAN.md` Phase 19 section and owner answers.
-2. Measure the `U` convention and `stdgates.inc` definitions (section 4).
+2. Measure the `U` convention and `stdgates.inc` definitions (section 4.1, done 2026-10-14).
 3. Lexer and parser for declarations, built-in gates, expressions, `measure` and `barrier`, with the refusal tests.
 4. Gate definitions, `stdgates.inc`, modifiers and the conformance tests.
 5. `input` bindings.
@@ -104,7 +116,7 @@ OpenQASM 3 is the exchange format of Qiskit (`qiskit.qasm3.dumps`), Braket, tket
 
 | Risk | How it is caught |
 |---|---|
-| A `stdgates.inc` definition differs from the gate table by a global phase, which `ctrl` would expose | Section 4 conformance test, against the specification's own definition |
+| A built-in gate differs from Qiskit's by a global phase, which `ctrl` would expose | Section 5 conformance test, entrywise with global phase |
 | `qiskit.qasm3.dumps` emits constructs outside the subset (for example `gate` definitions of Qiskit-only gates, or annotations) | Each is either supported exactly or refused by name; the differential test records which fixtures are refused |
 | The specification's grammar has corner cases a hand-rolled parser misses | Refusal by default: a token the parser does not know is `InvalidCircuit`, never skipped |
 | Changing the OpenQASM 2 measure order changes accepted programs | Owner decision Q5 before any change |
@@ -130,7 +142,7 @@ OpenQASM 3 is the exchange format of Qiskit (`qiskit.qasm3.dumps`), Braket, tket
 5. **Q5:** as proposed: `qasm2::parse` keeps source order.
 6. **Q6:** as proposed: by header, header required.
 7. **Q7:** as proposed: `menos.from_qasm3(text, inputs=None)`.
-8. **Q8:** as proposed: embedded verbatim with its licence notice, after the licence is checked.
+8. **Q8:** first answered "embed verbatim"; revised the same day after the section 4.1 measurement: the 32 names are built-in gates with Qiskit's matrices, `U` is Qiskit's `UGate`, and the file is not shipped.
 9. **Q9:** open, with the implementation plan.
 
 ---
