@@ -1,6 +1,6 @@
 # Command Line
 
-The repository builds a small command-line tool, `menos`, that reads an **OpenQASM 2** file and either runs it or shows how it would be planned. It is an inspection tool, linked only to the public API.
+The repository builds a small command-line tool, `menos`, that reads an **OpenQASM 2 or OpenQASM 3** file and either runs it or shows how it would be planned. It is an inspection tool, linked only to the public API.
 
 ::: info Not installed by pip
 The command-line tool is a CMake target and is **not** part of the Python package. Build it with the CMake presets; the binary is `build/<preset>/cli/menos`.
@@ -15,8 +15,8 @@ build/release/cli/menos explain examples/bell.qasm
 ## Commands
 
 ```text
-menos explain <file.qasm> [--shots N] [--seed N] [--time-budget SECONDS] [--backend cpu|cuda]
-menos run     <file.qasm> --shots N --seed N [--statevector] [--time-budget SECONDS] [--backend cpu|cuda]
+menos explain <file.qasm> [--shots N] [--seed N] [--time-budget SECONDS] [--backend cpu|cuda] [--input NAME=VALUE]...
+menos run     <file.qasm> --shots N --seed N [--statevector] [--time-budget SECONDS] [--backend cpu|cuda] [--input NAME=VALUE]...
 ```
 
 ### `explain`
@@ -54,6 +54,10 @@ actual     state_bytes=40 execute_s=0.000006 sample_s=0.000000
 
 Both commands accept a [time budget](/runtime/time-budgets), the CLI form of `RunOptions.time_budget_seconds` (since Phase 17). It must be a finite number greater than 0; anything else is a usage error that names the flag. With `explain` it only decides which plans fit, since nothing runs. With `run`, an attempt that overruns is abandoned and replanned, and the report says so; if no plan fits, the tool exits with `1` and an error naming the budget. With a budget, the report also prints machine-dependent time estimates.
 
+### `--input NAME=VALUE`
+
+Binds an `input` declaration of an OpenQASM 3 program (since Phase 19), for example `--input theta=0.5` for `input float theta;`. Repeat it once per input. Every `input` in the program needs a binding and every binding must name an `input`; a missing or unknown name, a value that is not a finite number, or a name given twice is an error. OpenQASM 2 has no inputs, so `--input` with an OpenQASM 2 file is a usage error.
+
 ### `--backend cpu|cuda`
 
 Forces the backend instead of letting the planner choose, the CLI form of `RunOptions.backend` (since Phase 17). The report then contains a `backend    cpu (requested)` (or `cuda`) line. A CUDA request that cannot be honoured exits with `1` and an error, and never runs on the CPU. See [Forcing a backend](/planning/backend-selection#forcing-a-backend). Any value other than `cpu` or `cuda` is a usage error.
@@ -64,19 +68,32 @@ Forces the backend instead of letting the planner choose, the CLI form of `RunOp
 
 ```text
 error: --shots is required for 'run'
-error: usage: menos <explain|run> <file.qasm> [--shots N] [--seed N] [--statevector] [--time-budget SECONDS] [--backend cpu|cuda]
+error: usage: menos <explain|run> <file.qasm> [--shots N] [--seed N] [--statevector] [--time-budget SECONDS] [--backend cpu|cuda] [--input NAME=VALUE]...
 ```
 
 ## OpenQASM support
 
-| Supported | Not supported |
-|---|---|
-| OpenQASM 2.0, `qelib1.inc` gates that map to MENOS gates | The register-wide form `measure q -> c;` |
-| `measure q[i] -> c[j];` one bit at a time | OpenQASM 3 |
-
-Write measurements bit by bit. The register-wide form is rejected:
+The tool reads the program's header to choose the language: `OPENQASM 2.0;` or `OPENQASM 3;`/`OPENQASM 3.0;`. A file without a header is refused, because the two languages read some programs differently:
 
 ```text
+error: the program has no 'OPENQASM 2.0;' or 'OPENQASM 3.0;' header; add one so its language version is known
+```
+
+| | OpenQASM 2 | OpenQASM 3 |
+|---|---|---|
+| Gates | `qelib1.inc` gates that map to MENOS gates | `U`, `gphase`, every `stdgates.inc` gate, user `gate` definitions |
+| Modifiers | — | `inv @`, `pow(k) @` with an integer `k`, `ctrl @`, `negctrl @` |
+| Registers | one `qreg`, at most one `creg` | any number of `qubit`/`bit` (or `qreg`/`creg`) |
+| Parameters | constant expressions | constant expressions, `const`, and `input` bound with `--input` |
+| Measurement | `measure q[i] -> c[j];` bit by bit | bit by bit or a whole register: `c = measure q;`, `c[0] = measure q[0];`, `measure q -> c;` |
+| Not supported | `gate` blocks, `if`, `opaque`, `reset` | `reset`, control flow, subroutines, timing (`delay`, `box`), calibrations, classical variables, applying a gate to a whole register |
+
+Both importers keep operations in source order, measurements included. As everywhere in MENOS, measurements must be terminal: a gate after measuring the same qubit is refused. (Until Phase 19 the OpenQASM 2 importer moved every measurement to the end, which could silently change such a program's result.)
+
+The `stdgates.inc` gates have Qiskit's matrices, global phase included, so `ctrl @` of any of them is what Qiskit means; the official file's own definitions are not used, because read literally they disagree with the gates they name (`docs/adr/0023` section 4.1). Anything outside the supported subset is refused with its line and column:
+
+```text
+error: qasm3: 'reset' is not supported (deferred to dynamic circuits) at line 3, column 1
 error: qasm2: expected '[' after a register name at line 7
 ```
 

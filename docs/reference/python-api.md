@@ -6,7 +6,7 @@ The native API, exported from the top-level `menos` package. It is the thin laye
 from menos import Circuit, NoiseMethod, Opcode, RunOptions, Result, run
 ```
 
-The top-level module exports exactly: `Circuit`, `NoiseMethod`, `Opcode`, `Result`, `RunOptions`, `run`, `run_batch`, `ReadoutMitigationOptions`, `MitigatedResult`, `readout_calibration_circuits`, `run_readout_mitigated`, `MenosError`, `InvalidCircuitError`, `UnsupportedFeatureError`, `ResourceExceededError`, `InternalError`. `Observable` and `PauliString` are available only from `menos._core`.
+The top-level module exports exactly: `Circuit`, `NoiseMethod`, `Opcode`, `Result`, `RunOptions`, `run`, `run_batch`, `ReadoutMitigationOptions`, `MitigatedResult`, `readout_calibration_circuits`, `run_readout_mitigated`, `from_qasm3`, `MenosError`, `InvalidCircuitError`, `UnsupportedFeatureError`, `ResourceExceededError`, `InternalError`. `Observable` and `PauliString` are available only from `menos._core`.
 
 ## `run`
 
@@ -23,6 +23,37 @@ run_batch(circuits: Sequence[Circuit], options: RunOptions) -> list[Result]
 ```
 
 Runs several circuits and returns their results in order. Each circuit is planned and run exactly as `run` does. Circuit `i` runs with the `(i+1)`-th SplitMix64 output of `options.seed` rather than `options.seed` itself, so the circuits draw independent random streams. `menos._core.derive_seeds(seed, count)` returns those seeds. An empty list raises `InvalidCircuitError`.
+
+## `from_qasm3`
+
+```text
+from_qasm3(text: str, inputs: dict[str, float] | None = None) -> Circuit
+```
+
+Parses an OpenQASM 3 program into a `Circuit` (since Phase 19). `inputs` binds the program's `input` declarations by name; every `input` needs a binding and every binding must name an `input`, otherwise it raises `InvalidCircuitError`. A construct outside the supported static subset (see [Command Line](/build/command-line#openqasm-support)) raises `UnsupportedFeatureError` naming it, its line and its column. The `stdgates.inc` gates have Qiskit's matrices, global phase included.
+
+```python
+import math
+
+import menos
+
+circuit = menos.from_qasm3(
+    """OPENQASM 3.0;
+include "stdgates.inc";
+input float theta;
+qubit[2] q;
+bit[2] c;
+h q[0];
+ctrl @ rx(theta) q[0], q[1];
+c = measure q;
+""",
+    {"theta": math.pi},
+)
+options = menos.RunOptions()
+options.shots = 100
+options.seed = 1
+assert sum(menos.run(circuit, options).counts.values()) == 100
+```
 
 ## Readout mitigation
 
@@ -161,6 +192,9 @@ assert sig(Circuit.append_channel) == (
     "kraus: collections.abc.Sequence[collections.abc.Sequence[complex]]) -> None"
 )
 assert sig(core.Result.explain) == "explain(self) -> str"
+assert sig(core.from_qasm3) == (
+    "from_qasm3(text: str, inputs: collections.abc.Mapping[str, float]) -> menos._core.Circuit"
+)
 
 assert sorted(n for n in dir(RunOptions) if not n.startswith("_")) == sorted(
     ["shots", "want_statevector", "seed", "memory_budget_bytes", "expectation", "time_budget_seconds",
@@ -175,7 +209,7 @@ assert sorted(m for m in dir(Opcode) if m[0].isupper()) == sorted(
 )
 assert sorted(menos.__all__) == sorted(
     ["Backend", "Circuit", "NoiseMethod", "Opcode", "Result", "RunOptions", "run", "run_batch", "ReadoutMitigationOptions",
-     "MitigatedResult", "readout_calibration_circuits", "run_readout_mitigated", "MenosError",
+     "MitigatedResult", "readout_calibration_circuits", "run_readout_mitigated", "from_qasm3", "MenosError",
      "InvalidCircuitError", "UnsupportedFeatureError", "ResourceExceededError", "InternalError"]
 )
 assert sorted(n for n in dir(core.MitigatedResult) if not n.startswith("_")) == sorted(

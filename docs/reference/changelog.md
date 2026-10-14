@@ -2,6 +2,13 @@
 
 MENOS was built in phases, each passing an acceptance gate before the next began. The package version is **1.1.0**. The repository has no release tags, so this page records the development history by phase rather than by tagged release.
 
+## Phase 19: OpenQASM 3 import
+
+- New OpenQASM 3 importer for the static-circuit subset: `qubit`/`bit` declarations and several registers, `U`, `gphase`, every `stdgates.inc` gate, user `gate` definitions, the `inv`, `pow`, `ctrl` and `negctrl` modifiers, `const` and `input` parameters, constant expressions, and all three `measure` forms. Constructs outside it are refused with their line and column.
+- The `stdgates.inc` gates have Qiskit's matrices, global phase included: the official file's own definitions, read literally, disagree with the gates they name (measured, `docs/adr/0023` section 4.1).
+- The CLI chooses the importer from the program's header and binds OpenQASM 3 inputs with `--input NAME=VALUE`. Python gains `menos.from_qasm3(text, inputs)`.
+- **Behaviour change:** the OpenQASM 2 importer keeps measurements in source order. It used to move every measurement to the end, so a program that measured a qubit and then acted on it ran with the gate first, silently. Such a program is now refused, as MENOS refuses mid-circuit measurement everywhere; programs whose measurements are all terminal are unchanged.
+
 ## Phase 18: native Windows
 
 - MENOS builds, tests and ships natively on **Windows x64 with MSVC**, CPU only: the engines, planner, runtime, CLI and Python package. Before, the source refused to build on Windows.

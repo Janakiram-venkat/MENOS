@@ -41,7 +41,7 @@ OpenQASM 3 is the exchange format of Qiskit (`qiskit.qasm3.dumps`), Braket, tket
 
 ### 2.2 Refused with `UnsupportedFeature`, naming the construct, line and column
 
-`reset` (Q2, deferred to Phase 24), `if`/`else`, `for`, `while`, `switch`, `break`/`continue`, `def` subroutines, `extern`, `delay`, `box`, `duration`/`stretch` and timing, `defcal`/`cal`/`defcalgrammar`, classical assignments and arithmetic on `bit`/`int` at run time, `measure` without a target, a measurement used as an expression, `pow` with a non-integer exponent, arrays, `#pragma` and annotations, and any include other than `stdgates.inc`. Malformed programs throw `InvalidCircuit` with the same location.
+`reset` (Q2, deferred to Phase 24), `if`/`else`, `for`, `while`, `switch`, `break`/`continue`, `def` subroutines, `extern`, `delay`, `box`, `duration`/`stretch` and timing, `defcal`/`cal`/`defcalgrammar`, classical assignments and arithmetic on `bit`/`int` at run time, `measure` without a target, a measurement used as an expression, `pow` with a non-integer exponent, arrays, `#pragma` and annotations, and any include other than `stdgates.inc`. Also refused, because the subset cannot represent them exactly or they need semantics it does not define: applying a gate to a whole register (broadcast), register slices, physical qubits (`$0`), `float` widths other than 64 and sized `angle[n]` (both round), integer division (`1 / 2`), `input` of a type other than `float` or `angle`, and functions other than the nine listed in section 2.1. Malformed programs throw `InvalidCircuit` with the same location.
 
 ## 3. Design — [MENOS]
 
