@@ -6,7 +6,7 @@ find_package(Python 3.10 REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(nanobind CONFIG REQUIRED)
 
 nanobind_add_module(menos_core_ext bindings.cpp)
-target_link_libraries(menos_core_ext PRIVATE menos_api)
+target_link_libraries(menos_core_ext PRIVATE menos_api menos_qasm3)
 set_target_properties(menos_core_ext PROPERTIES OUTPUT_NAME "_core")
 
 install(TARGETS menos_core_ext LIBRARY DESTINATION menos)

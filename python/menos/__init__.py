@@ -5,6 +5,7 @@ This top-level package exposes the thin C++ core surface
 ``BackendV2`` adapter.
 """
 
+from menos import _core
 from menos._core import (
     Backend,
     Circuit,
@@ -40,11 +41,27 @@ __all__ = [
     "MitigatedResult",
     "readout_calibration_circuits",
     "run_readout_mitigated",
+    "from_qasm3",
     "MenosError",
     "InvalidCircuitError",
     "UnsupportedFeatureError",
     "ResourceExceededError",
     "InternalError",
 ]
+
+
+
+def from_qasm3(text: str, inputs: dict[str, float] | None = None) -> Circuit:
+    """Parse an OpenQASM 3 program into a Circuit (docs/adr/0023).
+
+    ``inputs`` binds the program's ``input`` declarations by name. Every
+    ``input`` needs a binding and every binding must name an ``input``.
+    Constructs outside the supported static subset raise
+    UnsupportedFeatureError naming the construct, line and column; a
+    malformed program raises InvalidCircuitError.
+    """
+    bindings = {} if inputs is None else {str(k): float(v) for k, v in inputs.items()}
+    return _core.from_qasm3(text, bindings)
+
 
 __version__ = "1.1.0"
