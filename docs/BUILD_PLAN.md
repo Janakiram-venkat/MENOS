@@ -411,7 +411,7 @@ An ADR for each item that changes public API or planner behaviour. Then plan mod
 
 ## Phase 18: Native Windows (MSVC) (STARTED 2026-10-13)
 
-**Status (2026-10-13):** the owner started Phase 18 on 2026-10-13 as the next phase, ahead of the proposed interoperability roadmap, which was renumbered to Phases 19–26. Branch: `phase-18-windows-native`. Design: `docs/adr/0022`, whose section 9 records the owner's answers of 2026-10-13. The owner approved the plan the same day. The gate below is written.
+**Status (2026-10-13):** the owner started Phase 18 on 2026-10-13 as the next phase, ahead of the proposed interoperability roadmap, which was renumbered to Phases 19–26. Branch: `phase-18-windows-native`. Design: `docs/adr/0022`, whose section 9 records the owner's answers of 2026-10-13. The owner approved the plan the same day. The gate below is written. Gate evidence on `7fa38ce` (local Windows, GitHub Actions run 38581342797, Linux `verify.sh`) is recorded in `docs/adr/0022` section 10 and awaits the owner's decision.
 
 ### Goal
 
