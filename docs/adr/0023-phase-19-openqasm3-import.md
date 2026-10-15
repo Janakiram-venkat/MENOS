@@ -2,7 +2,7 @@
 
 ## Status
 
-**Accepted for implementation (2026-10-14); gate not yet passed.** The owner started Phase 19 on 2026-10-14, in parallel with Phase 18, whose gate is still open (`docs/adr/0022`, on branch `phase-18-windows-native`). The owner chose OpenQASM 3 import as the first phase of the interoperability roadmap answered section 9 the same day and approved the implementation plan. Branch `phase-19-openqasm3-import`, started from `main` at `ff74397` and rebased on 2026-10-14, at the owner's decision, onto `phase-18-windows-native` at `7fa38ce`, so that it carries Phase 18's fixes (`menos.__version__`, the `noise` and `test` extras) and builds natively on Windows too. ADR number 0022 belongs to Phase 18.
+**Accepted; Phase 19 COMPLETE (2026-10-16).** The owner accepted the Phase 19 gate on 2026-10-16 on the evidence in section 10 (section 10.4). The owner started Phase 19 on 2026-10-14, in parallel with Phase 18, whose gate is still open (`docs/adr/0022`, on branch `phase-18-windows-native`). The owner chose OpenQASM 3 import as the first phase of the interoperability roadmap answered section 9 the same day and approved the implementation plan. Branch `phase-19-openqasm3-import`, started from `main` at `ff74397` and rebased on 2026-10-14, at the owner's decision, onto `phase-18-windows-native` at `7fa38ce`, so that it carries Phase 18's fixes (`menos.__version__`, the `noise` and `test` extras) and builds natively on Windows too. ADR number 0022 belongs to Phase 18.
 
 Labels follow `docs/adr/0014`–`0022`: **[MEASURED]**, **[DERIVED]**, **[MENOS]** (a proposed design decision) and **[OPEN]** (an owner decision, section 9).
 
@@ -149,7 +149,7 @@ No reading makes every body agree with its name. Under the specification's own m
 
 ## 10. Gate evidence
 
-Recorded on 2026-10-15 on commit `bb720d8`. **The owner has not yet confirmed the gate.**
+Recorded on 2026-10-15 on commit `bb720d8`. The owner accepted the gate on 2026-10-16 (section 10.4).
 
 ### 10.1 Runs
 
@@ -176,3 +176,7 @@ Recorded on 2026-10-15 on commit `bb720d8`. **The owner has not yet confirmed th
 - The documentation site was not built (no Node.js in WSL); its Python snippets ran in the pytest stage.
 - The Windows run did not include `-Wheels` (the cibuildwheel stage for CPython 3.10–3.13).
 - GPU tests under CUDA 13 did not execute (driver); they did under CUDA 12.
+
+### 10.4 Owner acceptance (2026-10-16)
+
+The owner accepted the Phase 19 gate on 2026-10-16 on the evidence above. No ruling was made. The commits after `bb720d8` change documentation only. Phase 19 is COMPLETE. It merges into `main` after Phase 18, whose gate is still open.
