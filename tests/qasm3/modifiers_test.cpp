@@ -6,6 +6,7 @@
 
 #include <complex>
 #include <numbers>
+#include <set>
 #include <string>
 #include <variant>
 
@@ -65,6 +66,44 @@ TEST(Qasm3ModifiersTest, InvOfAUserGateReversesAndInvertsItsBody) {
         "g(0.7) q[0], q[1];\n",
         2);
     EXPECT_LE(max_abs_difference(unitary_of(circuit), dagger(unitary_of(forward), 4)), kTol);
+}
+
+TEST(Qasm3ModifiersTest, InvOfEveryGateTableEntryIsItsAdjoint) {
+    // One call per gate-table opcode; `inv @ sx` is the only way to reach SXdg.
+    const std::string calls[] = {
+        "x q[0];",
+        "y q[0];",
+        "z q[0];",
+        "h q[0];",
+        "s q[0];",
+        "sdg q[0];",
+        "t q[0];",
+        "tdg q[0];",
+        "sx q[0];",
+        "inv @ sx q[0];",
+        "rx(0.37) q[0];",
+        "ry(-1.21) q[0];",
+        "rz(2.05) q[0];",
+        "p(0.83) q[0];",
+        "U(0.37, -1.21, 2.05) q[0];",
+        "cx q[0], q[1];",
+        "cz q[0], q[1];",
+        "swap q[0], q[1];",
+        "cp(0.83) q[1], q[0];",
+        "ccx q[2], q[0], q[1];",
+    };
+    std::set<Opcode> covered;
+    for (const std::string& call : calls) {
+        const Circuit forward = program(call, 3);
+        const Circuit inverse = program("inv @ " + call, 3);
+        ASSERT_EQ(forward.operations().size(), 1U) << call;
+        ASSERT_EQ(inverse.operations().size(), 1U) << call;
+        covered.insert(std::get<GateOp>(forward.operations()[0]).opcode);
+        EXPECT_TRUE(std::holds_alternative<GateOp>(inverse.operations()[0])) << call;
+        EXPECT_LE(max_abs_difference(unitary_of(inverse), dagger(unitary_of(forward), 8)), kTol)
+            << call;
+    }
+    EXPECT_EQ(covered.size(), 20U);  // every Opcode except Unitary and Measure
 }
 
 TEST(Qasm3ModifiersTest, PowRepeatsAndNegativePowInverts) {

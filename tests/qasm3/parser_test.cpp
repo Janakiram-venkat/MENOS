@@ -181,6 +181,36 @@ rz(.25) q;
     }
 }
 
+TEST(Qasm3ParserTest, UnicodeConstantsAndTheRemainingFunctions) {
+    const Circuit circuit = parse(R"(include "stdgates.inc";
+qubit q;
+rz(τ) q;
+rz(ℯ) q;
+rz(tan(0.5)) q;
+rz(arcsin(0.5)) q;
+rz(arccos(0.5)) q;
+)");
+    const double expected[] = {
+        2 * std::numbers::pi, std::numbers::e, std::tan(0.5), std::asin(0.5), std::acos(0.5)};
+    ASSERT_EQ(circuit.operations().size(), std::size(expected));
+    for (std::size_t i = 0; i < std::size(expected); ++i) {
+        EXPECT_NEAR(gate_at(circuit, i).params[0], expected[i], 1e-15) << i;
+    }
+}
+
+TEST(Qasm3ParserTest, CregDeclaresClassicalBitsInDeclarationOrder) {
+    const Circuit circuit = parse(R"(qubit[2] q;
+creg c[2];
+bit d;
+c[1] = measure q[0];
+measure q[1] -> d;
+)");
+    EXPECT_EQ(circuit.num_clbits(), 3U);
+    ASSERT_EQ(circuit.operations().size(), 2U);
+    EXPECT_EQ(measure_at(circuit, 0).clbit, 1U);
+    EXPECT_EQ(measure_at(circuit, 1).clbit, 2U);  // d follows c's two bits
+}
+
 TEST(Qasm3ParserTest, CommentsAreIgnored) {
     const Circuit circuit = parse(R"(// a line comment
 include "stdgates.inc"; /* a block
