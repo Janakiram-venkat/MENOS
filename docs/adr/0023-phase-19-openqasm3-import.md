@@ -149,4 +149,30 @@ No reading makes every body agree with its name. Under the specification's own m
 
 ## 10. Gate evidence
 
-To be recorded at the end of the phase.
+Recorded on 2026-10-15 on commit `bb720d8`. **The owner has not yet confirmed the gate.**
+
+### 10.1 Runs
+
+- **Linux.** `scripts/verify.sh` in the WSL clone `~/MENOS`, `UV_PYTHON_PREFERENCE=only-managed`, exit 0 (`verify.sh: all stages passed`). GCC 15.2.0, CMake 4.2.3, clang-format/clang-tidy 21.1.8, Python 3.14.4, uv 0.12.21, CUDA 13.3.73 and 12.4.131. The documentation stage was skipped (no Node.js in WSL), as the script reports.
+- **Windows.** `scripts\verify-windows.ps1` (without `-Wheels`) in a worktree of the same commit, exit 0 (`verify-windows: all stages passed`), MSVC 14.50.35717. Not a Phase 19 criterion; run because the branch is based on Phase 18 (`7fa38ce`).
+- An earlier `verify.sh` run on `66c4918` also exited 0. A review of the tests against criteria 1 and 4 on that commit found gaps (`creg`, `τ`, `ℯ`, `tan`, `arcsin` and `arccos` untested; `inv` tested on 8 of the 20 gate-table opcodes), which `bb720d8` closes with tests only.
+
+### 10.2 Criteria
+
+| # | Criterion | Evidence |
+|---|---|---|
+| 1 | Subset | `tests/qasm3/parser_test.cpp`, 22 tests: header forms and its absence; the include; `qubit`/`bit` sized and unsized, `qreg`, `creg`, flattened in declaration order; `U`; `gphase`; each of the 32 names with its arity, the aliases and `id`; user gates and their argument substitution; every constant (`pi`/`π`, `tau`/`τ`, `euler`/`ℯ`), operator and the nine functions; `const` of `int`, `float`, `angle`; the three `input` forms and every binding error; the three `measure` forms in source order; `barrier`. |
+| 2 | Refusals | `tests/qasm3/refusal_test.cpp`: 42 constructs, each asserting `UnsupportedFeature`, the construct's name and `line 4, column N`; another version than 3; a refused keyword inside a gate body. Malformed programs: `MalformedProgramsNameTheirLocation` (9 cases, location asserted). |
+| 3 | Built-in gates | `python/tests/test_qasm3.py::test_each_stdgates_name_has_qiskits_matrix` (32 cases) and `test_builtin_u_is_qiskits_ugate`: the full unitary, built column by column, equals Qiskit's `Operator` within 1e-12, global phase included. The section 4.1 measurement is kept as `test_qiskits_vendored_stdgates_bodies_disagree_with_their_names`. |
+| 4 | Modifiers | `tests/qasm3/modifiers_test.cpp`, 13 tests, each entrywise within 1e-12 against a matrix built in the test: `inv` of each of the 20 gate-table opcodes, of `U` and of a user gate; `pow` positive, negative and zero; every `ctrl` mapping (`cx`, `ccx`, `cz`, `cp`, `gphase`→`p`); `negctrl`, mixed controls and nested modifiers; a definition's global phase made relative under `ctrl`; the `UnitaryOp` path; acceptance at 5 qubits and refusal at 6 naming the line. Also `test_modifier_program_equals_qiskits_import`. |
+| 5 | Differential | `test_statevector_equals_qiskits_import_of_the_same_text`: 13 fixtures (one covering the gate names plus `sxdg`, `rzz`, `u`; 12 `random_circuit` with up to 3-qubit gates), each within 1e-12 of `qiskit.qasm3.loads` of the same text and within 1e-12 of the original circuit after one phase factor. `test_seeded_counts_equal_menos_backend`: counts equal `MENOSBackend`'s exactly for seeds 3, 17 and 2026. |
+| 6 | OpenQASM 2/3 equivalence | `tests/qasm3/equivalence_test.cpp`: three paired programs (Bell, every shared gate with `barrier` and `id`, interleaved measurements) give identical circuits, operation by operation, parameters and global phase compared exactly. |
+| 7 | OpenQASM 2 measure order | `Qasm2ParserTest.MeasurementsKeepSourceOrder` and `GateAfterMeasuringTheSameQubitIsRefusedByValidate`. `git diff 7fa38ce..bb720d8` adds only these two tests to `tests/qasm2/parser_test.cpp` and changes no golden file; the CLI golden tests pass. |
+| 8 | Entry points | `tests/cli/qasm3_test.cpp`, 7 tests: OpenQASM 2 and 3 programs give identical `run` and `explain` output; `--input` binds; missing binding; malformed flags; no header; `--input` refused for OpenQASM 2; a refusal surfaces with its location. Python: `test_inputs_bind_by_name_and_none_means_no_inputs`, `test_refused_constructs_raise_unsupported_feature_with_their_location`. |
+| 9 | Verification | Linux: format and clang-tidy (all targets) clean; `dev` and `release` 679/679 (`dev` skips the wall-time report, which needs an optimised build); pytest 313 passed, 1 deselected (`test_wheel_smoke.py`), including 53 in `test_qasm3.py`; wheel smoke test 1 passed; `cuda-dev`/`cuda-release` 734/734 (56 and 55 GPU tests skipping: the Windows driver does not support CUDA 13); `cuda12-dev`/`cuda12-release` 734/734 (GPU tests executing). Windows: `windows-dev` and `windows-release` 680/680; pytest 313 passed, 1 deselected; wheel smoke 1 passed. Documentation: README, `docs/build/command-line.md`, `docs/reference/python-api.md`, `compatibility.md`, `limitations.md`, `changelog.md`, `docs/BUILD_PLAN.md` and this ADR. New symbols: `qasm3::parse` is called by the CLI and the Python binding; `menos.from_qasm3` is public; the `src/qasm3` internals are reached only through `parse`; each is tested above. |
+
+### 10.3 Not verified
+
+- The documentation site was not built (no Node.js in WSL); its Python snippets ran in the pytest stage.
+- The Windows run did not include `-Wheels` (the cibuildwheel stage for CPython 3.10–3.13).
+- GPU tests under CUDA 13 did not execute (driver); they did under CUDA 12.
