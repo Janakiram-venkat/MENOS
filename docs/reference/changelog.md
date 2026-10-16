@@ -1,6 +1,16 @@
 # Changelog
 
-MENOS was built in phases, each passing an acceptance gate before the next began. The package version is **0.2.0**. The repository has no release tags, so this page records the development history by phase rather than by tagged release.
+MENOS was built in phases, each passing an acceptance gate before the next began. The package version is **1.1.0**. The repository has no release tags, so this page records the development history by phase rather than by tagged release.
+
+## Phase 18: native Windows
+
+- MENOS builds, tests and ships natively on **Windows x64 with MSVC**, CPU only: the engines, planner, runtime, CLI and Python package. Before, the source refused to build on Windows.
+- The host-memory probe uses `GlobalMemoryStatusEx` on Windows; the default memory budget is unchanged (half of physical memory).
+- LAPACKE on Windows comes from the official OpenBLAS 0.3.34 x64 (LP64) release, downloaded and hash-checked by `scripts/fetch-openblas-windows.ps1` and shipped inside the Python package.
+- New presets `windows-dev` (Debug, AddressSanitizer) and `windows-release`, and `scripts/verify-windows.ps1`.
+- Windows wheels for CPython 3.10–3.14 (`win_amd64`), built by `cibuildwheel` and the wheel workflow; each wheel runs the Python suite.
+- Refused at configure time: CUDA with MSVC, and any compiler other than MSVC on Windows.
+- The `noise` extra (`qiskit-aer` 0.17.2) is restored, and `menos.__version__` matches the package version (1.1.0).
 
 ## Phase 17: API surface
 
@@ -70,7 +80,7 @@ MENOS was built in phases, each passing an acceptance gate before the next began
 
 ## Known deferrals
 
-Recorded, not scheduled: checkpointing and state migration; per-fragment CPU/CUDA selection for cut plans; CUDA kernels specialised to diagonal or permutation gates; asynchronous CUDA gate launches; multi-GPU, ROCm and Metal; Windows; OpenQASM 3. See [Limitations](/reference/limitations).
+Recorded, not scheduled: checkpointing and state migration; per-fragment CPU/CUDA selection for cut plans; CUDA kernels specialised to diagonal or permutation gates; asynchronous CUDA gate launches; multi-GPU, ROCm and Metal; CUDA on Windows, Windows ARM64 and non-MSVC Windows toolchains; OpenQASM 3. See [Limitations](/reference/limitations).
 
 ## Design records
 

@@ -296,7 +296,9 @@ def power_state() -> dict:
 
 def environment() -> dict:
     return {
-        "timestamp": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
+        # datetime.timezone.utc, not datetime.UTC: the alias is Python 3.11+, and
+        # MENOS supports 3.10 (docs/adr/0022).
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
         "cpu": _cpu_model(),
         "logical_cpus": os.cpu_count(),
         "physical_cpus": _physical_cpus(),

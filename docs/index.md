@@ -58,5 +58,5 @@ Continue with [Installation](/get-started/installation), or go straight to [Your
 | Fix a problem | [Troubleshooting](/troubleshooting/common-errors) |
 
 ::: info Status of this release
-MENOS is at version 0.2.0. The implementation roadmap (Phases 1 to 11) is complete. Linux on x86-64 is the only platform the project's verification suite has been run on; see [Supported Platforms](/introduction/supported-platforms) for exactly what that means.
+MENOS is at version 1.1.0. Phases 1 to 17 are complete, and Phase 18 adds native Windows (x64, MSVC, CPU only). The verification suites run on Linux x86-64 and on Windows x64; see [Supported Platforms](/introduction/supported-platforms) for exactly what that means.
 :::

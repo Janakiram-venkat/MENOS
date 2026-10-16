@@ -23,6 +23,36 @@ option(MENOS_ENABLE_CUDA "Build the CUDA dense backend" OFF)
 # runs on MENOS's own thread pool, built on the platform thread library.
 find_package(Threads REQUIRED)
 
+# Windows is supported with MSVC only (docs/adr/0022). A MinGW build of the
+# Python extension was observed to configure, build and then misbehave at run
+# time, so any other compiler is refused here rather than half-working.
+if(WIN32 AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    message(FATAL_ERROR "menos: on Windows only MSVC is supported (found "
+                        "${CMAKE_CXX_COMPILER_ID} at ${CMAKE_CXX_COMPILER}); build from a "
+                        "Visual Studio x64 developer environment (docs/adr/0022 section 3)")
+endif()
+
+# MSVC 19.51 (toolset 14.51) miscompiles operator_schmidt_rank in
+# src/analysis/schmidt_rank_bound.cpp: the optimised code reads a loop bound
+# from a stack slot it never initialised, so a run crashes, hangs or silently
+# computes a wrong rank bound (measured, docs/adr/0022 section 3.1). MSVC 19.50
+# compiles the same source correctly. Refused rather than half-working.
+if(MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.51
+   AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.52)
+    message(FATAL_ERROR "menos: MSVC ${CMAKE_CXX_COMPILER_VERSION} (toolset 14.51) miscompiles "
+                        "MENOS (docs/adr/0022 section 3.1); use the 14.50 toolset, e.g. "
+                        "Enter-VsDevShell -DevCmdArguments \"-arch=x64 -host_arch=x64 "
+                        "-vcvars_ver=14.50\"")
+endif()
+
+# Windows is supported for the CPU build only (docs/adr/0022). Refuse a CUDA
+# request outright rather than silently building without CUDA.
+if(MSVC AND MENOS_ENABLE_CUDA)
+    message(FATAL_ERROR "menos: MENOS_ENABLE_CUDA is not supported with MSVC. "
+                        "CUDA on Windows is a recorded Phase 18 deferral "
+                        "(docs/adr/0022 section 7); configure with MENOS_ENABLE_CUDA=OFF")
+endif()
+
 if(MENOS_ENABLE_CUDA)
     enable_language(CUDA)
     find_package(CUDAToolkit REQUIRED)
@@ -74,19 +104,30 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Warning set from CLAUDE.md, applied to menos targets only (not to
-# FetchContent'd third-party code, which is not held to this bar).
-set(MENOS_WARNING_FLAGS
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Wconversion
-    -Wsign-conversion
-    -Wshadow
-    -Wold-style-cast
-    -Wnon-virtual-dtor
-    -Woverloaded-virtual
-    -Werror
-)
+# FetchContent'd third-party code, which is not held to this bar). MSVC gets
+# its own equivalent (docs/adr/0022 section 3).
+if(MSVC)
+    set(MENOS_WARNING_FLAGS
+        /W4
+        /WX
+        /permissive-
+        /Zc:__cplusplus
+        /utf-8
+    )
+else()
+    set(MENOS_WARNING_FLAGS
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Wconversion
+        -Wsign-conversion
+        -Wshadow
+        -Wold-style-cast
+        -Wnon-virtual-dtor
+        -Woverloaded-virtual
+        -Werror
+    )
+endif()
 
 include(FetchContent)
 FetchContent_Declare(
@@ -95,6 +136,9 @@ FetchContent_Declare(
     GIT_TAG 063de7e9578f82b369302001269680b4b1553359 # v1.18.0, see docs/adr/0001-toolchain-and-dependencies.md
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# GoogleTest is test-only: without this its install rules put gtest headers
+# and libraries into every Python wheel (seen in the Phase 18 wheel builds).
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 # Test-only: the tests/ir fixture loader parses Qiskit-generated JSON.
@@ -177,4 +221,35 @@ endif()
 
 if(MENOS_BUILD_BENCHMARKS)
     add_subdirectory(benchmarks)
+endif()
+
+# Windows has no rpath: an executable finds a DLL in its own directory. Copy
+# the OpenBLAS DLL (src/common) next to every menos executable, at configure
+# time so that gtest_discover_tests can already run them when they are first
+# built (docs/adr/0022 section 4). A single-config generator (the windows-*
+# presets use Ninja) puts each executable in its directory's binary dir; a
+# multi-config one (Visual Studio, scikit-build-core's default) in a
+# per-configuration subdirectory of it.
+if(WIN32)
+    function(menos_copy_openblas_dll directory)
+        get_property(targets DIRECTORY "${directory}" PROPERTY BUILDSYSTEM_TARGETS)
+        foreach(target IN LISTS targets)
+            get_target_property(type ${target} TYPE)
+            if(type STREQUAL "EXECUTABLE")
+                get_target_property(binary_dir ${target} BINARY_DIR)
+                if(CMAKE_CONFIGURATION_TYPES)
+                    foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
+                        file(COPY "${MENOS_OPENBLAS_DLL}" DESTINATION "${binary_dir}/${config}")
+                    endforeach()
+                else()
+                    file(COPY "${MENOS_OPENBLAS_DLL}" DESTINATION "${binary_dir}")
+                endif()
+            endif()
+        endforeach()
+        get_property(subdirectories DIRECTORY "${directory}" PROPERTY SUBDIRECTORIES)
+        foreach(subdirectory IN LISTS subdirectories)
+            menos_copy_openblas_dll("${subdirectory}")
+        endforeach()
+    endfunction()
+    menos_copy_openblas_dll("${CMAKE_SOURCE_DIR}")
 endif()

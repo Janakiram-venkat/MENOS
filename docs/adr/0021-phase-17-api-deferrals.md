@@ -92,7 +92,7 @@ Each step is one or more small commits with tests, as in earlier phases.
 - `MENOSBackend.max_circuits` stays 1 (Phase 14 deferral).
 - Per-operation tensor-network boundaries, the dense sampler's per-shot monitoring, and checkpointing all stay deferred (Phase 11).
 - Diagonal and permutation CUDA kernels, and asynchronous launches, stay deferred (Phase 16).
-- The interoperability roadmap (Phases 18–25) is out of scope.
+- The interoperability roadmap (Phases 18–25; renumbered to Phases 19–26 on 2026-10-13, when native Windows became Phase 18) is out of scope.
 
 ## 8. Risks
 

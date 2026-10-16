@@ -1,6 +1,8 @@
 #include "kernels/cpu/thread_pool.h"
 
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include <algorithm>
 #include <atomic>
@@ -37,7 +39,10 @@ std::pair<std::size_t, std::size_t> chunk_bounds(std::size_t count,
 class ThreadPool {
 public:
     ThreadPool()
-        : owner_pid_(::getpid()),
+        :
+#ifndef _WIN32
+          owner_pid_(::getpid()),
+#endif
           num_workers_(common::default_thread_count() - 1),
           errors_(num_workers_ + 1) {
         workers_.reserve(num_workers_);
@@ -59,9 +64,11 @@ public:
     // NOLINTBEGIN(bugprone-easily-swappable-parameters)
     bool try_run(std::size_t count, std::uint32_t threads, ChunkFunction function, void* context) {
         // NOLINTEND(bugprone-easily-swappable-parameters)
+#ifndef _WIN32
         if (::getpid() != owner_pid_) {
             return false;  // a forked child: the workers do not exist in it
         }
+#endif
         const std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
         if (!lock.owns_lock()) {
             return false;  // another thread is using the pool
@@ -130,7 +137,10 @@ private:
         tls_inside_pool = false;
     }
 
+#ifndef _WIN32
+    // Windows has no fork(), so there is no child to detect (docs/adr/0022).
     const pid_t owner_pid_;
+#endif
     const std::uint32_t num_workers_;
     std::vector<std::exception_ptr> errors_;
     std::vector<std::thread> workers_;

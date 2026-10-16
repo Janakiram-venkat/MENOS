@@ -26,11 +26,11 @@ uv add "menos[qiskit]"
 
 Without it you can still use the [native API](/build/native-api).
 
-::: warning What the PyPI wheel covers
-Version 0.2.0 ships one wheel: **CPython 3.14, Linux x86-64** (manylinux 2.28, so glibc 2.28 or newer). It is **CPU-only**. No source distribution is published, so on any other platform, Python version or architecture `pip` finds no matching distribution; [install from source](#install-from-source) instead. For GPU support, [build from source with CUDA](/gpu/cuda-installation).
+::: warning What the PyPI wheels cover
+Version 1.1.0 ships wheels for **CPython 3.10–3.14 on Linux x86-64** (manylinux 2.28, so glibc 2.28 or newer). They are **CPU-only**. No source distribution is published, so on any other platform, Python version or architecture `pip` finds no matching distribution. Windows wheels (CPython 3.10–3.14, `win_amd64`) are built by the project's wheel workflow but are not yet on PyPI; on Windows, [build from source](#on-windows) or install a wheel the workflow produced. For GPU support, [build from source with CUDA](/gpu/cuda-installation) on Linux.
 :::
 
-You need **Python 3.14**. The package requires `>=3.14` and 3.14 is the only version that has been tested. If your system does not provide it, [`uv`](https://docs.astral.sh/uv/) can install it:
+You need **Python 3.10 or newer** (up to 3.14). If your system does not provide it, [`uv`](https://docs.astral.sh/uv/) can install it:
 
 ```bash
 uv python install 3.14
@@ -54,7 +54,7 @@ sudo apt install build-essential cmake git liblapacke-dev liblapack-dev libblas-
 
 On other Linux distributions, install the equivalent packages. On macOS, LAPACK is found through the Accelerate framework; note that macOS is [not verified](/introduction/supported-platforms).
 
-You also need **Python 3.14** (see above).
+You also need **Python 3.10–3.14** (see above). On Windows, follow [On Windows](#on-windows) instead of this step.
 
 ### 2. Get the source
 
@@ -77,6 +77,22 @@ python3.14 -m venv .venv
 ```
 
 The `qiskit` extra installs Qiskit 2.5.2, which `MENOSBackend` and `MENOSEstimator` require. Without it you can still use the [native API](/build/native-api).
+
+### On Windows
+
+Native Windows builds use MSVC and are **CPU-only** (for the CUDA backend on a Windows machine, use WSL). You need:
+
+- Visual Studio 2026 with the **Desktop development with C++** workload (the free Build Tools are enough). Its CMake and Ninja are used.
+- `git` and [`uv`](https://docs.astral.sh/uv/).
+- OpenBLAS, which provides LAPACKE. A script downloads the pinned OpenBLAS 0.3.34 x64 release, checks its SHA-256 and unpacks it under `build\_deps`, where the build finds it:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\fetch-openblas-windows.ps1
+uv venv .venv --python 3.14
+uv pip install --python .venv\Scripts\python.exe ".[qiskit]"
+```
+
+The OpenBLAS DLL and its licence are installed next to the extension module, so nothing needs to be added to `PATH`. To use an OpenBLAS directory of your own, set the environment variable `MENOS_OPENBLAS_ROOT`; it must be an LP64 build (the `OpenBLAS-<version>-x64.zip` release, not `x64-64`), and the build refuses an ILP64 one.
 
 ::: tip What the build needs from the network
 Building requires network access. During configuration CMake downloads GoogleTest and nlohmann/json from GitHub at pinned versions. **Both are used only by the test suite**, but they are fetched even for a Python-only install, and the build fails without them. Python build tools (`scikit-build-core` 1.0.3 and `nanobind` 3.1.0) are fetched by the package installer.
@@ -112,9 +128,15 @@ ctest --preset release --output-on-failure
 
 `scripts/verify.sh` runs the complete verification (formatting, static analysis, both presets, the Python suite, a wheel build and a clean-environment smoke test). It needs `clang-format` and `clang-tidy` in addition to the prerequisites above.
 
+On Windows, the presets are `windows-dev` (Debug with AddressSanitizer) and `windows-release`, and must run inside a Visual Studio x64 developer environment. `scripts\verify-windows.ps1` enters one, fetches OpenBLAS, builds and tests both presets, runs the Python suite, builds a wheel and smoke-tests it; with `-Wheels` it also builds and tests wheels for CPython 3.10–3.14:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\verify-windows.ps1 -Wheels
+```
+
 ## Enabling CUDA
 
-Neither the PyPI wheel nor a default source install has GPU support. See [CUDA Installation](/gpu/cuda-installation) for how to build with it.
+Neither the PyPI wheels nor a default source install has GPU support, and the CUDA backend is not available in native Windows builds. See [CUDA Installation](/gpu/cuda-installation) for how to build with it.
 
 ## If installation fails
 
