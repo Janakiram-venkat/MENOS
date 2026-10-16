@@ -27,10 +27,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _find_cli_binary() -> Path | None:
-    for preset in ("dev", "release"):
-        candidate = REPO_ROOT / "build" / preset / "cli" / "menos"
-        if candidate.is_file():
-            return candidate
+    # The Windows presets build menos.exe (docs/adr/0022). windows-release
+    # comes first: the AddressSanitizer build needs MSVC's ASan runtime DLL,
+    # which is on PATH only inside a Visual Studio developer environment.
+    for preset in ("dev", "release", "windows-release", "windows-dev"):
+        for name in ("menos", "menos.exe"):
+            candidate = REPO_ROOT / "build" / preset / "cli" / name
+            if candidate.is_file():
+                return candidate
     return None
 
 

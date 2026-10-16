@@ -33,7 +33,7 @@ Instead of pushing every circuit through one fixed algorithm, MENOS:
 | Output | Counts, exact statevectors, exact Pauli expectation values, exact noisy simulation |
 | Engines | Dense, stabilizer, Pauli propagation, matrix product state, tensor network, exact circuit cutting, density matrix |
 | Planner | Cost model in work units, automatic factorization, CPU/CUDA selection by calibrated seconds |
-| Integration | Qiskit `BackendV2` (`MENOSBackend`), `EstimatorV2` (`MENOSEstimator`) and `SamplerV2` (`MENOSSampler`), with Qiskit Aer noise models |
+| Integration | Qiskit `BackendV2` (`MENOSBackend`), `EstimatorV2` (`MENOSEstimator`) and `SamplerV2` (`MENOSSampler`), with Qiskit Aer noise models; OpenQASM 3 import (`menos.from_qasm3`, static subset) and OpenQASM 2/3 on the command line |
 | Mitigation | Opt-in readout-error mitigation with calibrated, reported uncertainty; batch execution of several circuits (`run_batch`) |
 | GPU | NVIDIA CUDA dense backend, bitwise identical to the CPU |
 | Runtime | Time-budget monitoring with safe abandonment and replanning |
@@ -60,7 +60,7 @@ uv add menos
 
 Add the `qiskit` extra (`pip install "menos[qiskit]"` or `uv add "menos[qiskit]"`) to use `MENOSBackend`, `MENOSEstimator` and `MENOSSampler`; it pins Qiskit 2.5.2.
 
-The 0.2.0 wheel is prebuilt for CPython > 3.10 on Linux x86-64 (manylinux 2.28) and is **CPU-only**. No source distribution is published, so on other platforms build from source.
+The 1.1.0 wheels on PyPI are prebuilt for CPython 3.10–3.14 on Linux x86-64 (manylinux 2.28) and are **CPU-only**. Windows wheels (CPython 3.10–3.14, `win_amd64`, CPU-only) are built by the wheel workflow but not yet published. No source distribution is published, so on other platforms build from source.
 
 ### From source
 
@@ -70,6 +70,14 @@ Build from source for the CUDA backend, an unsupported platform, or development.
 sudo apt install build-essential cmake git liblapacke-dev liblapack-dev libblas-dev   # Ubuntu
 uv venv .venv --python 3.12
 uv pip install --python .venv/bin/python ".[qiskit]"
+```
+
+On Windows (x64, CPU only), install Visual Studio 2026's C++ tools, then:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\fetch-openblas-windows.ps1   # pinned OpenBLAS, provides LAPACKE
+uv venv .venv --python 3.14
+uv pip install --python .venv\Scripts\python.exe ".[qiskit]"
 ```
 
 Run these from the repository root. See the documentation's Installation and Requirements pages for details, including building with CUDA.
@@ -220,7 +228,7 @@ scripts/verify.sh
 
 ## Platforms
 
-Only **Linux on x86-64** has been verified. macOS arm64 and Linux aarch64 are intended but untested; Windows is unsupported. See the documentation's Supported Platforms and Limitations pages.
+**Linux on x86-64** and **Windows x64 (MSVC, CPU only)** have been verified; `scripts/verify.sh` and `scripts/verify-windows.ps1` are their verification scripts. macOS arm64 and Linux aarch64 are intended but untested. The CUDA backend is Linux-only (on Windows, use WSL). See the documentation's Supported Platforms and Limitations pages.
 
 ## Contributing
 

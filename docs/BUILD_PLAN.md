@@ -20,18 +20,19 @@
 | 13 | Noisy trajectory simulation | **COMPLETE — acceptance gate passed 2026-10-03 (evidence: `docs/adr/0017` section 10; `scripts/verify.sh` exit 0 on `847cb44`)** |
 | 14 | Error mitigation and batch execution | **COMPLETE — acceptance gate passed 2026-10-07 (evidence: `docs/adr/0018` section 10; `scripts/verify.sh` exit 0 on `75ad45f`)** |
 | 15 | Dense CPU engine performance | **COMPLETE — acceptance gate passed 2026-10-08 (evidence: `docs/adr/0019` sections 10.9–10.10; `scripts/verify.sh` exit 0 on `a01052a`)** |
-| 16 | Specialised CUDA kernels | Started 2026-10-08 — ADR first |
-| 17 | API surface: recorded deferrals | Not started — follows Phase 16 |
-| 18 | OpenQASM 3 import (frontend) | Proposed (2026-10-07) — not approved |
-| 19 | PennyLane device (frontend) | Proposed (2026-10-07) — not approved |
-| 20 | Stim engine for noisy Clifford circuits (backend) | Proposed (2026-10-07) — not approved |
-| 21 | Cirq frontend | Proposed (2026-10-07) — not approved |
-| 22 | Adjoint differentiation | Proposed (2026-10-07) — not approved |
-| 23 | Dynamic circuits | Proposed (2026-10-07) — not approved |
-| 24 | NVIDIA cuQuantum engines (backend) | Proposed (2026-10-07) — not approved |
-| 25 | Further frontends and engines (candidates) | Proposed (2026-10-07) — not approved |
+| 16 | Specialised CUDA kernels | **COMPLETE — acceptance gate passed 2026-10-09 (evidence: `docs/adr/0020` section 13; merged to `main` in `c6b9c87`)** |
+| 17 | API surface: recorded deferrals | **COMPLETE — acceptance gate passed 2026-10-10 (evidence: `docs/adr/0021` section 11; `scripts/verify.sh` exit 0 on `1041893`)** |
+| 18 | Native Windows (MSVC) | Started 2026-10-13 — ADR `docs/adr/0022` |
+| 19 | OpenQASM 3 import (frontend) | **COMPLETE — acceptance gate passed 2026-10-16 (evidence: `docs/adr/0023` section 10; `scripts/verify.sh` exit 0 on `bb720d8`)** |
+| 20 | PennyLane device (frontend) | Proposed (2026-10-07) — not approved |
+| 21 | Stim engine for noisy Clifford circuits (backend) | Proposed (2026-10-07) — not approved |
+| 22 | Cirq frontend | Proposed (2026-10-07) — not approved |
+| 23 | Adjoint differentiation | Proposed (2026-10-07) — not approved |
+| 24 | Dynamic circuits | Proposed (2026-10-07) — not approved |
+| 25 | NVIDIA cuQuantum engines (backend) | Proposed (2026-10-07) — not approved |
+| 26 | Further frontends and engines (candidates) | Proposed (2026-10-07) — not approved |
 
-**Current position.** Phase 11 is COMPLETE and officially closed: `322eca5` is the final implementation and gate commit (`scripts/verify.sh` exit 0) and `9a0f0f7` is the documentation closure commit, on branch `phase-11-monitoring-replanning`. Phase 12 is NOT STARTED. On 2026-10-01 the owner set the scope of Phases 12–14: noise models, delivered in three phases (exact density-matrix simulation, then trajectories, then error mitigation). The specifications below are the plan of record. The owner recorded the Phase 12 decisions on 2026-10-01 and the branch `phase-12-noise-density-matrix` exists. The owner approved the Phase 12 plan and ADR 0016 the same day. Phase 12 is implemented on branch `phase-12-noise-density-matrix` (final code commit `96a7cd0`) and awaits the owner's gate decision; see the Phase 12 verification record. On 2026-10-02 the owner made that decision: Phase 12 closes once criterion 10 is re-verified with GPU tests that actually execute. CUDA 12.x support (commit `e546581`, `docs/adr/0014` section 17) made that possible on this machine, the re-verification passed, and **Phase 12 is COMPLETE** (see the Phase 12 gate record). Phase 13 followed: the owner answered ADR 0017's open questions and approved the plan the same day, Phase 13 was implemented and the owner accepted its gate on 2026-10-03: **Phase 13 is COMPLETE**. Phase 14 is not started. On 2026-10-05 the owner added the performance roadmap (Phases 15–17), which comes after Phase 14 and does not renumber it.
+**Current position.** Phase 11 is COMPLETE and officially closed: `322eca5` is the final implementation and gate commit (`scripts/verify.sh` exit 0) and `9a0f0f7` is the documentation closure commit, on branch `phase-11-monitoring-replanning`. Phase 12 is NOT STARTED. On 2026-10-01 the owner set the scope of Phases 12–14: noise models, delivered in three phases (exact density-matrix simulation, then trajectories, then error mitigation). The specifications below are the plan of record. The owner recorded the Phase 12 decisions on 2026-10-01 and the branch `phase-12-noise-density-matrix` exists. The owner approved the Phase 12 plan and ADR 0016 the same day. Phase 12 is implemented on branch `phase-12-noise-density-matrix` (final code commit `96a7cd0`) and awaits the owner's gate decision; see the Phase 12 verification record. On 2026-10-02 the owner made that decision: Phase 12 closes once criterion 10 is re-verified with GPU tests that actually execute. CUDA 12.x support (commit `e546581`, `docs/adr/0014` section 17) made that possible on this machine, the re-verification passed, and **Phase 12 is COMPLETE** (see the Phase 12 gate record). Phase 13 followed: the owner answered ADR 0017's open questions and approved the plan the same day, Phase 13 was implemented and the owner accepted its gate on 2026-10-03: **Phase 13 is COMPLETE**. Phase 14 is not started. On 2026-10-05 the owner added the performance roadmap (Phases 15–17), which comes after Phase 14 and does not renumber it. Phases 14–17 are COMPLETE (gates accepted 2026-10-07, 2026-10-08, 2026-10-09 and 2026-10-10). On 2026-10-13 the owner started **Phase 18, native Windows (MSVC)**, as the next phase, and renumbered the proposed interoperability roadmap from Phases 18–25 to Phases 19–26 with its content unchanged. On 2026-10-14 the owner started **Phase 19, OpenQASM 3 import**, in parallel with Phase 18, and accepted its gate on 2026-10-16: **Phase 19 is COMPLETE**. Phase 18's gate is still open.
 
 ### Phase 10 frozen record
 
@@ -408,9 +409,56 @@ Written on 2026-10-09 from `docs/adr/0021` (owner answers in its section 9).
 
 An ADR for each item that changes public API or planner behaviour. Then plan mode and owner approval.
 
-## Interoperability roadmap (Phases 18–25) — PROPOSED, not approved
+## Phase 18: Native Windows (MSVC) (STARTED 2026-10-13)
 
-**Status (2026-10-07): proposal only.** The owner asked for MENOS to work with other open-source quantum SDKs, both as frontends (other SDKs submit circuits to MENOS) and as backends (MENOS plans over external engines). Nothing in this section is approved. The owner sets the order, the scope and every threshold at each phase's kickoff. Every phase follows the usual process: an ADR, then plan mode, then owner approval, on a `phase-<N>-<slug>` branch. The roadmap comes after Phase 17 and does not renumber it.
+**Status (2026-10-13):** the owner started Phase 18 on 2026-10-13 as the next phase, ahead of the proposed interoperability roadmap, which was renumbered to Phases 19–26. Branch: `phase-18-windows-native`. Design: `docs/adr/0022`, whose section 9 records the owner's answers of 2026-10-13. The owner approved the plan the same day. The gate below is written. Gate evidence on `7fa38ce` (local Windows, GitHub Actions run 38581342797, Linux `verify.sh`) is recorded in `docs/adr/0022` section 10 and awaits the owner's decision.
+
+### Goal
+
+Build, test and ship MENOS natively on Windows x64 with MSVC: the CPU engines, planner, runtime, CLI, Python package and wheels. Until now the source refused to build on Windows (`src/plan/hardware_profile.cpp`), and Windows users had to use WSL.
+
+### Required behavior
+
+1. **Host-memory probe.** `detect_hardware_profile()` reads total physical memory with `GlobalMemoryStatusEx` on Windows. The planner's default memory budget (half of it) is unchanged.
+2. **MSVC toolchain.** The library, CLI, tests, benchmarks and Python extension build with MSVC at `/W4 /WX`. Floating-point contraction stays off (`/fp:precise`, never `/fp:contract`), the MSVC counterpart of `-ffp-contract=off`.
+3. **LAPACK on Windows.** `LAPACKE_zgesdd` comes from OpenBLAS's official x64 binary release, pinned by version and SHA-256, LP64 only.
+4. **Windows wheels.** CPython 3.10–3.14, `win_amd64`, CPU-only, with the OpenBLAS DLL and its licence inside the wheel.
+5. **CUDA on Windows is refused at configure time** with a message naming the deferral; it is never silently disabled.
+6. **Linux and macOS behaviour is unchanged.**
+
+### Owner decisions (recorded 2026-10-13)
+
+1. Phase number 18; the proposed interoperability roadmap becomes Phases 19–26, content unchanged.
+2. CPU only. CUDA on Windows is a recorded deferral.
+3. Windows wheels for CPython 3.10–3.14, the same range as Linux.
+4. Sanitizers: MSVC `/fsanitize=address` in the Windows Debug preset. UBSan and LSan coverage stays with the Linux `scripts/verify.sh`, which remains part of the gate.
+5. LAPACK: the official OpenBLAS x64 binary release, pinned by version and SHA-256, shipped inside the wheel.
+6. A Windows test that fails only through a last-bit numeric difference from Linux (the MSVC runtime's `sin`/`cos`/`exp`, or OpenBLAS against reference LAPACK) is brought to the owner. No tolerance or expected value is changed without an owner ruling.
+
+### Out of scope for Phase 18
+
+CUDA on Windows; Windows ARM64; MinGW and clang-cl; publishing to PyPI; clang-tidy and clang-format on Windows (they stay in the Linux `verify.sh`); processor groups beyond 64 logical CPUs; CPU-name detection in the Windows benchmark environment.
+
+### Phase 18 acceptance gate
+
+Written on 2026-10-13 from `docs/adr/0022` (owner answers in its section 9).
+
+1. **Native build.** The `windows-dev` (MSVC, `/fsanitize=address`, Debug) and `windows-release` presets configure and build at `/W4 /WX`, and `ctest` passes 100% on both. Counts are recorded and every skipped test is listed.
+2. **Memory probe.** The Windows branch uses `GlobalMemoryStatusEx`. A regression test bounds the result by `GetPhysicallyInstalledSystemMemory`, an independent source, and the planner's default-budget tests pass.
+3. **LAPACK.** OpenBLAS is pinned by version and SHA-256, found by CMake, and checked to be LP64. `svd_test` and every MPS and Schmidt-rank test pass on Windows with no tolerance or expected value changed.
+4. **Python (editable).** The full Python suite passes on CPython 3.14 on Windows, with the same deselects as `scripts/verify.sh`.
+5. **Wheels.** `cibuildwheel` builds cp310–cp314 `win_amd64` wheels locally; each, installed in a clean environment, passes its test command; each contains the OpenBLAS DLL and its licence; `delvewheel` reports no unresolved dependency.
+6. **CUDA refusal.** Configuring with MSVC and `MENOS_ENABLE_CUDA=ON` fails with the deferral message.
+7. **Linux unchanged.** `scripts/verify.sh` exits 0 in the WSL clone on the final commit, and the Linux test counts change only by the tests this phase adds.
+8. **Documentation and CI.** The README, the platform, requirements, installation, compatibility, limitations, troubleshooting and changelog pages, `docs/adr/0022` and this file describe Windows support and its limits. The wheel workflow has a Windows job. Every new symbol has a production caller and tests.
+
+### Phase 18 process
+
+ADR `docs/adr/0022` first, then plan mode and owner approval (both done on 2026-10-13). Windows verification runs through `scripts/verify-windows.ps1`; Linux verification stays `scripts/verify.sh` in the WSL clone.
+
+## Interoperability roadmap (Phases 19–26) — PROPOSED, not approved
+
+**Status (2026-10-07): proposal only.** The owner asked for MENOS to work with other open-source quantum SDKs, both as frontends (other SDKs submit circuits to MENOS) and as backends (MENOS plans over external engines). Nothing in this section is approved. The owner sets the order, the scope and every threshold at each phase's kickoff. Every phase follows the usual process: an ADR, then plan mode, then owner approval, on a `phase-<N>-<slug>` branch. The roadmap comes after Phase 17 and does not renumber it. *Renumbered by the owner on 2026-10-13 from Phases 18–25 to Phases 19–26, when native Windows became Phase 18; the content is unchanged.*
 
 ### Why
 
@@ -432,20 +480,36 @@ MENOS's distinguishing feature is not a single fast engine. It is the planner: a
 - **Jobs that do not use an integration are unchanged.** Plans, results, `explain()` output and CLI golden files stay the same, unless a new engine wins a plan on cost. Any such planner change is measured and recorded, never left implicit.
 - **Abstractions follow the second implementation.** The Qiskit adapter is the first frontend. Shared frontend code (a common conversion layer, a plugin registry) may be extracted only when the second frontend (proposed: PennyLane) shows what is truly shared, not before.
 
-### Phase 18: OpenQASM 3 import (frontend) — PROPOSED
+### Phase 19: OpenQASM 3 import (frontend) — COMPLETE (acceptance gate passed 2026-10-16)
+
+*The owner started this phase on 2026-10-14 as the first interoperability phase, in parallel with Phase 18 (native Windows, branch `phase-18-windows-native`), whose gate was still open; the owner's instruction set aside "current phase only" for this one case. Design: `docs/adr/0023`. Branch: `phase-19-openqasm3-import`, rebased onto `phase-18-windows-native` on 2026-10-14, so it merges after Phase 18.*
 
 **Goal.** Accept OpenQASM 3 programs in the CLI and the C++/Python APIs. OpenQASM 3 is the common exchange format of Qiskit, Braket, tket and others, so one importer gives MENOS the widest reach per unit of work.
 
 **Required behavior.**
-1. Import the static-circuit subset: `qubit`/`bit` declarations, the standard gate library (`stdgates.inc`), user `gate` definitions, gate modifiers that are exact (`inv`, `pow` with integer exponent, `ctrl`), constant parameter expressions, `measure`, `reset`, `barrier`, and `input` parameters bound at submission.
-2. Everything else is refused with its source location: classical control flow, `while`, subroutines with classical return values, timing and `delay` semantics, `defcal`/pulse grammar, and `extern`. Dynamic circuits are Phase 23.
+1. Import the static-circuit subset: `qubit`/`bit` declarations, the standard gate library (`stdgates.inc`), user `gate` definitions, gate modifiers that are exact (`inv`, `pow` with integer exponent, `ctrl`, `negctrl`), constant parameter expressions, `measure`, `barrier`, and `input` parameters bound at submission. The exact scope is `docs/adr/0023` section 2.
+2. Everything else is refused with its source location: `reset`, classical control flow, `while`, subroutines with classical return values, timing and `delay` semantics, `defcal`/pulse grammar, and `extern`. Dynamic circuits, `reset` included, are Phase 24 (old numbering 23).
 3. A program that is also valid OpenQASM 2 gives the same KIR circuit through both importers.
 
-**Owner decisions needed.** A hand-rolled parser (as in Phase 7) or the reference ANTLR grammar (a new dependency); whether `reset` is in scope before Phase 23; whether `input` parameters are in scope.
+**Owner decisions (2026-10-14).** A hand-rolled parser; `reset` refused and deferred to Phase 24; `input` parameters in scope; a modifier with no exact gate-table equivalent becomes an exact `UnitaryOp` of at most `kMaxUnitaryQubits` qubits. Q5–Q8 (same day): the OpenQASM 2 importer keeps source order; the CLI chooses the importer from the header; Python `menos.from_qasm3(text, inputs=None)`; the `stdgates.inc` names as built-in gates with Qiskit's matrices (first answered "embed verbatim", revised after `docs/adr/0023` section 4.1 measured that the file's bodies, taken literally, disagree with the gates they name). Q9, the gate, is settled with the implementation plan.
 
-**Acceptance gate (proposed).** The OpenQASM 2/3 equivalence fixtures give identical KIR; circuits exported with `qiskit.qasm3.dumps` give statevectors equal to Qiskit's within tolerance; each refused construct has a test naming it; existing OpenQASM 2 and CLI golden files pass unmodified; `scripts/verify.sh` passes.
+### Phase 19 acceptance gate
 
-### Phase 19: PennyLane device (frontend) — PROPOSED
+Approved by the owner with the implementation plan on 2026-10-14 (`docs/adr/0023` section 9, Q9). It refines the proposal above it ("statevectors equal to Qiskit's within tolerance") after `qiskit.qasm3.dumps` was measured to drop a circuit's global phase: the oracle is Qiskit's own import of the same text.
+
+1. **Subset.** Every construct in `docs/adr/0023` section 2.1 is imported; each has a C++ test.
+2. **Refusals.** Every construct in section 2.2 is refused with `UnsupportedFeature` naming it, its line and its column; each has a test.
+3. **Built-in gates.** All 32 `stdgates.inc` names and `U` equal Qiskit's matrices entrywise within 1e-12, global phase included.
+4. **Modifiers.** Every `inv`/`pow`/`ctrl`/`negctrl` rule is exact, entrywise within 1e-12, including the `UnitaryOp` path and the refusal above 5 qubits.
+5. **Differential.** For every fixture exported with `qiskit.qasm3.dumps`, MENOS's statevector equals that of `qiskit.qasm3.loads` of the same text within 1e-12, global phase included, and equals the original circuit's up to one global phase factor; seeded counts equal `MENOSBackend`'s exactly.
+6. **OpenQASM 2/3 equivalence.** The paired fixtures give identical circuits.
+7. **OpenQASM 2 measure order.** `qasm2::parse` keeps source order, with a regression test; the existing OpenQASM 2 tests and CLI golden tests pass unmodified.
+8. **Entry points.** CLI header dispatch and `--input`, and Python `from_qasm3`, each tested.
+9. **Verification.** `scripts/verify.sh` exits 0 in the WSL clone on the final commit; documentation updated; every new symbol has a production caller and tests.
+
+**Gate record (2026-10-16):** every criterion has evidence in `docs/adr/0023` section 10, and `scripts/verify.sh` exits 0 on `bb720d8` (dev/release 679/679, pytest 313 passed, every CUDA stage 734/734 with GPU tests executing in the CUDA 12 builds); `scripts\verify-windows.ps1` also exits 0 there. The owner accepted the gate on that evidence. All nine criteria pass. Phase 19 is COMPLETE.
+
+### Phase 20: PennyLane device (frontend) — PROPOSED
 
 **Goal.** A PennyLane device (`menos.qubit`, registered by an entry point) built on PennyLane's `qml.devices.Device` API, so PennyLane users can run circuits, variational algorithms and gradients through MENOS's planner.
 
@@ -460,7 +524,7 @@ MENOS's distinguishing feature is not a single fast engine. It is the planner: a
 
 **Acceptance gate (proposed).** Every measurement type agrees with `default.qubit` on a fixture set within tolerance (exact) or by chi-square (counts); the parameter-shift gradient of a VQE fixture agrees with `default.qubit`; PennyLane's device test suite passes for the supported features; unsupported operations are refused by name; the Qiskit adapter's tests pass unmodified; `scripts/verify.sh` passes with the extra installed.
 
-### Phase 20: Stim engine for noisy Clifford circuits (backend) — PROPOSED
+### Phase 21: Stim engine for noisy Clifford circuits (backend) — PROPOSED
 
 **Goal.** Add Stim (Apache-2.0, C++) as a `SimulationEngine` for Clifford circuits with Pauli noise. Noisy stabilizer simulation was deferred in Phase 13 (`docs/adr/0017`). With this engine the planner can run error-correction-scale noisy Clifford circuits (thousands of qubits, millions of shots), which the density-matrix and trajectory engines cannot.
 
@@ -474,7 +538,7 @@ MENOS's distinguishing feature is not a single fast engine. It is the planner: a
 
 **Acceptance gate (proposed).** On small fixtures, Stim counts agree with the Phase 12 density matrix by chi-square; noiseless results agree exactly with `StabilizerEngine`; non-Clifford or non-Pauli circuits are never sent to Stim; the planner chooses Stim for a large noisy-Clifford fixture that no other engine can run within budget, and `explain()` says why; `scripts/verify.sh` passes.
 
-### Phase 21: Cirq frontend — PROPOSED
+### Phase 22: Cirq frontend — PROPOSED
 
 **Goal.** A Cirq simulator (`menos.cirq.MENOSSimulator`, implementing `cirq.SimulatesSamples` and `cirq.SimulatesExpectationValues`) that converts Cirq circuits directly. Cirq's own QASM export is OpenQASM 2, which loses some gates and parameters, so a direct converter is more faithful.
 
@@ -482,7 +546,7 @@ MENOS's distinguishing feature is not a single fast engine. It is the planner: a
 
 **Acceptance gate (proposed).** Agreement with `cirq.Simulator` on a fixture set (tolerance for exact outputs, chi-square for samples); refused constructs tested; `scripts/verify.sh` passes with the extra installed.
 
-### Phase 22: Adjoint differentiation — PROPOSED
+### Phase 23: Adjoint differentiation — PROPOSED
 
 **Goal.** Gradients of expectation values in one forward and one backward pass, for the dense CPU and CUDA engines. Parameter-shift needs 2 circuits per parameter. Adjoint differentiation is what users of PennyLane's `lightning.qubit` expect, and it makes MENOS practical for variational workloads.
 
@@ -490,17 +554,17 @@ MENOS's distinguishing feature is not a single fast engine. It is the planner: a
 
 **Acceptance gate (proposed).** Adjoint gradients agree with parameter-shift and with finite differences within tolerance on a fixture set; the speed-up over parameter-shift is measured and recorded; `scripts/verify.sh` passes.
 
-### Phase 23: Dynamic circuits — PROPOSED
+### Phase 24: Dynamic circuits — PROPOSED
 
 **Goal.** Mid-circuit measurement, reset, and classical feed-forward (`if` on measured bits). Qiskit, OpenQASM 3, PennyLane (`qml.measure`, `qml.cond`) and Cirq all express these, and the frontends above must refuse them until this phase.
 
-**Required behavior.** KIR support for classical bits and conditioned operations; engine feasibility rules (dense and density-matrix engines branch or sample exactly; engines that cannot represent a construct are infeasible); per-shot semantics documented; the frontends of Phases 18, 19 and 21 lift their refusals for the supported subset.
+**Required behavior.** KIR support for classical bits and conditioned operations; engine feasibility rules (dense and density-matrix engines branch or sample exactly; engines that cannot represent a construct are infeasible); per-shot semantics documented; the frontends of Phases 19, 20 and 22 lift their refusals for the supported subset.
 
 **Owner decisions needed.** The supported subset (single-bit conditions, register comparisons, loops); whether exact branch-weighted outputs or sampled outputs are required; how replanning interacts with partially executed shots.
 
 **Acceptance gate (proposed).** Agreement with Aer's dynamic-circuit support on a fixture set (teleportation, active reset, repeat-until-success); existing static-circuit results unchanged; `scripts/verify.sh` passes.
 
-### Phase 24: NVIDIA cuQuantum engines (backend) — PROPOSED
+### Phase 25: NVIDIA cuQuantum engines (backend) — PROPOSED
 
 **Goal.** cuStateVec and cuTensorNet as additional CUDA engines, competing with MENOS's own CUDA dense engine and CPU tensor-network engine on cost. Phase 8's engine stays closed and stays as the oracle; this adds engines beside it and does not reopen it.
 
@@ -508,14 +572,14 @@ MENOS's distinguishing feature is not a single fast engine. It is the planner: a
 
 **Acceptance gate (proposed).** Differential agreement with the existing engines; measured crossovers recorded; planner changes recorded; GPU tests that actually execute; `scripts/verify.sh` passes.
 
-### Phase 25: Further frontends and engines (candidates) — PROPOSED
+### Phase 26: Further frontends and engines (candidates) — PROPOSED
 
-The owner chooses from these at kickoff, using what Phases 18–24 have shown:
+The owner chooses from these at kickoff, using what Phases 19–25 have shown:
 
 1. **pytket** (Quantinuum TKET) backend.
 2. **Amazon Braket** local-simulator interface.
 3. **MQT** (Munich Quantum Toolkit) integration, for example its decision-diagram simulator as an engine for highly structured circuits.
-4. **Stim circuit import with detector sampling**, if it was not in Phase 20.
+4. **Stim circuit import with detector sampling**, if it was not in Phase 21.
 5. **A plugin registry for third-party engines and frontends**, only if at least two frontends and two external engines exist and show a common shape.
 
 ### Contributing a frontend or an engine
@@ -536,7 +600,7 @@ The owner plans to write some frontends and engines directly. This checklist is 
 
 ## Deferred work
 
-Rust service layer, C ABI, sparse engine, distributed/multi-GPU, ROCm, Windows, lineage cache, cloud API and other unscheduled platform work remain deferred and require owner approval plus an ADR. Density matrix and noise support moved out of this list into the Phase 12–14 noise roadmap on 2026-10-01; noisy MPS and tensor-network engines, CUDA density-matrix support, and noise-model fitting from device calibration data stay deferred. On 2026-10-07 the PennyLane device and OpenQASM 3 moved out of this list into the proposed interoperability roadmap (Phases 18–25), which is not yet approved.
+Rust service layer, C ABI, sparse engine, distributed/multi-GPU, ROCm, lineage cache, cloud API and other unscheduled platform work remain deferred and require owner approval plus an ADR. Density matrix and noise support moved out of this list into the Phase 12–14 noise roadmap on 2026-10-01; noisy MPS and tensor-network engines, CUDA density-matrix support, and noise-model fitting from device calibration data stay deferred. On 2026-10-07 the PennyLane device and OpenQASM 3 moved out of this list into the proposed interoperability roadmap (Phases 19–26), which is not yet approved. On 2026-10-13 native Windows (x64, MSVC, CPU) moved out of this list into Phase 18; CUDA on Windows, Windows ARM64 and other Windows toolchains stay deferred.
 
 ## Phase 11 kickoff (historical: used; Phase 11 is complete)
 

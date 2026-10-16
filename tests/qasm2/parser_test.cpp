@@ -7,6 +7,7 @@
 #include <variant>
 
 #include "common/error.h"
+#include "ir/validate.h"
 
 namespace menos::qasm2 {
 namespace {
@@ -298,6 +299,56 @@ TEST(Qasm2ParserTest, MeasureToUndeclaredCregThrowsInvalidCircuit) {
         "qreg q[1];\n"
         "measure q[0] -> c[0];\n";
     EXPECT_THROW(static_cast<void>(parse(text)), common::InvalidCircuit);
+}
+
+// docs/adr/0023 section 9, Q5: measurements keep their source position.
+// The parameters on both sides of the measure check that each batch's
+// offsets are rebased correctly.
+TEST(Qasm2ParserTest, MeasurementsKeepSourceOrder) {
+    const Circuit circuit = parse(R"(
+        OPENQASM 2.0;
+        include "qelib1.inc";
+        qreg q[2];
+        creg c[2];
+        rx(0.25) q[0];
+        measure q[0] -> c[0];
+        cp(0.5) q[1],q[0];
+        ry(-0.75) q[1];
+        measure q[1] -> c[1];
+    )");
+
+    ASSERT_EQ(circuit.operations().size(), 5U);
+    const auto& rx = std::get<GateOp>(circuit.operations()[0]);
+    EXPECT_EQ(rx.opcode, Opcode::RX);
+    EXPECT_EQ(rx.params, std::vector<double>{0.25});
+    EXPECT_EQ(std::get<MeasureOp>(circuit.operations()[1]).qubit, 0U);
+    const auto& cp = std::get<GateOp>(circuit.operations()[2]);
+    EXPECT_EQ(cp.opcode, Opcode::CP);
+    EXPECT_EQ(cp.qubits, (std::vector<QubitId>{1, 0}));
+    EXPECT_EQ(cp.params, std::vector<double>{0.5});
+    const auto& ry = std::get<GateOp>(circuit.operations()[3]);
+    EXPECT_EQ(ry.opcode, Opcode::RY);
+    EXPECT_EQ(ry.qubits, std::vector<QubitId>{1});
+    EXPECT_EQ(ry.params, std::vector<double>{-0.75});
+    EXPECT_EQ(std::get<MeasureOp>(circuit.operations()[4]).qubit, 1U);
+}
+
+// Before Q5 the x below was moved ahead of the measurement, silently
+// changing the result; now validate() refuses it as it refuses every
+// operation on an already-measured qubit.
+TEST(Qasm2ParserTest, GateAfterMeasuringTheSameQubitIsRefusedByValidate) {
+    const Circuit circuit = parse(R"(
+        OPENQASM 2.0;
+        include "qelib1.inc";
+        qreg q[1];
+        creg c[1];
+        measure q[0] -> c[0];
+        x q[0];
+    )");
+
+    ASSERT_EQ(circuit.operations().size(), 2U);
+    EXPECT_TRUE(std::holds_alternative<MeasureOp>(circuit.operations()[0]));
+    EXPECT_THROW(ir::validate(circuit), common::UnsupportedFeature);
 }
 
 }  // namespace

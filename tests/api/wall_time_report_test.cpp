@@ -25,7 +25,7 @@ TEST(WallTimeReportTest, TwentyFourQubitsTwoHundredOperations) {
 #ifndef NDEBUG
     GTEST_SKIP() << "Performance report only; see this test's comment. Run under the release "
                     "preset for a real number.";
-#endif
+#else
     constexpr std::uint32_t n = 24;
     Circuit circuit(n, n);
     for (std::uint32_t i = 0; i < 200; ++i) {
@@ -49,6 +49,7 @@ TEST(WallTimeReportTest, TwentyFourQubitsTwoHundredOperations) {
 
     EXPECT_GE(result.execute_seconds(), 0.0);
     EXPECT_GE(result.sample_seconds(), 0.0);
+#endif
 }
 
 }  // namespace

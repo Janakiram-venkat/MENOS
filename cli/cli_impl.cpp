@@ -1,12 +1,14 @@
 // docs/BUILD_PLAN.md Phase 7: `menos explain`/`menos run`. Linked only
-// to the public API (menos::run/preview, menos::qasm2::parse) -- no
-// engine or planner internals included directly.
+// to the public API (menos::run/preview, menos::qasm2::parse,
+// menos::qasm3::parse) -- no engine or planner internals included directly.
 
 #include "cli_impl.h"
 
 #include "menos/menos.h"
 #include "menos/qasm2.h"
+#include "menos/qasm3.h"
 
+#include <cctype>
 #include <cmath>
 #include <cstdint>
 #include <format>
@@ -50,6 +52,9 @@ struct Flags {
     std::optional<double> time_budget;
     // Phase 17 (docs/adr/0021 section 2, owner Q2): RunOptions::backend.
     std::optional<menos::Backend> backend;
+    // Phase 19 (docs/adr/0023 section 3): values for an OpenQASM 3 program's
+    // `input` declarations.
+    menos::qasm3::InputBindings inputs;
 };
 
 std::uint64_t parse_uint64_flag(const std::string& flag_name, const std::string& value) {
@@ -118,6 +123,35 @@ Flags parse_flags(const std::vector<std::string>& args, std::size_t start, bool 
             } else {
                 throw UsageError("--backend must be 'cpu' or 'cuda', got '" + value + "'");
             }
+        } else if (arg == "--input") {
+            if (i + 1 >= args.size()) {
+                throw UsageError("--input requires an argument NAME=VALUE");
+            }
+            const std::string& binding = args[++i];
+            const std::size_t equals = binding.find('=');
+            if (equals == std::string::npos || equals == 0) {
+                throw UsageError("--input requires NAME=VALUE, got '" + binding + "'");
+            }
+            const std::string name = binding.substr(0, equals);
+            const std::string value = binding.substr(equals + 1);
+            double parsed = 0.0;
+            try {
+                std::size_t consumed = 0;
+                parsed = std::stod(value, &consumed);
+                if (consumed != value.size()) {
+                    throw std::invalid_argument("trailing characters");
+                }
+            } catch (const std::exception&) {
+                throw UsageError(
+                    std::format("--input {} requires a number, got '{}'", name, value));
+            }
+            if (!std::isfinite(parsed)) {
+                throw UsageError(
+                    std::format("--input {} requires a finite number, got '{}'", name, value));
+            }
+            if (!flags.inputs.emplace(name, parsed).second) {
+                throw UsageError("--input " + name + " is given more than once");
+            }
         } else if (arg == "--statevector" && allow_statevector) {
             flags.statevector = true;
         } else {
@@ -125,6 +159,48 @@ Flags parse_flags(const std::vector<std::string>& args, std::size_t start, bool 
         }
     }
     return flags;
+}
+
+// The importer is chosen from the program's header (docs/adr/0023 section 9,
+// Q6): `OPENQASM 2...` goes to qasm2::parse, `OPENQASM 3...` to qasm3::parse,
+// each of which checks the exact version itself. A program without a header
+// is refused rather than guessed at.
+menos::Circuit parse_program(const std::string& text, const menos::qasm3::InputBindings& inputs) {
+    std::size_t i = 0;
+    for (;;) {
+        while (i < text.size() && std::isspace(static_cast<unsigned char>(text[i])) != 0) {
+            ++i;
+        }
+        if (text.compare(i, 2, "//") == 0) {
+            i = text.find('\n', i);
+            i = i == std::string::npos ? text.size() : i;
+        } else if (text.compare(i, 2, "/*") == 0) {
+            const std::size_t end = text.find("*/", i + 2);
+            i = end == std::string::npos ? text.size() : end + 2;
+        } else {
+            break;
+        }
+    }
+    const std::string keyword = "OPENQASM";
+    if (text.compare(i, keyword.size(), keyword) != 0) {
+        throw UsageError(
+            "the program has no 'OPENQASM 2.0;' or 'OPENQASM 3.0;' header; add one "
+            "so its language version is known");
+    }
+    i += keyword.size();
+    while (i < text.size() && std::isspace(static_cast<unsigned char>(text[i])) != 0) {
+        ++i;
+    }
+    if (text.compare(i, 1, "2") == 0) {
+        if (!inputs.empty()) {
+            throw UsageError("--input applies only to OpenQASM 3 programs");
+        }
+        return menos::qasm2::parse(text);
+    }
+    if (text.compare(i, 1, "3") == 0) {
+        return menos::qasm3::parse(text, inputs);
+    }
+    throw UsageError("unsupported OpenQASM version in the header; expected 2.0 or 3");
 }
 
 // Highest classical bit first (matching the Qiskit adapter's own
@@ -144,7 +220,7 @@ std::string format_counts_key(const menos::BitString& key, std::uint32_t num_clb
 }
 
 int cmd_explain(const std::string& file, const Flags& flags, std::ostream& out) {
-    const menos::Circuit circuit = menos::qasm2::parse(read_file(file));
+    const menos::Circuit circuit = parse_program(read_file(file), flags.inputs);
     // explain() never executes, so the concrete shot count has no
     // effect on the plan (src/plan/planner.cpp only ever tests
     // shots > 0); default to 1 purely to request the counts output
@@ -170,7 +246,7 @@ int cmd_run(const std::string& file, const Flags& flags, std::ostream& out) {
     if (!flags.seed.has_value()) {
         throw UsageError("--seed is required for 'run'");
     }
-    const menos::Circuit circuit = menos::qasm2::parse(read_file(file));
+    const menos::Circuit circuit = parse_program(read_file(file), flags.inputs);
     if (flags.statevector && circuit.num_qubits() > kCliStatevectorQubitLimit) {
         throw UsageError(
             std::format("--statevector requested for a {}-qubit circuit, above this CLI's {}-qubit "
@@ -208,7 +284,7 @@ int dispatch(const std::vector<std::string>& args, std::ostream& out) {
     if (args.size() < 2) {
         throw UsageError(
             "usage: menos <explain|run> <file.qasm> [--shots N] [--seed N] [--statevector] "
-            "[--time-budget SECONDS] [--backend cpu|cuda]");
+            "[--time-budget SECONDS] [--backend cpu|cuda] [--input NAME=VALUE]...");
     }
     const std::string& command = args[0];
     const std::string& file = args[1];

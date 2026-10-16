@@ -71,8 +71,8 @@ struct HardwareProfile {
 inline constexpr double kDefaultMemoryBudgetFraction = 0.5;
 
 // Total memory from sysconf on Linux, sysctlbyname("hw.memsize") on
-// macOS, with both calibrated figures left at zero. Throws InternalError if
-// the platform call fails.
+// macOS, GlobalMemoryStatusEx on Windows, with both calibrated figures left
+// at zero. Throws InternalError if the platform call fails.
 //
 // Zero means "not calibrated", and the planner treats it that way: a job with
 // a time budget against an uncalibrated profile is refused rather than

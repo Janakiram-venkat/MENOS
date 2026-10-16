@@ -15,7 +15,17 @@
 #define LAPACK_COMPLEX_CUSTOM
 #define lapack_complex_float std::complex<float>
 #define lapack_complex_double std::complex<double>
+#ifdef _MSC_VER
+// C4190: lapacke.h declares lapack_make_complex_float/double extern "C" while
+// returning the std::complex types defined above. MENOS never calls them; the
+// functions it does call take only pointers and integers (docs/adr/0022).
+#pragma warning(push)
+#pragma warning(disable : 4190)
+#endif
 #include <lapacke.h>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include <algorithm>
 #include <string>

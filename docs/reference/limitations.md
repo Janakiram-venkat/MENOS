@@ -4,9 +4,10 @@ Every entry here is a real limitation of this release. None is speculative, and 
 
 ## Platforms and installation
 
-- **Only Linux on x86-64 has been verified.** macOS arm64 and Linux aarch64 are intended but untested; Windows is unsupported.
-- **Python 3.14 only**, with **Qiskit pinned to 2.5.2**.
-- **Source installation only**: there is no package-index release. Building needs network access to GitHub (for test-only dependencies) and LAPACKE.
+- **Only Linux on x86-64 and Windows x64 have been verified.** macOS arm64 and Linux aarch64 are intended but untested.
+- **Windows is CPU-only and MSVC-only.** CUDA on Windows is refused at configure time (use WSL); ARM64, MinGW and clang-cl are not supported.
+- **Python 3.10–3.14**, with **Qiskit pinned to 2.5.2**.
+- **PyPI has Linux wheels only.** Windows wheels are built by the wheel workflow but not yet published. Building from source needs network access to GitHub (for test-only dependencies) and LAPACKE.
 - **No CMake install or export rules.** The C++ libraries are not installable packages; the only installed artifact is the Python extension.
 
 ## Circuits
@@ -66,10 +67,11 @@ Every entry here is a real limitation of this release. None is speculative, and 
 
 ## Command line
 
-- Measurement must be written bit by bit (`measure q[0] -> c[0];`).
+- In OpenQASM 2, measurement must be written bit by bit (`measure q[0] -> c[0];`); OpenQASM 3 also accepts whole registers.
 - `--statevector` is limited to 10 qubits; there is no budget option.
 - The binary is a CMake target and is not installed by `pip`.
-- OpenQASM 3 is not supported.
+- OpenQASM 3 is imported for its static-circuit subset only: `reset`, control flow, subroutines, timing, calibrations, classical variables and applying a gate to a whole register are refused. `pow` takes integer exponents only, and a controlled gate with no gate-table form is limited to 5 qubits.
+- A program must start with an `OPENQASM` header so the CLI can choose the importer.
 
 ## Verification scope
 

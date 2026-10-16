@@ -16,7 +16,7 @@ Each entry is a **symptom**, its **cause**, and a **solution**.
 |---|---|
 | **Symptom** | `import menos` fails with an `ImportError` about `menos._core` |
 | **Cause** | The native extension did not build, or was built for a different Python version than the one importing it |
-| **Solution** | Reinstall into an environment created with Python 3.14 (`uv venv .venv --python 3.14`). An extension built for one Python version cannot load in another |
+| **Solution** | Reinstall into the environment you import from (for example `uv venv .venv --python 3.14`). An extension built for one Python version cannot load in another. On Windows, `DLL load failed` means `libopenblas.dll` is missing next to `_core*.pyd` in the installed `menos` package; reinstall after running `scripts\fetch-openblas-windows.ps1` |
 
 ## `ModuleNotFoundError: No module named 'qiskit'`
 
@@ -31,8 +31,8 @@ Each entry is a **symptom**, its **cause**, and a **solution**.
 | | |
 |---|---|
 | **Symptom** | `pip` or `uv` refuses to install, naming a Python version requirement |
-| **Cause** | `menos` requires Python `>=3.14` |
-| **Solution** | Use Python 3.14. If your system does not provide it, `uv python install 3.14` installs one. The PyPI wheel is built for CPython 3.14 on Linux x86-64 only, and no source distribution is published; on other platforms [install from source](/get-started/installation#install-from-source) |
+| **Cause** | `menos` requires Python `>=3.10`, and PyPI has wheels only for CPython 3.10–3.14 on Linux x86-64 |
+| **Solution** | Use Python 3.10–3.14 (`uv python install 3.14` installs one). No source distribution is published; on other platforms, including Windows, [install from source](/get-started/installation#install-from-source) |
 
 ## Qiskit version problems
 

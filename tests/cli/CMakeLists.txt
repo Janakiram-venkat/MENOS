@@ -1,5 +1,6 @@
 add_executable(menos_cli_tests
     golden_test.cpp
+    qasm3_test.cpp
 )
 
 target_include_directories(menos_cli_tests PRIVATE ${CMAKE_SOURCE_DIR}/cli)

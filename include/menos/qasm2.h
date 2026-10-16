@@ -29,6 +29,10 @@ namespace menos::qasm2 {
 // declared classical register). Does not call menos::ir::validate()
 // itself -- the caller does, exactly like every other Circuit-producing
 // entry point (docs/BUILD_PLAN.md Phase 7).
+//
+// Operations keep source order, measurements included (docs/adr/0023
+// section 9, Q5): a gate written after a measurement of the same qubit is
+// refused by ir::validate() instead of being moved ahead of it.
 [[nodiscard]] Circuit parse(std::string_view text);
 
 }  // namespace menos::qasm2
