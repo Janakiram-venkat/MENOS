@@ -2,6 +2,14 @@
 
 MENOS was built in phases, each passing an acceptance gate before the next began. The package version is **1.1.0**. The repository has no release tags, so this page records the development history by phase rather than by tagged release.
 
+## Phase 20: PennyLane device
+
+- New PennyLane device **`menos.qubit`** (`menos.pennylane.MENOSQubitDevice`), registered through PennyLane's `pennylane.plugins` entry point and installed with the `pennylane` extra (PennyLane 0.45.1, CPython 3.11 or later).
+- **Analytic results:** `expval` and `var` of Pauli-sum observables, `probs` and `state`, all exact and equal to `default.qubit`'s within 1e-12, global phase included. **With shots:** `expval`, `var`, `probs`, `sample` and `counts`, including shot vectors.
+- Noise channels are simulated exactly through their own Kraus matrices; results equal `default.mixed`'s within 1e-12.
+- Parameter-shift gradients run through the device, each circuit planned on its own.
+- Constructs the device cannot run exactly are refused by name with `MENOSDeviceUnsupportedError`, which is both `menos.UnsupportedFeatureError` and PennyLane's `DeviceError`.
+
 ## Phase 19: OpenQASM 3 import
 
 - New OpenQASM 3 importer for the static-circuit subset: `qubit`/`bit` declarations and several registers, `U`, `gphase`, every `stdgates.inc` gate, user `gate` definitions, the `inv`, `pow`, `ctrl` and `negctrl` modifiers, `const` and `input` parameters, constant expressions, and all three `measure` forms. Constructs outside it are refused with their line and column.

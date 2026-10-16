@@ -24,7 +24,7 @@
 | 17 | API surface: recorded deferrals | **COMPLETE — acceptance gate passed 2026-10-10 (evidence: `docs/adr/0021` section 11; `scripts/verify.sh` exit 0 on `1041893`)** |
 | 18 | Native Windows (MSVC) | Started 2026-10-13 — ADR `docs/adr/0022` |
 | 19 | OpenQASM 3 import (frontend) | **COMPLETE — acceptance gate passed 2026-10-16 (evidence: `docs/adr/0023` section 10; `scripts/verify.sh` exit 0 on `bb720d8`)** |
-| 20 | PennyLane device (frontend) | Proposed (2026-10-07) — not approved |
+| 20 | PennyLane device (frontend) | Started (2026-10-16) — ADR 0024 answered; plan awaiting approval |
 | 21 | Stim engine for noisy Clifford circuits (backend) | Proposed (2026-10-07) — not approved |
 | 22 | Cirq frontend | Proposed (2026-10-07) — not approved |
 | 23 | Adjoint differentiation | Proposed (2026-10-07) — not approved |
@@ -509,7 +509,33 @@ Approved by the owner with the implementation plan on 2026-10-14 (`docs/adr/0023
 
 **Gate record (2026-10-16):** every criterion has evidence in `docs/adr/0023` section 10, and `scripts/verify.sh` exits 0 on `bb720d8` (dev/release 679/679, pytest 313 passed, every CUDA stage 734/734 with GPU tests executing in the CUDA 12 builds); `scripts\verify-windows.ps1` also exits 0 there. The owner accepted the gate on that evidence. All nine criteria pass. Phase 19 is COMPLETE.
 
-### Phase 20: PennyLane device (frontend) — PROPOSED
+### Phase 20: PennyLane device (frontend) — STARTED 2026-10-16
+
+*The owner started this phase on 2026-10-16, while Phase 18's gate is still open, and answered `docs/adr/0024` section 9 the same day with every recommended option. Branch: `phase-20-pennylane-device`, from `main` at `887b987`. The owner decisions and the gate below supersede the proposal text above them where they differ.*
+
+**Owner decisions (2026-10-16).**
+- `pennylane==0.45.1`, exact-pinned, CPython 3.11–3.14 only.
+- Noise channels are in scope, through PennyLane's own Kraus matrices.
+- A non-exact result under `shots=None` is always refused.
+- `MENOSBackend.max_circuits` stays 1.
+- Each required run is one `menos.run` call, so item 3 reads "each circuit planned alone by `plan_job`" instead of "through `run_batch`".
+- Analytic `var` is ⟨O²⟩ − ⟨O⟩².
+- Seeds come from one NumPy generator per device.
+- Finite-shot measurements follow PennyLane's semantics.
+- Refusals raise an exception that is both `UnsupportedFeatureError` and `DeviceError`, if measured feasible.
+- No shared frontend code is extracted.
+
+**Phase 20 acceptance gate** (`docs/adr/0024` section 9, Q11):
+1. Conventions: one test per row.
+2. Gate table and the `UnitaryOp` path within 1e-12 of PennyLane's matrices, global phase included.
+3. Analytic `state`/`probs`/`expval`/`var` within 1e-12 of `default.qubit`.
+4. Finite-shot chi-square at a family-wise 0.001; shot vectors; seeded determinism.
+5. The parameter-shift VQE gradient within 1e-12 of `default.qubit`'s.
+6. Noise against `default.mixed` within 1e-12, with chi-square for counts.
+7. Every refusal by name.
+8. PennyLane's device test suite passes for the supported features, with every skip listed.
+9. The entry point works from the installed wheel.
+10. Existing suites unchanged; `scripts/verify.sh` and `scripts/verify-windows.ps1` exit 0 on the final commit; documentation updated; every new symbol has a production caller and tests.
 
 **Goal.** A PennyLane device (`menos.qubit`, registered by an entry point) built on PennyLane's `qml.devices.Device` API, so PennyLane users can run circuits, variational algorithms and gradients through MENOS's planner.
 

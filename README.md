@@ -33,7 +33,7 @@ Instead of pushing every circuit through one fixed algorithm, MENOS:
 | Output | Counts, exact statevectors, exact Pauli expectation values, exact noisy simulation |
 | Engines | Dense, stabilizer, Pauli propagation, matrix product state, tensor network, exact circuit cutting, density matrix |
 | Planner | Cost model in work units, automatic factorization, CPU/CUDA selection by calibrated seconds |
-| Integration | Qiskit `BackendV2` (`MENOSBackend`), `EstimatorV2` (`MENOSEstimator`) and `SamplerV2` (`MENOSSampler`), with Qiskit Aer noise models; OpenQASM 3 import (`menos.from_qasm3`, static subset) and OpenQASM 2/3 on the command line |
+| Integration | Qiskit `BackendV2` (`MENOSBackend`), `EstimatorV2` (`MENOSEstimator`) and `SamplerV2` (`MENOSSampler`), with Qiskit Aer noise models; the PennyLane device `menos.qubit`; OpenQASM 3 import (`menos.from_qasm3`, static subset) and OpenQASM 2/3 on the command line |
 | Mitigation | Opt-in readout-error mitigation with calibrated, reported uncertainty; batch execution of several circuits (`run_batch`) |
 | GPU | NVIDIA CUDA dense backend, bitwise identical to the CPU |
 | Runtime | Time-budget monitoring with safe abandonment and replanning |
@@ -116,6 +116,24 @@ options.shots = 100
 options.seed = 1
 print(run(circuit, options).explain())
 ```
+
+## PennyLane
+
+With the `pennylane` extra (`pip install "menos[pennylane]"`, CPython 3.11 or later, PennyLane 0.45.1), MENOS is the PennyLane device `menos.qubit`:
+
+```python no-run
+import pennylane as qml
+
+dev = qml.device("menos.qubit", wires=2, seed=7)
+
+@qml.qnode(dev)
+def circuit(x):
+    qml.RX(x, 0)
+    qml.CNOT([0, 1])
+    return qml.expval(qml.Z(0) @ qml.Z(1)), qml.state()
+```
+
+Analytic results are exact and agree with `default.qubit` within 1e-12. Parameter-shift gradients, shots, shot vectors and noise channels are supported. The runnable version is [`examples/pennylane_device.py`](examples/pennylane_device.py); the documentation's PennyLane Device page lists what is refused.
 
 ## Supported execution engines
 

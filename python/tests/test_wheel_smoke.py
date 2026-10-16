@@ -29,3 +29,26 @@ def test_wheel_install_smoke():
     assert sum(counts.values()) == 100
     assert set(counts) <= {"00", "11"}
     assert menos.__version__
+
+
+def test_wheel_pennylane_entry_point():
+    """docs/adr/0024 gate criterion 9: the installed wheel registers
+    menos.qubit through the pennylane.plugins entry point."""
+    import pytest
+
+    qml = pytest.importorskip("pennylane")
+    from menos.pennylane import MENOSQubitDevice
+
+    dev = qml.device("menos.qubit", wires=2, seed=1)
+    assert isinstance(dev, MENOSQubitDevice)
+
+    @qml.set_shots(100)
+    @qml.qnode(dev)
+    def bell():
+        qml.Hadamard(0)
+        qml.CNOT([0, 1])
+        return qml.counts()
+
+    counts = bell()
+    assert sum(counts.values()) == 100
+    assert set(counts) <= {"00", "11"}
