@@ -26,17 +26,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # CPU-only wheel: CPython 3.10-3.14.
+          # CPU-only wheel: CPython 3.10-3.11 (3.12+ get the auto wheel).
           - variant: cpu
             dist_name: menos
-            cibw_build: "cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp314-manylinux_x86_64"
-            python_tags: "cp310 cp311 cp312 cp313 cp314"
+            cibw_build: "cp310-manylinux_x86_64 cp311-manylinux_x86_64"
+            python_tags: "cp310 cp311"
           # "Auto" wheel: CUDA is compiled in and the planner uses the GPU
           # only when one is present at run time, otherwise the CPU engines.
-          # CPython 3.12-3.14. Distribution name menos-cuda12 so that it can
-          # sit beside the CPU wheel on an index; the import name is "menos".
+          # CPython 3.12-3.14. Same distribution name as the CPU wheel: pip
+          # picks the wheel by Python tag, so one `pip install menos` gets
+          # CUDA+CPU where it is built and CPU-only elsewhere.
           - variant: cuda
-            dist_name: menos-cuda12
+            dist_name: menos
             cibw_build: "cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp314-manylinux_x86_64"
             python_tags: "cp312 cp313 cp314"
 
@@ -48,14 +49,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.14"
-
-      - name: Name the CUDA distribution
-        if: matrix.variant == 'cuda'
-        run: |
-          set -eux
-          sed -i 's/^name = "menos"$/name = "menos-cuda12"/' pyproject.toml
-          grep -n '^name = ' pyproject.toml
-          grep -q '^name = "menos-cuda12"$' pyproject.toml
 
       - name: Inspect project configuration
         run: |
@@ -79,7 +72,7 @@ jobs:
           print("Python requirement:", project.get("requires-python"))
 
           assert project["name"] == "${{ matrix.dist_name }}"
-          assert project["version"] == "1.1.0", "Expected MENOS version 1.1.0."
+          assert project["version"] == "1.2.0", "Expected MENOS version 1.2.0."
           assert project.get("requires-python") == ">=3.10", (
               "Expected requires-python = '>=3.10'."
           )
@@ -160,9 +153,8 @@ jobs:
 
           # Each wheel is installed into a clean environment and run. The
           # runner has no GPU, so this proves the wheel imports and runs on
-          # the CPU, and that a CUDA wheel really has CUDA compiled in (its
-          # refusal of a forced CUDA run says "no usable CUDA device", the
-          # CPU wheel's says "no CUDA support").
+          # the CPU and refuses a forced CUDA run. That a CUDA wheel really
+          # has CUDA is checked below (bundled libcudart) and by the GPU job.
           CIBW_TEST_EXTRAS: "test"
           CIBW_TEST_COMMAND: >-
             python {project}/scripts/check_wheel_backends.py ${{ matrix.variant }} &&
@@ -200,8 +192,8 @@ jobs:
 
               if str(name) != dist:
                   raise SystemExit(f"Unexpected package name: {name}")
-              if str(version) != "1.1.0":
-                  raise SystemExit(f"Expected version 1.1.0, got {version}")
+              if str(version) != "1.2.0":
+                  raise SystemExit(f"Expected version 1.2.0, got {version}")
 
               python_tags = {tag.interpreter for tag in tags}
               supported = python_tags & expected
@@ -261,8 +253,8 @@ jobs:
 
   cuda-gpu-test:
     # Optional: runs only when a GPU runner label is given. Installs the CUDA
-    # wheel built above and checks that the GPU is actually used and agrees
-    # with the CPU.
+    # wheel built above and checks that the dense engine really runs on
+    # the GPU.
     name: Run the CUDA wheel on a GPU
     needs: linux
     if: inputs.gpu_runner != ''
@@ -372,7 +364,7 @@ jobs:
           for wheel in sorted(Path("wheelhouse").glob("*.whl")):
               name, version, _, tags = parse_wheel_filename(wheel.name)
               assert name == "menos", name
-              assert str(version) == "1.1.0", version
+              assert str(version) == "1.2.0", version
               assert {tag.platform for tag in tags} == {"win_amd64"}, tags
               with ZipFile(wheel) as archive:
                   files = archive.namelist()
