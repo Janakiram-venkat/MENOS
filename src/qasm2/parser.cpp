@@ -1,6 +1,7 @@
 #include "menos/qasm2.h"
 
 #include <cctype>
+#include <cstddef>
 #include <cstdint>
 #include <numbers>
 #include <optional>
@@ -223,19 +224,54 @@ public:
         // (Circuit::append_batch's precondition, include/menos/circuit.h).
         qubit_offsets_.push_back(static_cast<std::uint32_t>(gate_qubits_.size()));
         param_offsets_.push_back(static_cast<std::uint32_t>(params_.size()));
+        // Operations keep source order (docs/adr/0023 section 9, Q5): each
+        // measure follows exactly the gates written before it, so a gate on
+        // an already-measured qubit reaches ir::validate and is refused there
+        // rather than being silently moved ahead of the measurement.
         Circuit circuit(*num_qubits_, num_clbits_);
-        circuit.append_batch(std::move(opcodes_),
-                             std::move(gate_qubits_),
-                             std::move(qubit_offsets_),
-                             std::move(params_),
-                             std::move(param_offsets_));
-        for (const auto& [qubit, clbit] : measures_) {
-            circuit.append_measure(qubit, clbit);
+        std::size_t next_gate = 0;
+        for (const PendingMeasure& measure : measures_) {
+            append_gates(circuit, next_gate, measure.gates_before);
+            next_gate = measure.gates_before;
+            circuit.append_measure(measure.qubit, measure.clbit);
         }
+        append_gates(circuit, next_gate, opcodes_.size());
         return circuit;
     }
 
 private:
+    struct PendingMeasure {
+        std::size_t gates_before;  // gates written before this measure
+        QubitId qubit;
+        ClbitId clbit;
+    };
+
+    // Appends gates [first, last) of the collected CSR arrays as one batch,
+    // rebasing their offsets to start at zero.
+    void append_gates(Circuit& circuit, std::size_t first, std::size_t last) const {
+        if (first == last) {
+            return;
+        }
+        const auto begin = [](const auto& v, std::size_t i) {
+            return v.begin() + static_cast<std::ptrdiff_t>(i);
+        };
+        const std::uint32_t qubit_base = qubit_offsets_[first];
+        const std::uint32_t param_base = param_offsets_[first];
+        std::vector<std::uint32_t> qubit_offsets;
+        std::vector<std::uint32_t> param_offsets;
+        for (std::size_t i = first; i <= last; ++i) {
+            qubit_offsets.push_back(qubit_offsets_[i] - qubit_base);
+            param_offsets.push_back(param_offsets_[i] - param_base);
+        }
+        circuit.append_batch(
+            std::vector<Opcode>(begin(opcodes_, first), begin(opcodes_, last)),
+            std::vector<QubitId>(begin(gate_qubits_, qubit_base),
+                                 begin(gate_qubits_, qubit_offsets_[last])),
+            std::move(qubit_offsets),
+            std::vector<double>(begin(params_, param_base), begin(params_, param_offsets_[last])),
+            std::move(param_offsets));
+    }
+
     const Token& peek() const {
         return tokens_[pos_];
     }
@@ -451,7 +487,7 @@ private:
         expect(TokenKind::Arrow, "'->' in a measure statement");
         const ClbitId clbit = parse_clbit_ref();
         expect(TokenKind::Semicolon, "';' after a measure statement");
-        measures_.emplace_back(qubit, clbit);
+        measures_.push_back({opcodes_.size(), qubit, clbit});
     }
 
     void parse_gate_call(const std::string& name, int line) {
@@ -553,7 +589,7 @@ private:
     std::vector<std::uint32_t> qubit_offsets_;
     std::vector<double> params_;
     std::vector<std::uint32_t> param_offsets_;
-    std::vector<std::pair<QubitId, ClbitId>> measures_;
+    std::vector<PendingMeasure> measures_;
 };
 
 }  // namespace

@@ -23,7 +23,7 @@ qiskit = ["qiskit==2.5.2"]
 # Restored on 2026-10-13 (Phase 18, owner decision) after it went missing from
 # this tree.
 noise = ["qiskit==2.5.2", "qiskit-aer==0.17.2"]
-test = ["pytest==9.1.1", "qiskit==2.5.2", "qiskit-aer==0.17.2"]
+test = ["pytest==9.1.1", "qiskit==2.5.2", "qiskit-aer==0.17.2", "qiskit-qasm3-import==0.6.0"]
 
 [tool.scikit-build]
 minimum-version = "build-system.requires"

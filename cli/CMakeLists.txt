@@ -1,5 +1,5 @@
 # docs/BUILD_PLAN.md Phase 7: linked only to the public API
-# (menos_api, menos_qasm2), no engine or planner internals directly.
+# (menos_api, menos_qasm2, menos_qasm3), no engine or planner internals directly.
 # Split into a small library (cli_impl, parameterized on ostream) plus a
 # thin main.cpp so tests/cli can exercise the exact same command-
 # dispatch and formatting logic in process, without spawning a
@@ -7,7 +7,7 @@
 add_library(menos_cli_impl STATIC
     cli_impl.cpp
 )
-target_link_libraries(menos_cli_impl PUBLIC menos_api menos_qasm2 menos_common)
+target_link_libraries(menos_cli_impl PUBLIC menos_api menos_qasm2 menos_qasm3 menos_common)
 target_compile_features(menos_cli_impl PUBLIC cxx_std_20)
 target_compile_options(menos_cli_impl PRIVATE ${MENOS_WARNING_FLAGS})
 

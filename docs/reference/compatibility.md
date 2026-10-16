@@ -51,7 +51,7 @@ What MENOS was built and tested against. "Tested" means exercised by `scripts/ve
 
 ## OpenQASM
 
-The command-line tool reads OpenQASM 2 (see [Command Line](/build/command-line)). OpenQASM 3 is not supported. The Python API has no QASM entry point; use Qiskit's own loaders to build a `QuantumCircuit`.
+The command-line tool reads OpenQASM 2 and OpenQASM 3, chosen by the program's header (see [Command Line](/build/command-line#openqasm-support)). OpenQASM 3 is imported for its static-circuit subset, with `stdgates.inc` gates as Qiskit defines them; `reset`, control flow and timing are refused with their location. From Python, `menos.from_qasm3(text, inputs)` returns a `Circuit` (since Phase 19); there is no Python entry point for OpenQASM 2. Results agree with Qiskit's own OpenQASM 3 import (`qiskit.qasm3.loads`) within 1e-12, global phase included.
 
 ## Verification
 

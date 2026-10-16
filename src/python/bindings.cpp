@@ -2,6 +2,7 @@
 #include <nanobind/ndarray.h>
 #include <nanobind/stl/array.h>
 #include <nanobind/stl/complex.h>
+#include <nanobind/stl/map.h>
 #include <nanobind/stl/optional.h>
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
@@ -19,6 +20,7 @@
 #include "menos/menos.h"
 #include "menos/mitigation.h"
 #include "menos/observable.h"
+#include "menos/qasm3.h"
 #include "plan/enum_names.h"
 
 namespace nb = nanobind;
@@ -244,6 +246,17 @@ NB_MODULE(_core, m) {
         .def("explain", &menos::Result::explain);
 
     m.def("run", &menos::run, "circuit"_a, "options"_a);
+
+    // Phase 19 (docs/adr/0023): OpenQASM 3 import. menos.from_qasm3 wraps it so
+    // that inputs may be None.
+    m.def(
+        "from_qasm3",
+        [](const std::string& text, const std::map<std::string, double>& inputs) {
+            return menos::qasm3::parse(text,
+                                       menos::qasm3::InputBindings(inputs.begin(), inputs.end()));
+        },
+        "text"_a,
+        "inputs"_a);
 
     // Phase 14 (docs/adr/0018): batch execution and readout mitigation.
     m.def(

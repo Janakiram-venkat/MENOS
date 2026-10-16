@@ -10,7 +10,7 @@ The authoritative plan is `docs/BUILD_PLAN.md`. Read the current phase specifica
 
 ## Current phase
 
-**Phase 17 is COMPLETE: the owner accepted its acceptance gate on 2026-10-10, on the evidence in `docs/adr/0021` section 11 (`scripts/verify.sh` exit 0 on `1041893`), recorded in section 11.1. Phases 12–16 are COMPLETE. No later phase has been started; the interoperability roadmap (Phases 18–25) in `docs/BUILD_PLAN.md` is a proposal only, and the owner sets its order and scope.**
+**Phase 19 is COMPLETE: the owner accepted its acceptance gate on 2026-10-16, on the evidence in `docs/adr/0023` section 10 (`scripts/verify.sh` and `scripts/verify-windows.ps1` exit 0 on `bb720d8`), recorded in section 10.4. Phase 18 (native Windows) is STARTED; its gate is not passed, and Phase 19 merges into `main` after it. Phases 12–17 are COMPLETE. The rest of the interoperability roadmap (Phases 20–26) in `docs/BUILD_PLAN.md` is a proposal only, and the owner sets its order and scope.**
 
 Platform note (2026-10-02, `docs/adr/0014` section 17): the CUDA backend supports toolkits 12.0 and later. On the WSL machine (driver 566.14), only the `cuda12-dev`/`cuda12-release` presets reach the GPU; `scripts/lsan-wsl-libcuda.supp` suppresses, by path, a leak inside WSL's CUDA driver shim. Git inside WSL has no identity configured; commits use the repository's existing author.
 
@@ -105,6 +105,10 @@ Invariants:
 **Native Windows (MSVC).** Specification and gate: `docs/BUILD_PLAN.md`, Phase 18. Design: `docs/adr/0022`. The owner started the phase on 2026-10-13 as the next phase, renumbered the proposed interoperability roadmap to Phases 19–26, answered section 9 and approved the plan the same day. Branch `phase-18-windows-native`. **STARTED; gate not passed.**
 
 Scope decisions: Windows x64, MSVC, CPU only (CUDA on Windows is refused at configure time); wheels for CPython 3.10–3.14 `win_amd64`; MSVC ASan in the `windows-dev` preset, with UBSan/LSan coverage staying in the Linux `verify.sh`; LAPACK from the official OpenBLAS 0.3.34 x64 (LP64) release, pinned by SHA-256 and shipped in the wheel; any Windows-only last-bit numeric failure goes to the owner, never a tolerance change. Windows verification: `scripts/verify-windows.ps1`; Linux verification stays `scripts/verify.sh` in the WSL clone.
+
+## Phase 19
+
+**OpenQASM 3 import.** Specification and gate: `docs/BUILD_PLAN.md`, Phase 19. Design: `docs/adr/0023`. The owner started the phase on 2026-10-14, in parallel with Phase 18 (native Windows, branch `phase-18-windows-native`, gate still open), and answered `docs/adr/0023` section 9 Q1–Q8 the same day: a hand-rolled parser; `reset` refused and deferred to Phase 24; `input` parameters in scope; a modifier with no exact gate-table equivalent becomes an exact `UnitaryOp`; the OpenQASM 2 importer keeps measurements in source order; the CLI chooses the importer from the header; Python `menos.from_qasm3`; the `stdgates.inc` names as built-in gates with Qiskit's matrices (revised from "embed verbatim" after the section 4.1 measurement). Branch `phase-19-openqasm3-import`, rebased onto `phase-18-windows-native` (`7fa38ce`) at the owner's decision, so it merges after Phase 18. The owner approved the implementation plan and the gate (Q9) the same day. **COMPLETE (frozen): the owner accepted the gate on 2026-10-16** on the evidence in `docs/adr/0023` section 10 (`bb720d8`), recorded in section 10.4.
 
 ## Definition of done
 

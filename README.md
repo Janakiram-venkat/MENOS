@@ -33,7 +33,7 @@ Instead of pushing every circuit through one fixed algorithm, MENOS:
 | Output | Counts, exact statevectors, exact Pauli expectation values, exact noisy simulation |
 | Engines | Dense, stabilizer, Pauli propagation, matrix product state, tensor network, exact circuit cutting, density matrix |
 | Planner | Cost model in work units, automatic factorization, CPU/CUDA selection by calibrated seconds |
-| Integration | Qiskit `BackendV2` (`MENOSBackend`), `EstimatorV2` (`MENOSEstimator`) and `SamplerV2` (`MENOSSampler`), with Qiskit Aer noise models |
+| Integration | Qiskit `BackendV2` (`MENOSBackend`), `EstimatorV2` (`MENOSEstimator`) and `SamplerV2` (`MENOSSampler`), with Qiskit Aer noise models; OpenQASM 3 import (`menos.from_qasm3`, static subset) and OpenQASM 2/3 on the command line |
 | Mitigation | Opt-in readout-error mitigation with calibrated, reported uncertainty; batch execution of several circuits (`run_batch`) |
 | GPU | NVIDIA CUDA dense backend, bitwise identical to the CPU |
 | Runtime | Time-budget monitoring with safe abandonment and replanning |

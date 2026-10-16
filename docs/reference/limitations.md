@@ -67,10 +67,11 @@ Every entry here is a real limitation of this release. None is speculative, and 
 
 ## Command line
 
-- Measurement must be written bit by bit (`measure q[0] -> c[0];`).
+- In OpenQASM 2, measurement must be written bit by bit (`measure q[0] -> c[0];`); OpenQASM 3 also accepts whole registers.
 - `--statevector` is limited to 10 qubits; there is no budget option.
 - The binary is a CMake target and is not installed by `pip`.
-- OpenQASM 3 is not supported.
+- OpenQASM 3 is imported for its static-circuit subset only: `reset`, control flow, subroutines, timing, calibrations, classical variables and applying a gate to a whole register are refused. `pow` takes integer exponents only, and a controlled gate with no gate-table form is limited to 5 qubits.
+- A program must start with an `OPENQASM` header so the CLI can choose the importer.
 
 ## Verification scope
 
