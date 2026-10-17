@@ -33,6 +33,16 @@ Every entry here is a real limitation of this release. None is speculative, and 
 - Native counts are hexadecimal-keyed.
 - **An observable whose terms are all the identity raises `InternalError`.**
 
+## PennyLane device
+
+- **Needs CPython 3.11 or later and PennyLane 0.45.1 exactly.** No PennyLane release supports both 3.10 and 3.14.
+- **Pauli-sum observables only.** `Hermitian`, `Projector`, `SparseHamiltonian` and `Hadamard` used as an observable are refused.
+- **No mid-circuit measurements, `qml.cond` or resets**, as everywhere in MENOS.
+- **No device derivatives**: no adjoint and no backprop. Gradients use parameter-shift or another PennyLane method that runs through the device.
+- **One MENOS run per analytic `expval`**, and two per `var`. A QNode with many observables runs the circuit many times.
+- **Analytic `state` and `probs` need a dense plan.** Analytic `state` and `probs` of a noisy circuit, and `density_matrix`, are refused.
+- No Catalyst / `qml.qjit` and no program capture.
+
 ## Engines
 
 - **Stabilizer:** Clifford only; no statevector.

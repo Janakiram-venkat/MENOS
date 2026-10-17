@@ -43,6 +43,7 @@ const sidebar = [
       { text: 'SamplerV2', link: '/build/sampler' },
       { text: 'Noise Models', link: '/build/noise-models' },
       { text: 'Readout Mitigation', link: '/build/readout-mitigation' },
+      { text: 'PennyLane Device', link: '/build/pennylane' },
       { text: 'Native API', link: '/build/native-api' },
       { text: 'Command Line', link: '/build/command-line' },
     ],
@@ -148,6 +149,7 @@ const sidebar = [
       { text: 'Time Budget', link: '/examples/time-budget' },
       { text: 'Replanning', link: '/examples/replanning' },
       { text: 'Noise', link: '/examples/noise' },
+      { text: 'PennyLane', link: '/examples/pennylane' },
     ],
   },
   {

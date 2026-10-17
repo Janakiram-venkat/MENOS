@@ -38,6 +38,12 @@ Run any of them from the repository root:
 | [Advanced Workload](/examples/cut-and-recombine) | Exact circuit cutting |
 | [Noise](/examples/noise) | A Bell pair under a Qiskit Aer noise model, simulated exactly |
 
+## Other frameworks
+
+| Example | Shows |
+|---|---|
+| [PennyLane](/examples/pennylane) | A variational energy and its gradient on the `menos.qubit` device |
+
 ## Hardware and budgets
 
 | Example | Shows |
@@ -48,4 +54,4 @@ Run any of them from the repository root:
 
 ## Which examples need what
 
-All of them need only the default install plus Qiskit (the `qiskit` extra), except [CUDA](/examples/cuda), which runs on any build and reports what it used, and [Noise](/examples/noise), which needs Qiskit Aer (the `noise` extra).
+All of them need only the default install plus Qiskit (the `qiskit` extra), except [CUDA](/examples/cuda), which runs on any build and reports what it used, [Noise](/examples/noise), which needs Qiskit Aer (the `noise` extra), and [PennyLane](/examples/pennylane), which needs the `pennylane` extra (CPython 3.11 or later).
