@@ -26,6 +26,12 @@ uv add "menos[qiskit]"
 
 Without it you can still use the [native API](/build/native-api).
 
+To use the PennyLane device `menos.qubit`, install the `pennylane` extra, which pins PennyLane 0.45.1 and needs CPython 3.11 or later (see [PennyLane Device](/build/pennylane)):
+
+```bash
+pip install "menos[pennylane]"
+```
+
 ::: warning What the PyPI wheels cover
 Version 1.1.0 ships wheels for **CPython 3.10–3.14 on Linux x86-64** (manylinux 2.28, so glibc 2.28 or newer). They are **CPU-only**. No source distribution is published, so on any other platform, Python version or architecture `pip` finds no matching distribution. Windows wheels (CPython 3.10–3.14, `win_amd64`) are built by the project's wheel workflow but are not yet on PyPI; on Windows, [build from source](#on-windows) or install a wheel the workflow produced. For GPU support, [build from source with CUDA](/gpu/cuda-installation) on Linux.
 :::

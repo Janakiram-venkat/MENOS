@@ -9,6 +9,7 @@ What MENOS was built and tested against. "Tested" means exercised by `scripts/ve
 | Python | **3.10–3.14** | Required (`>=3.10`); 3.14 in both verification scripts, 3.10–3.14 by the Windows wheel tests |
 | Qiskit | **2.5.2** | Pinned exactly; other versions untested |
 | Qiskit Aer | **0.17.2** | Optional (`menos[noise]`), for noise models; pinned exactly and checked against Qiskit 2.5.2 |
+| PennyLane | **0.45.1** | Optional (`menos[pennylane]`), for the `menos.qubit` device; pinned exactly; CPython 3.11 or later only |
 | NumPy | Whatever installs with your Python | Required |
 | CMake | 3.25 or newer | 4.2.3 used |
 | C++ compiler | GCC 12+, Clang 16+, AppleClang 15+ (C++20); MSVC on Windows | GCC 15.2.0 and MSVC 14.50 used |
@@ -48,6 +49,17 @@ What MENOS was built and tested against. "Tested" means exercised by `scripts/ve
 | `BaseSamplerV2` | **No** |
 | Provider | **No** |
 | `BackendV1` | No |
+
+## PennyLane interfaces
+
+| Interface | Implemented |
+|---|---|
+| `qml.devices.Device` | Yes (`menos.qubit`, `menos.pennylane.MENOSQubitDevice`) |
+| `pennylane.plugins` entry point | Yes |
+| Device derivatives (adjoint, backprop) | **No**; parameter-shift and other PennyLane methods run through the device |
+| Catalyst / `qml.qjit`, program capture | **No** |
+
+Results agree with `default.qubit` (and with `default.mixed` for noise) within 1e-12, and the device passes PennyLane's own device test suite except for the constructs it refuses (see [PennyLane Device](/build/pennylane#what-is-refused)).
 
 ## OpenQASM
 
