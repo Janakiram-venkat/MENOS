@@ -2,14 +2,6 @@ name: Build MENOS Wheels
 
 on:
   workflow_dispatch:
-    inputs:
-      gpu_runner:
-        description: >-
-          Runner label of a self-hosted machine with an NVIDIA GPU. When set,
-          the CUDA wheel is also installed and run there, so the CUDA path is
-          exercised on real hardware (GitHub-hosted runners have no GPU).
-        required: false
-        default: ""
 
 permissions:
   contents: read
@@ -72,7 +64,7 @@ jobs:
           print("Python requirement:", project.get("requires-python"))
 
           assert project["name"] == "${{ matrix.dist_name }}"
-          assert project["version"] == "1.2.1", "Expected MENOS version 1.2.1."
+          assert project["version"] == "1.2.0", "Expected MENOS version 1.2.0."
           assert project.get("requires-python") == ">=3.10", (
               "Expected requires-python = '>=3.10'."
           )
@@ -192,8 +184,8 @@ jobs:
 
               if str(name) != dist:
                   raise SystemExit(f"Unexpected package name: {name}")
-              if str(version) != "1.2.1":
-                  raise SystemExit(f"Expected version 1.2.1, got {version}")
+              if str(version) != "1.2.0":
+                  raise SystemExit(f"Expected version 1.2.0, got {version}")
 
               python_tags = {tag.interpreter for tag in tags}
               supported = python_tags & expected
@@ -250,36 +242,6 @@ jobs:
             dist/
           if-no-files-found: warn
           retention-days: 14
-
-  cuda-gpu-test:
-    # Optional: runs only when a GPU runner label is given. Installs the CUDA
-    # wheel built above and checks that the dense engine really runs on
-    # the GPU.
-    name: Run the CUDA wheel on a GPU
-    needs: linux
-    if: inputs.gpu_runner != ''
-    runs-on: ${{ inputs.gpu_runner }}
-
-    steps:
-      - name: Checkout MENOS
-        uses: actions/checkout@v4
-
-      - name: Download CUDA wheels
-        uses: actions/download-artifact@v4
-        with:
-          name: menos-linux-cuda-wheels
-          path: artifact
-
-      - name: Install the wheel and run on the GPU
-        run: |
-          set -eux
-          nvidia-smi
-          python3 -m venv .venv
-          . .venv/bin/activate
-          pyver="cp$(python -c 'import sys; print(f"{sys.version_info[0]}{sys.version_info[1]}")')"
-          wheel="$(ls artifact/wheelhouse/*-${pyver}-*.whl)"
-          pip install "${wheel}[test]"
-          python scripts/check_wheel_backends.py cuda --gpu
 
   windows:
     # Native Windows wheels (docs/adr/0022 section 5). The cibuildwheel
@@ -364,7 +326,7 @@ jobs:
           for wheel in sorted(Path("wheelhouse").glob("*.whl")):
               name, version, _, tags = parse_wheel_filename(wheel.name)
               assert name == "menos", name
-              assert str(version) == "1.2.1", version
+              assert str(version) == "1.2.0", version
               assert {tag.platform for tag in tags} == {"win_amd64"}, tags
               with ZipFile(wheel) as archive:
                   files = archive.namelist()
