@@ -2,7 +2,7 @@
 
 ## Status
 
-**Accepted (design); implementation plan awaiting approval.** The owner started Phase 20 on 2026-10-16 as the next interoperability phase, while Phase 18's gate (`docs/adr/0022`) is still open. The owner answered section 9 the same day, taking every recommended option. Branch `phase-20-pennylane-device`, started from `main` at `887b987` (Phase 18 and Phase 19 merged).
+**Accepted (design); implemented in `b942fd6`; gate not passed.** The owner started Phase 20 on 2026-10-16 as the next interoperability phase, while Phase 18's gate (`docs/adr/0022`) is still open. The owner answered section 9 the same day, taking every recommended option. Branch `phase-20-pennylane-device`, started from `main` at `887b987` (Phase 18 and Phase 19 merged). On 2026-10-17 `scripts/verify.sh` and `scripts/verify-windows.ps1` both exited 0 on `b942fd6` (section 10). That run left two refusals of section 2.2 unmet (section 10.3). At the owner's request they were fixed on top of `b942fd6`, and the gate evidence is recorded for that change (section 10.6).
 
 Labels follow `docs/adr/0014`–`0023`: **[MEASURED]**, **[DERIVED]**, **[MENOS]** (a proposed design decision) and **[OPEN]** (an owner decision, section 9).
 
@@ -285,3 +285,69 @@ The owner took the recommended option, (a), for every question:
 - **Q9:** a device exception that is both `menos.UnsupportedFeatureError` and PennyLane's `DeviceError`, subject to the step-2 measurement, with (b) as the recorded fallback.
 - **Q10:** no shared frontend code is extracted.
 - **Q11:** the gate as written in Q11.
+
+## 10. Gate evidence (`b942fd6`, 2026-10-17)
+
+### 10.1 Verification runs
+
+- **Linux.** `scripts/verify.sh` in the WSL clone `~/MENOS` on `b942fd6`, `UV_PYTHON_PREFERENCE=only-managed`, exit 0. Format and clang-tidy (all targets) clean; `dev` and `release` 679/679; pytest 548 passed, 2 deselected (`test_wheel_smoke.py`), 3 warnings (one PennyLane `UserWarning` raised inside the refusal test for `probs` of a `Hermitian`, two Qiskit deprecation warnings in `test_qasm3.py`); wheel smoke 2 passed in a clean CPython 3.14 venv; `cuda-dev`/`cuda-release` and `cuda12-dev`/`cuda12-release` 734/734. The documentation site was not built (no Node.js in WSL), as in Phase 19; its Python snippets ran in the pytest stage.
+- **Windows.** `scripts\verify-windows.ps1` (without `-Wheels`) on `b942fd6`, exit 0 (`verify-windows: all stages passed`). `windows-dev` and `windows-release` 680/680; pytest 548 passed, 2 deselected; wheel smoke 2 passed.
+- A first Windows run, made while `verify.sh` was running in WSL at the same time, failed three `windows-dev` tests (`TrajectoryRunTest.CountsPassAChiSquareTestAgainstTheDensityMatrix`, `ReadoutMitigationRunTest.ReadoutOnlyMitigationAgreesWithTheReferenceWithinItsErrors`, `ReadoutMitigationRunTest.AMitigatedResultIsNeverExactAndExplainsItself`). Each was AddressSanitizer out of memory on a 32 MiB allocation in `measure_memory_bandwidth` (`src/plan/hardware_profile.cpp`), with 7 GB of 31.7 GB free. The three passed when re-run alone, and the full run above was made with nothing else running. Phase 20 changes no C++.
+- The pytest count grew from 313 at Phase 19 (`bb720d8`) to 548: 234 new tests in `python/tests/test_pennylane_*.py` and the `pennylane_device` example in `test_examples.py`. Every one passed on both platforms (none skipped).
+
+### 10.2 Criteria
+
+| # | Criterion | Evidence |
+|---|---|---|
+| 1 | Conventions, one test per row of section 4 | `test_pennylane_conventions.py`: wire to qubit with and without device wires (non-integer, non-contiguous labels), the `UnitaryOp` operand order, the gate table, the `GlobalPhase` sign, big-endian `state()`, `probs` in the listed wire order, `counts`/`sample` first wire leftmost, `Identity`/`Barrier` as no operation, channel operand order (an asymmetric two-wire channel against `default.qubit`/`default.mixed`), and seeds. All passed. |
+| 2 | Gate table and `UnitaryOp` path within 1e-12, global phase included | `test_gate_table_matches_pennylane_matrix` for all 20 names of `GATE_MAP` (`test_gate_map_covers_every_name` checks coverage); `test_unitary_path_matches_pennylane_matrix` for random unitaries on 1–5 wires; `test_unitary_path_for_unmapped_named_gate` (`CRX`). Each compares the matrix the device applies, column by column through `state()`, with `op.matrix()` at `atol=1e-12`, `rtol=0`. All passed. |
+| 3 | Analytic `state`/`probs`/`expval`/`var` within 1e-12 of `default.qubit` | `test_pennylane_analytic.py`: every circuit of `tests/ir/fixtures/random_circuits.json` rebuilt in PennyLane (the rebuild is first checked against the fixture's Qiskit oracle), plus decomposed templates (`QFT`, `StronglyEntanglingLayers`, `BasicEntanglerLayers`, `BasisState`, `StatePrep`, a 6-wire `MultiControlledX`, `ctrl(RY)`, controlled `GlobalPhase`, `Rot`/`CRot`, `IsingXX`/`SISWAP`), `probs(op=…)`, string wire labels and parameter broadcasting, all at 1e-12 with the global phase included. Also the identity-term path, the single-Pauli variance and the Q3 exactness guard (`test_non_exact_analytic_result_is_refused`). All passed. |
+| 4 | Finite-shot chi-square at a family-wise 0.001; shot vectors; seeded determinism | `test_counts_chi_square_against_default_qubit`: 8 fixtures of 2–4 qubits, 20,000 shots each, each at 0.001/8 (Bonferroni). `test_shot_vector_structure_matches_default_qubit`: a shot vector `[100, (200, 2), 50]` over seven measurement kinds has `default.qubit`'s result structure. `test_same_seed_gives_identical_results`, `test_seeds_reproduce_and_differ`, `test_samples_are_not_sorted` (Q8) and `test_finite_shot_expval_is_estimated_from_samples`. All passed. |
+| 5 | Parameter-shift VQE gradient within 1e-12 of `default.qubit`'s | `test_pennylane_gradient.py`: a 4-qubit, 9-term hand-written Hamiltonian, a two-layer ansatz with 24 parameters. Energy and parameter-shift gradient within 1e-12 of `default.qubit`'s; within 1e-10 of `default.qubit`'s backprop gradient; `diff_method="best"` runs parameter-shift through `execute`. All passed. |
+| 6 | Noise against `default.mixed` within 1e-12; chi-square for counts | `test_pennylane_noise.py`: nine circuits (depolarizing, amplitude damping, generalized amplitude damping, phase damping, bit and phase flip, `PauliError`, `ThermalRelaxationError`, `ResetError`, a random two-qubit `QubitChannel`): `expval` and `var` within 1e-12; counts by chi-square under `noise_method="exact"` and `"auto"` (18 tests at 0.001/18). Noisy analytic `state`/`probs` refused; analytic runs stay on `NoiseMethod.Exact` under `"auto"`; a Kraus list outside MENOS's 1e-12 CPTP check is refused, not renormalised. All passed. |
+| 7 | Every refusal of section 2.2 by name | `test_pennylane_refusals.py`: mid-circuit measurement, `qml.cond`, reset, `expval` of a measurement value, `Hermitian`, `Projector`, `SparseHamiltonian`, a `Hadamard` observable, a non-Pauli factor of a product, `density_matrix`, `mutual_info`, `vn_entropy`, `purity`, `classical_shadow`, `shadow_expval`, `state` with shots, `probs` of a non-Pauli observable, `Snapshot`, `sample`/`counts` with `shots=None`, and an undecomposable operation. Each raises `MENOSDeviceUnsupportedError`, is both `menos.UnsupportedFeatureError` and `DeviceError`, and names the construct and `menos.qubit`. On `b942fd6`, two items of section 2.2 were not met (section 10.3); both are fixed in section 10.6. |
+| 8 | PennyLane's device test suite passes for the supported features, with every skip listed | `test_pennylane_device_suite.py` runs `pennylane.devices.tests` (426 tests) with `--skip-ops` and fails on any failure that is not a refusal by design; passed on both platforms. Outcomes measured separately in the WSL venv: **`shots=None`:** 345 passed, 37 skipped, 9 xfailed, 35 refused by design. **`shots=10000`:** 338 passed, 52 skipped, 9 xfailed, 27 refused by design. The skips and refusals are listed in section 10.4. |
+| 9 | Entry point from the installed wheel; wheels build with the extra marker | `test_wheel_pennylane_entry_point` (`qml.device("menos.qubit", …)` and a Bell-pair counts run) passed from a clean venv with the built wheel on Linux and Windows. The wheel's metadata carries `Provides-Extra: pennylane`, `Requires-Dist: pennylane==0.45.1; python_version >= "3.11" and extra == "pennylane"` and the `[pennylane.plugins]` entry `menos.qubit = menos.pennylane.device:MENOSQubitDevice`. The cibuildwheel matrix (`verify-windows.ps1 -Wheels`, CPython 3.10–3.14) was not run. |
+| 10 | Existing suites unchanged; both verify scripts exit 0; documentation; production callers and tests | Both scripts exit 0 on `b942fd6` (section 10.1). The C++ suites (including the CLI golden tests) are the same 679 (Linux) and 680 (Windows) tests as at Phase 19, all passing; no C++, planner, engine or `menos._core` file changed. Two existing Python test files changed, both additively: `test_examples.py` skips `pennylane_*` examples when PennyLane is not installed, and `test_wheel_smoke.py` gained the entry-point test. Documentation: README, `docs/build/pennylane.md`, `docs/examples/pennylane.md`, `docs/get-started/installation.md`, `compatibility.md`, `limitations.md`, `changelog.md`, `docs/BUILD_PLAN.md`, this ADR; example `examples/pennylane_device.py`, run by `test_examples.py`. New symbols: `MENOSQubitDevice` is reached through the entry point, and `MENOSDeviceUnsupportedError` through every refusal; the `_convert.py` functions are called only by `device.py`; each is tested above. |
+
+### 10.3 Criterion 7 on `b942fd6` (fixed in section 10.6)
+
+1. **Program capture and `qml.qjit`/Catalyst (section 2.2) had no refusal.** The device did not implement `eval_jaxpr`, so capture reached the base class's bare `NotImplementedError`. Catalyst refused with its own `CompileError` ("Config file (…/menos_qubit.toml) does not exist"), measured with Catalyst 0.15.0.
+2. **`diff_method="backprop"` and `"adjoint"` were refused by PennyLane, not by the device.** PennyLane raised its own `QuantumFunctionError` naming `menos.qubit`, which is not `menos.UnsupportedFeatureError` as section 2.2 states.
+
+The owner chose a code change over accepting either item as recorded.
+
+### 10.4 Device test suite: skips and refusals (`b942fd6`, WSL venv)
+
+Refused by design (`MENOSDeviceUnsupportedError`, naming the construct): observables `Hermitian`, `Projector`, `SparseHamiltonian` and `Hadamard` (alone or as a factor of a product), `Snapshot`, and the suite's custom `MyMeasurement` class. 35 tests with `shots=None`, 27 with `shots=10000`.
+
+Skipped or xfailed, with the suite's own reason (count with `shots=None` / `shots=10000`):
+
+| Reason | None | 10000 |
+|---|---|---|
+| "Device is in analytic mode, cannot test sampling." | 10 | 0 |
+| "Device is in non-analytical mode." | 0 | 17 |
+| "test is old interface specific." (8) and three other old-device-interface messages (1 each) | 11 | 11 |
+| xfail "most devices do not support CV" | 8 | 8 |
+| "device does not support diff_method" (`TestGradients`, backprop variants: `test_basic_grad`, `test_backprop_state`, `test_parameter_shift`, `test_probs`, `test_multi_meas`, `test_hessian`) | 6 | 0 |
+| "collection skipped" (`test_gradients_jax`, `test_gradients_torch`: JAX and Torch not installed) | 2 | 2 |
+| "test only works with backprop" | 2 | 2 |
+| "QutritBasisState template only works on qutrit devices" | 2 | 2 |
+| "operation not supported on the device" (`test_supported_gates_can_be_implemented[QubitDensityMatrix]`: mixed-state preparation, out of scope as a density-matrix construct) | 1 | 1 |
+| "test only works with parameter-shift" | 1 | 1 |
+| xfail "Device does not support custom measurement transforms." | 1 | 1 |
+| "Shots must be specified in the device to compute a sampled measurement." | 1 | 0 |
+| "If shots=None no warning is raised." / "If shots!=None no error is raised." | 1 | 1 |
+| "test should only be run in analytic mode" | 0 | 6 |
+| "test only works with analytic-mode simulations" | 0 | 4 |
+| "SparseHamiltonian only supported in analytic mode" | 0 | 2 |
+| "test only works with analytic-mode pure statevector simulators" | 0 | 2 |
+| "Some plugins don't update state information when shots is not None." | 0 | 1 |
+
+### 10.5 As built, differing from section 3
+
+- There is no `_results.py`: result conversion lives in `_convert.py` (`statevector_to_big_endian`, `counts_to_samples`) and `device.py`.
+- Finite-shot measurements are computed by each measurement's own `process_samples` on the expanded rows, after `split_non_commuting` and `diagonalize_measurements`, instead of through `measurements_from_counts` (section 3.2 step 6). The semantics are PennyLane's (Q8), and criterion 4's tests cover them.
+- `setup_execution_config` is not overridden. Mid-circuit measurements reach `_refuse_unsupported` and are refused by name (criterion 7 tests), without PennyLane's `defer_measurements` being applied first.
+- Q9: the step-2 measurement is the refusal tests themselves. `MENOSDeviceUnsupportedError(UnsupportedFeatureError, DeviceError)` works with nanobind's exception type, and every refusal test asserts both `isinstance` checks, so the fallback (b) was not needed.
+- Not recorded: the step-2 `reference.qubit` baseline of the device test suite, and the section 8 cost measurement of one run per `expval` on the gradient fixture. Neither is a gate criterion.

@@ -46,6 +46,9 @@ _NAME = "menos.qubit"
 # The same spellings as MENOSBackend's options (docs/adr/0017, docs/adr/0021).
 _NOISE_METHODS = {"exact": NoiseMethod.Exact, "auto": NoiseMethod.Auto}
 _BACKENDS = {"cpu": Backend.Cpu, "cuda": Backend.Cuda}
+# Device-computed derivatives; adjoint is Phase 23 (docs/adr/0024 section 2.2).
+# Parameter-shift and the other gradient transforms run through execute().
+_DEVICE_DIFF_METHODS = ("backprop", "adjoint", "device")
 
 
 class MENOSDeviceUnsupportedError(UnsupportedFeatureError, DeviceError):
@@ -181,6 +184,25 @@ class MENOSQubitDevice(Device):
         program.add_transform(_diagonalize_for_shots)
         program.add_transform(broadcast_expand)
         return program
+
+    def supports_derivatives(self, execution_config=None, circuit=None) -> bool:
+        # PennyLane asks this before it raises its own QuantumFunctionError
+        # for a device-only method, so the refusal is made here, by name.
+        method = getattr(execution_config, "gradient_method", None)
+        if method in _DEVICE_DIFF_METHODS:
+            _refuse(f'diff_method="{method}" (no device derivatives; adjoint is Phase 23)')
+        return False
+
+    def eval_jaxpr(self, jaxpr, consts, *args, execution_config=None, shots=None):
+        # Reached only with qml.capture enabled (needs JAX).
+        _refuse("program capture (eval_jaxpr)")
+
+    @property
+    def qjit_capabilities(self):
+        # Catalyst (qml.qjit) reads this before anything else on a device
+        # (catalyst 0.15.0, device/qjit_device.py); PennyLane never does.
+        # Without it Catalyst still refuses, with its own CompileError.
+        _refuse("qml.qjit (Catalyst)")
 
     def execute(self, circuits, execution_config: ExecutionConfig | None = None):
         return tuple(self._execute_tape(tape) for tape in circuits)

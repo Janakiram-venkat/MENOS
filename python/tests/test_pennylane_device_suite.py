@@ -24,8 +24,9 @@ pytest.importorskip("flaky")
 
 from pennylane.devices.tests import get_device_tests  # noqa: E402
 
-# Observables without a Pauli representation, Snapshot, and the suite's own
-# custom measurement-process class: each refused by name (section 2.2).
+# Observables without a Pauli representation, Snapshot, the suite's own
+# custom measurement-process class, and backprop (the suite's diff_method
+# probe): each refused by name (section 2.2).
 REFUSED_BY_DESIGN = (
     "MENOSDeviceUnsupportedError: observable Hermitian (no Pauli representation)",
     "MENOSDeviceUnsupportedError: observable Projector (no Pauli representation)",
@@ -33,6 +34,7 @@ REFUSED_BY_DESIGN = (
     "MENOSDeviceUnsupportedError: observable SparseHamiltonian (no Pauli representation)",
     "MENOSDeviceUnsupportedError: Snapshot is not supported by menos.qubit",
     "MENOSDeviceUnsupportedError: measurement MyMeasurement ",
+    'MENOSDeviceUnsupportedError: diff_method="backprop"',
 )
 
 

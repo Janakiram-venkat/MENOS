@@ -61,7 +61,7 @@ Every PennyLane noise channel on at most 5 wires is simulated exactly through it
 
 ## Gradients
 
-The device has no derivatives of its own. `diff_method="best"` and `"parameter-shift"` let PennyLane run the shifted circuits through the device, each planned on its own, and the gradients agree with `default.qubit`'s within `1e-12`. `"backprop"` and `"adjoint"` are refused by PennyLane.
+The device has no derivatives of its own. `diff_method="best"` and `"parameter-shift"` let PennyLane run the shifted circuits through the device, each planned on its own, and the gradients agree with `default.qubit`'s within `1e-12`. `"backprop"`, `"adjoint"` and `"device"` are refused (see below).
 
 ## What is refused
 
@@ -71,6 +71,8 @@ Each of these raises `menos.pennylane.MENOSDeviceUnsupportedError`, which is bot
 - observables without a Pauli representation (`Hermitian`, `Projector`, `SparseHamiltonian`, and `Hadamard` used as an observable)
 - `density_matrix`, `mutual_info`, `vn_entropy`, `purity`, classical shadows, and `state` with shots
 - `Snapshot`
+- `diff_method="backprop"`, `"adjoint"` and `"device"`
+- program capture (`qml.capture`) and `qml.qjit` (Catalyst)
 - an operation PennyLane cannot decompose into the supported set
 
 ## See also

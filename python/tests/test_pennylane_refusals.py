@@ -101,14 +101,44 @@ def test_undecomposable_operation_is_refused_by_name():
         _qnode(circuit)()
 
 
-@pytest.mark.parametrize("diff_method", ["backprop", "adjoint"])
+@pytest.mark.parametrize("diff_method", ["backprop", "adjoint", "device"])
 def test_device_gradients_are_refused(diff_method):
-    # The device has no derivatives of its own (adjoint is Phase 23);
-    # PennyLane itself refuses, naming the device.
+    # The device has no derivatives of its own (adjoint is Phase 23). It
+    # refuses before PennyLane would raise its own QuantumFunctionError.
     def circuit(x):
         qml.RX(x, 0)
         return qml.expval(qml.Z(0))
 
-    with pytest.raises(QuantumFunctionError, match=f"menos.qubit.*does not support {diff_method}"):
+    with pytest.raises(MENOSDeviceUnsupportedError, match=f'diff_method="{diff_method}"') as info:
         node = _qnode(circuit, diff_method=diff_method)
         qml.grad(node)(qml.numpy.array(0.3, requires_grad=True))
+    assert not isinstance(info.value, QuantumFunctionError)
+    assert isinstance(info.value, menos.UnsupportedFeatureError)
+    assert isinstance(info.value, DeviceError)
+    assert "menos.qubit" in str(info.value)
+
+
+@pytest.mark.parametrize("diff_method", ["best", "parameter-shift", "finite-diff"])
+def test_gradient_transforms_are_not_refused(diff_method):
+    def circuit(x):
+        qml.RX(x, 0)
+        return qml.expval(qml.Z(0))
+
+    grad = qml.grad(_qnode(circuit, diff_method=diff_method))(qml.numpy.array(0.3, requires_grad=True))
+    assert abs(grad + np.sin(0.3)) < 1e-6
+
+
+def test_program_capture_is_refused_by_name():
+    # With qml.capture enabled (which needs JAX, not a MENOS dependency),
+    # PennyLane runs a captured program through Device.eval_jaxpr.
+    dev = MENOSQubitDevice(wires=1)
+    with pytest.raises(MENOSDeviceUnsupportedError, match=r"program capture \(eval_jaxpr\)"):
+        dev.eval_jaxpr(None, [])
+
+
+def test_qjit_is_refused_by_name():
+    # Catalyst (not a MENOS dependency) first evaluates
+    # hasattr(device, "qjit_capabilities"), which lets this error through.
+    dev = MENOSQubitDevice(wires=1)
+    with pytest.raises(MENOSDeviceUnsupportedError, match=r"qml\.qjit \(Catalyst\)"):
+        hasattr(dev, "qjit_capabilities")
