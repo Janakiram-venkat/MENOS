@@ -2,7 +2,7 @@
 
 ## Status
 
-**Accepted (design); implemented in `b942fd6`; gate not passed.** The owner started Phase 20 on 2026-10-16 as the next interoperability phase, while Phase 18's gate (`docs/adr/0022`) is still open. The owner answered section 9 the same day, taking every recommended option. Branch `phase-20-pennylane-device`, started from `main` at `887b987` (Phase 18 and Phase 19 merged). On 2026-10-17 `scripts/verify.sh` and `scripts/verify-windows.ps1` both exited 0 on `b942fd6` (section 10). That run left two refusals of section 2.2 unmet (section 10.3). At the owner's request they were fixed on top of `b942fd6`, and the gate evidence is recorded for that change (section 10.6).
+**Accepted; Phase 20 COMPLETE (2026-10-18).** On 2026-10-17 the owner instructed that the gate be marked passed once every criterion passed. Every criterion now has evidence (sections 10.2 and 10.6), so the gate is recorded as passed (section 10.7). The owner started Phase 20 on 2026-10-16 as the next interoperability phase, while Phase 18's gate (`docs/adr/0022`) is still open. The owner answered section 9 the same day, taking every recommended option. Branch `phase-20-pennylane-device`, started from `main` at `887b987` (Phase 18 and Phase 19 merged). On 2026-10-17 `scripts/verify.sh` and `scripts/verify-windows.ps1` both exited 0 on `b942fd6` (section 10). That run left two refusals of section 2.2 unmet (section 10.3). At the owner's request they were fixed on top of `b942fd6`, and the gate evidence is recorded for that change (section 10.6).
 
 Labels follow `docs/adr/0014`–`0023`: **[MEASURED]**, **[DERIVED]**, **[MENOS]** (a proposed design decision) and **[OPEN]** (an owner decision, section 9).
 
@@ -351,3 +351,37 @@ Skipped or xfailed, with the suite's own reason (count with `shots=None` / `shot
 - `setup_execution_config` is not overridden. Mid-circuit measurements reach `_refuse_unsupported` and are refused by name (criterion 7 tests), without PennyLane's `defer_measurements` being applied first.
 - Q9: the step-2 measurement is the refusal tests themselves. `MENOSDeviceUnsupportedError(UnsupportedFeatureError, DeviceError)` works with nanobind's exception type, and every refusal test asserts both `isinstance` checks, so the fallback (b) was not needed.
 - Not recorded: the step-2 `reference.qubit` baseline of the device test suite, and the section 8 cost measurement of one run per `expval` on the gradient fixture. Neither is a gate criterion.
+
+### 10.6 Criterion 7 fix (`5da898e`, 2026-10-17/18)
+
+**Change.** `python/menos/pennylane/device.py`, plus tests and `docs/build/pennylane.md`; no C++ change.
+- `supports_derivatives` refuses `diff_method="backprop"`, `"adjoint"` and `"device"` by name. PennyLane calls it, both when a QNode is built and when the diff method is resolved, before it would raise its own `QuantumFunctionError`. For every other method it returns `False`, as before, so parameter-shift and the other gradient transforms are unchanged.
+- `eval_jaxpr` refuses program capture by name. The base class raised a bare `NotImplementedError`.
+- A `qjit_capabilities` property refuses `qml.qjit` by name. Catalyst 0.15.0 evaluates `hasattr(device, "qjit_capabilities")` before anything else on a device (`catalyst/device/qjit_device.py`), and `hasattr` lets this exception through. PennyLane never reads the attribute. If a later Catalyst drops that hook, Catalyst still refuses, with its own `CompileError`.
+
+**Measured with JAX and Catalyst.** These were measured in a scratch venv (CPython 3.14, `pennylane==0.45.1`, `pennylane-catalyst==0.15.0`, `jax==0.7.1`, the `b942fd6` wheel with the new `device.py`), not in the test suite, because neither package is a MENOS dependency:
+- `qml.qjit(qml.qnode(dev)(f))(0.3)` raises `MENOSDeviceUnsupportedError: qml.qjit (Catalyst) is not supported by menos.qubit`.
+- With `qml.capture.enable()`, the same QNode raises `MENOSDeviceUnsupportedError: program capture (eval_jaxpr) is not supported by menos.qubit`.
+
+**Tests.** `test_pennylane_refusals.py`:
+- `test_device_gradients_are_refused[backprop|adjoint|device]` asserts `MENOSDeviceUnsupportedError` naming the method, and that it is not a `QuantumFunctionError`.
+- `test_gradient_transforms_are_not_refused[best|parameter-shift|finite-diff]`.
+- `test_program_capture_is_refused_by_name` calls `eval_jaxpr` directly.
+- `test_qjit_is_refused_by_name` evaluates `hasattr(dev, "qjit_capabilities")`.
+
+`test_pennylane_device_suite.py` now counts the backprop refusal as refused by design.
+
+**Device test suite (WSL venv).**
+- **`shots=None`:** 345 passed, 31 skipped, 9 xfailed, 41 refused by design. The six `TestGradients` backprop tests that section 10.4 lists as skipped ("device does not support diff_method") now fail on setup with the backprop refusal, because the suite's `validate_diff_method` probe calls `supports_derivatives`.
+- **`shots=10000`:** unchanged from section 10.4.
+
+**Verification on `5da898e`.** The owner committed the change as `5da898e` while the Windows run was in progress. Its `python/` tree and `docs/build/pennylane.md` are identical (ignoring line endings) to the files both runs verified.
+- **Linux:** `scripts/verify.sh` in the WSL clone, exit 0 (`verify.sh: all stages passed`). `dev`/`release` 679/679; pytest 554 passed, 2 deselected (548 plus the 6 new refusal tests); wheel smoke 2 passed; `cuda-dev`/`cuda-release`/`cuda12-dev`/`cuda12-release` 734/734. Documentation site not built (no Node.js), as in section 10.1.
+- **Windows:** `scripts\verify-windows.ps1`, exit 0 (`verify-windows: all stages passed`). `windows-dev`/`windows-release` 680/680; pytest 554 passed, 2 deselected; wheel smoke 2 passed.
+- An earlier Windows attempt on the same tree was stopped after about 4 hours. One `windows-dev` test, `ExecutionMonitorTest.TensorNetworkCallsTheMonitorOncePerObservableTerm` (Phase 11, C++, a 4-qubit tensor-network run), spun on one core without finishing while the other 679 had passed. `Stop-Process` and `taskkill` could not end it; it exited when the run was stopped. No debugger was installed, so no stack was captured. It passed 30 of 30 when repeated alone (0.11 s each), and in every other Windows run of this phase. The `verify-windows.ps1` ctest stages set no per-test timeout.
+
+**Gate status.** With this change, criterion 7 has evidence for every item of section 2.2. Criterion 10 requires both scripts to exit 0 on the final commit. They exited 0 on the content of `5da898e`. The commits after it change only documentation (this ADR, `docs/BUILD_PLAN.md`, `CLAUDE.md`) and add no Python snippet.
+
+### 10.7 Gate record
+
+On 2026-10-17 the owner instructed that the gate be marked passed once everything passed, and asked for the two criterion 7 items to be fixed rather than accepted as recorded. All ten criteria have evidence (sections 10.2 and 10.6), and both verification scripts exit 0 on `5da898e`. Phase 20 is COMPLETE (2026-10-18).

@@ -509,7 +509,7 @@ Approved by the owner with the implementation plan on 2026-10-14 (`docs/adr/0023
 
 **Gate record (2026-10-16):** every criterion has evidence in `docs/adr/0023` section 10, and `scripts/verify.sh` exits 0 on `bb720d8` (dev/release 679/679, pytest 313 passed, every CUDA stage 734/734 with GPU tests executing in the CUDA 12 builds); `scripts\verify-windows.ps1` also exits 0 there. The owner accepted the gate on that evidence. All nine criteria pass. Phase 19 is COMPLETE.
 
-### Phase 20: PennyLane device (frontend) — STARTED 2026-10-16
+### Phase 20: PennyLane device (frontend) — COMPLETE 2026-10-18
 
 *The owner started this phase on 2026-10-16, while Phase 18's gate is still open, and answered `docs/adr/0024` section 9 the same day with every recommended option. Branch: `phase-20-pennylane-device`, from `main` at `887b987`. The owner decisions and the gate below supersede the proposal text above them where they differ.*
 
@@ -536,6 +536,8 @@ Approved by the owner with the implementation plan on 2026-10-14 (`docs/adr/0023
 8. PennyLane's device test suite passes for the supported features, with every skip listed.
 9. The entry point works from the installed wheel.
 10. Existing suites unchanged; `scripts/verify.sh` and `scripts/verify-windows.ps1` exit 0 on the final commit; documentation updated; every new symbol has a production caller and tests.
+
+**Gate record (2026-10-18):** every criterion has evidence in `docs/adr/0024` section 10. On `b942fd6`, two refusals of criterion 7 fell short: `backprop`/`adjoint` were refused by PennyLane rather than the device, and program capture and `qml.qjit` had no refusal. At the owner's request they were fixed in `5da898e`, with no C++ change (section 10.6). `scripts/verify.sh` (dev/release 679/679, pytest 554 passed, every CUDA stage 734/734) and `scripts\verify-windows.ps1` (680/680, pytest 554 passed) both exit 0 on `5da898e`. The owner had instructed on 2026-10-17 that the gate be marked passed once everything passed. Phase 20 is COMPLETE.
 
 **Goal.** A PennyLane device (`menos.qubit`, registered by an entry point) built on PennyLane's `qml.devices.Device` API, so PennyLane users can run circuits, variational algorithms and gradients through MENOS's planner.
 
