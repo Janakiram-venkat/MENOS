@@ -72,7 +72,7 @@ jobs:
           print("Python requirement:", project.get("requires-python"))
 
           assert project["name"] == "${{ matrix.dist_name }}"
-          assert project["version"] == "1.2.0", "Expected MENOS version 1.2.0."
+          assert project["version"] == "1.2.1", "Expected MENOS version 1.2.1."
           assert project.get("requires-python") == ">=3.10", (
               "Expected requires-python = '>=3.10'."
           )
@@ -192,8 +192,8 @@ jobs:
 
               if str(name) != dist:
                   raise SystemExit(f"Unexpected package name: {name}")
-              if str(version) != "1.2.0":
-                  raise SystemExit(f"Expected version 1.2.0, got {version}")
+              if str(version) != "1.2.1":
+                  raise SystemExit(f"Expected version 1.2.1, got {version}")
 
               python_tags = {tag.interpreter for tag in tags}
               supported = python_tags & expected
@@ -364,7 +364,7 @@ jobs:
           for wheel in sorted(Path("wheelhouse").glob("*.whl")):
               name, version, _, tags = parse_wheel_filename(wheel.name)
               assert name == "menos", name
-              assert str(version) == "1.2.0", version
+              assert str(version) == "1.2.1", version
               assert {tag.platform for tag in tags} == {"win_amd64"}, tags
               with ZipFile(wheel) as archive:
                   files = archive.namelist()
