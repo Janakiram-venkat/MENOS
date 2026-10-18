@@ -24,6 +24,9 @@ def test_the_examples_directory_is_not_empty():
 
 @pytest.mark.parametrize("script", EXAMPLES, ids=lambda path: path.stem)
 def test_example_runs(script: Path):
+    if script.stem.startswith("pennylane_"):
+        # The PennyLane extra needs CPython 3.11 or later (docs/adr/0024).
+        pytest.importorskip("pennylane")
     completed = subprocess.run(
         [sys.executable, str(script)],
         capture_output=True,

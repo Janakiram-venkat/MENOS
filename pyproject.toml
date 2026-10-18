@@ -5,11 +5,11 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "menos"
 version = "1.2.0"
-description = "A quantum circuit simulation runtime with a Qiskit BackendV2 adapter"
+description = "A quantum circuit simulation runtime with Qiskit and PennyLane adapters"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
-keywords = ["quantum", "simulator", "qiskit", "statevector", "tensor-network", "cuda"]
+keywords = ["quantum", "simulator", "qiskit", "pennylane", "statevector", "tensor-network", "cuda"]
 requires-python = ">=3.10"
 dependencies = [
     "numpy",
@@ -23,7 +23,23 @@ qiskit = ["qiskit==2.5.2"]
 # Restored on 2026-10-13 (Phase 18, owner decision) after it went missing from
 # this tree.
 noise = ["qiskit==2.5.2", "qiskit-aer==0.17.2"]
-test = ["pytest==9.1.1", "qiskit==2.5.2", "qiskit-aer==0.17.2", "qiskit-qasm3-import==0.6.0"]
+# The PennyLane device menos.qubit (Phase 20, docs/adr/0024): exact-pinned like
+# Qiskit. PennyLane 0.45.1 requires CPython 3.11 or later, so the extra is
+# empty on 3.10 and the PennyLane tests skip there. pytest-mock and flaky are
+# the requirements of PennyLane's own device test suite.
+pennylane = ["pennylane==0.45.1; python_version >= '3.11'"]
+test = [
+    "pytest==9.1.1",
+    "qiskit==2.5.2",
+    "qiskit-aer==0.17.2",
+    "qiskit-qasm3-import==0.6.0",
+    "pennylane==0.45.1; python_version >= '3.11'",
+    "pytest-mock==3.16.0; python_version >= '3.11'",
+    "flaky==3.8.1; python_version >= '3.11'",
+]
+
+[project.entry-points."pennylane.plugins"]
+"menos.qubit" = "menos.pennylane.device:MENOSQubitDevice"
 
 [tool.scikit-build]
 minimum-version = "build-system.requires"
