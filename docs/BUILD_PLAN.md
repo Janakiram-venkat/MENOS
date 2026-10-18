@@ -24,7 +24,7 @@
 | 17 | API surface: recorded deferrals | **COMPLETE — acceptance gate passed 2026-10-10 (evidence: `docs/adr/0021` section 11; `scripts/verify.sh` exit 0 on `1041893`)** |
 | 18 | Native Windows (MSVC) | Started 2026-10-13 — ADR `docs/adr/0022` |
 | 19 | OpenQASM 3 import (frontend) | **COMPLETE — acceptance gate passed 2026-10-16 (evidence: `docs/adr/0023` section 10; `scripts/verify.sh` exit 0 on `bb720d8`)** |
-| 20 | PennyLane device (frontend) | Proposed (2026-10-07) — not approved |
+| 20 | PennyLane device (frontend) | Started (2026-10-16) — ADR 0024 answered; plan awaiting approval |
 | 21 | Stim engine for noisy Clifford circuits (backend) | Proposed (2026-10-07) — not approved |
 | 22 | Cirq frontend | Proposed (2026-10-07) — not approved |
 | 23 | Adjoint differentiation | Proposed (2026-10-07) — not approved |
@@ -32,7 +32,7 @@
 | 25 | NVIDIA cuQuantum engines (backend) | Proposed (2026-10-07) — not approved |
 | 26 | Further frontends and engines (candidates) | Proposed (2026-10-07) — not approved |
 
-**Current position.** Phase 11 is COMPLETE and officially closed: `322eca5` is the final implementation and gate commit (`scripts/verify.sh` exit 0) and `9a0f0f7` is the documentation closure commit, on branch `phase-11-monitoring-replanning`. Phase 12 is NOT STARTED. On 2026-10-01 the owner set the scope of Phases 12–14: noise models, delivered in three phases (exact density-matrix simulation, then trajectories, then error mitigation). The specifications below are the plan of record. The owner recorded the Phase 12 decisions on 2026-10-01 and the branch `phase-12-noise-density-matrix` exists. The owner approved the Phase 12 plan and ADR 0016 the same day. Phase 12 is implemented on branch `phase-12-noise-density-matrix` (final code commit `96a7cd0`) and awaits the owner's gate decision; see the Phase 12 verification record. On 2026-10-02 the owner made that decision: Phase 12 closes once criterion 10 is re-verified with GPU tests that actually execute. CUDA 12.x support (commit `e546581`, `docs/adr/0014` section 17) made that possible on this machine, the re-verification passed, and **Phase 12 is COMPLETE** (see the Phase 12 gate record). Phase 13 followed: the owner answered ADR 0017's open questions and approved the plan the same day, Phase 13 was implemented and the owner accepted its gate on 2026-10-03: **Phase 13 is COMPLETE**. Phase 14 is not started. On 2026-10-05 the owner added the performance roadmap (Phases 15–17), which comes after Phase 14 and does not renumber it. Phases 14–17 are COMPLETE (gates accepted 2026-10-07, 2026-10-08, 2026-10-09 and 2026-10-10). On 2026-10-13 the owner started **Phase 18, native Windows (MSVC)**, as the next phase, and renumbered the proposed interoperability roadmap from Phases 18–25 to Phases 19–26 with its content unchanged. On 2026-10-14 the owner started **Phase 19, OpenQASM 3 import**, in parallel with Phase 18, and accepted its gate on 2026-10-16: **Phase 19 is COMPLETE**. Phase 18's gate is still open.
+**Current position.** Phase 11 is COMPLETE and officially closed: `322eca5` is the final implementation and gate commit (`scripts/verify.sh` exit 0) and `9a0f0f7` is the documentation closure commit, on branch `phase-11-monitoring-replanning`. Phase 12 is NOT STARTED. On 2026-10-01 the owner set the scope of Phases 12–14: noise models, delivered in three phases (exact density-matrix simulation, then trajectories, then error mitigation). The specifications below are the plan of record. The owner recorded the Phase 12 decisions on 2026-10-01 and the branch `phase-12-noise-density-matrix` exists. The owner approved the Phase 12 plan and ADR 0016 the same day. Phase 12 is implemented on branch `phase-12-noise-density-matrix` (final code commit `96a7cd0`) and awaits the owner's gate decision; see the Phase 12 verification record. On 2026-10-02 the owner made that decision: Phase 12 closes once criterion 10 is re-verified with GPU tests that actually execute. CUDA 12.x support (commit `e546581`, `docs/adr/0014` section 17) made that possible on this machine, the re-verification passed, and **Phase 12 is COMPLETE** (see the Phase 12 gate record). Phase 13 followed: the owner answered ADR 0017's open questions and approved the plan the same day, Phase 13 was implemented and the owner accepted its gate on 2026-10-03: **Phase 13 is COMPLETE**. Phase 14 is not started. On 2026-10-05 the owner added the performance roadmap (Phases 15–17), which comes after Phase 14 and does not renumber it. Phases 14–17 are COMPLETE (gates accepted 2026-10-07, 2026-10-08, 2026-10-09 and 2026-10-10). On 2026-10-13 the owner started **Phase 18, native Windows (MSVC)**, as the next phase, and renumbered the proposed interoperability roadmap from Phases 18–25 to Phases 19–26 with its content unchanged. On 2026-10-14 the owner started **Phase 19, OpenQASM 3 import**, in parallel with Phase 18, and accepted its gate on 2026-10-16: **Phase 19 is COMPLETE**. On 2026-10-16 the owner started **Phase 20, PennyLane device**, whose gate was recorded passed on 2026-10-18: **Phase 20 is COMPLETE**. The owner accepted the Phase 18 gate on 2026-10-18: **Phase 18 is COMPLETE**.
 
 ### Phase 10 frozen record
 
@@ -409,9 +409,9 @@ Written on 2026-10-09 from `docs/adr/0021` (owner answers in its section 9).
 
 An ADR for each item that changes public API or planner behaviour. Then plan mode and owner approval.
 
-## Phase 18: Native Windows (MSVC) (STARTED 2026-10-13)
+## Phase 18: Native Windows (MSVC) — COMPLETE (acceptance gate passed 2026-10-18)
 
-**Status (2026-10-13):** the owner started Phase 18 on 2026-10-13 as the next phase, ahead of the proposed interoperability roadmap, which was renumbered to Phases 19–26. Branch: `phase-18-windows-native`. Design: `docs/adr/0022`, whose section 9 records the owner's answers of 2026-10-13. The owner approved the plan the same day. The gate below is written. Gate evidence on `7fa38ce` (local Windows, GitHub Actions run 38581342797, Linux `verify.sh`) is recorded in `docs/adr/0022` section 10 and awaits the owner's decision.
+**Status (2026-10-13):** the owner started Phase 18 on 2026-10-13 as the next phase, ahead of the proposed interoperability roadmap, which was renumbered to Phases 19–26. Branch: `phase-18-windows-native`. Design: `docs/adr/0022`, whose section 9 records the owner's answers of 2026-10-13. The owner approved the plan the same day. The gate below is written. Gate evidence on `7fa38ce` (local Windows, GitHub Actions run 38581342797, Linux `verify.sh`) is recorded in `docs/adr/0022` section 10. The owner accepted the gate on that evidence on 2026-10-18 (section 10.4).
 
 ### Goal
 
@@ -451,6 +451,8 @@ Written on 2026-10-13 from `docs/adr/0022` (owner answers in its section 9).
 6. **CUDA refusal.** Configuring with MSVC and `MENOS_ENABLE_CUDA=ON` fails with the deferral message.
 7. **Linux unchanged.** `scripts/verify.sh` exits 0 in the WSL clone on the final commit, and the Linux test counts change only by the tests this phase adds.
 8. **Documentation and CI.** The README, the platform, requirements, installation, compatibility, limitations, troubleshooting and changelog pages, `docs/adr/0022` and this file describe Windows support and its limits. The wheel workflow has a Windows job. Every new symbol has a production caller and tests.
+
+**Gate record (2026-10-18):** every criterion has evidence in `docs/adr/0022` section 10, on `7fa38ce`: `scripts\verify-windows.ps1 -Wheels` exits 0 locally, GitHub Actions run 38581342797 succeeds, and `scripts/verify.sh` exits 0 in the WSL clone. The owner accepted the gate on that evidence. All eight criteria pass. Phase 18 is COMPLETE.
 
 ### Phase 18 process
 
@@ -509,7 +511,35 @@ Approved by the owner with the implementation plan on 2026-10-14 (`docs/adr/0023
 
 **Gate record (2026-10-16):** every criterion has evidence in `docs/adr/0023` section 10, and `scripts/verify.sh` exits 0 on `bb720d8` (dev/release 679/679, pytest 313 passed, every CUDA stage 734/734 with GPU tests executing in the CUDA 12 builds); `scripts\verify-windows.ps1` also exits 0 there. The owner accepted the gate on that evidence. All nine criteria pass. Phase 19 is COMPLETE.
 
-### Phase 20: PennyLane device (frontend) — PROPOSED
+### Phase 20: PennyLane device (frontend) — COMPLETE 2026-10-18
+
+*The owner started this phase on 2026-10-16, while Phase 18's gate is still open, and answered `docs/adr/0024` section 9 the same day with every recommended option. Branch: `phase-20-pennylane-device`, from `main` at `887b987`. The owner decisions and the gate below supersede the proposal text above them where they differ.*
+
+**Owner decisions (2026-10-16).**
+- `pennylane==0.45.1`, exact-pinned, CPython 3.11–3.14 only.
+- Noise channels are in scope, through PennyLane's own Kraus matrices.
+- A non-exact result under `shots=None` is always refused.
+- `MENOSBackend.max_circuits` stays 1.
+- Each required run is one `menos.run` call, so item 3 reads "each circuit planned alone by `plan_job`" instead of "through `run_batch`".
+- Analytic `var` is ⟨O²⟩ − ⟨O⟩².
+- Seeds come from one NumPy generator per device.
+- Finite-shot measurements follow PennyLane's semantics.
+- Refusals raise an exception that is both `UnsupportedFeatureError` and `DeviceError`, if measured feasible.
+- No shared frontend code is extracted.
+
+**Phase 20 acceptance gate** (`docs/adr/0024` section 9, Q11):
+1. Conventions: one test per row.
+2. Gate table and the `UnitaryOp` path within 1e-12 of PennyLane's matrices, global phase included.
+3. Analytic `state`/`probs`/`expval`/`var` within 1e-12 of `default.qubit`.
+4. Finite-shot chi-square at a family-wise 0.001; shot vectors; seeded determinism.
+5. The parameter-shift VQE gradient within 1e-12 of `default.qubit`'s.
+6. Noise against `default.mixed` within 1e-12, with chi-square for counts.
+7. Every refusal by name.
+8. PennyLane's device test suite passes for the supported features, with every skip listed.
+9. The entry point works from the installed wheel.
+10. Existing suites unchanged; `scripts/verify.sh` and `scripts/verify-windows.ps1` exit 0 on the final commit; documentation updated; every new symbol has a production caller and tests.
+
+**Gate record (2026-10-18):** every criterion has evidence in `docs/adr/0024` section 10. On `b942fd6`, two refusals of criterion 7 fell short: `backprop`/`adjoint` were refused by PennyLane rather than the device, and program capture and `qml.qjit` had no refusal. At the owner's request they were fixed in `5da898e`, with no C++ change (section 10.6). `scripts/verify.sh` (dev/release 679/679, pytest 554 passed, every CUDA stage 734/734) and `scripts\verify-windows.ps1` (680/680, pytest 554 passed) both exit 0 on `5da898e`. The owner had instructed on 2026-10-17 that the gate be marked passed once everything passed. Phase 20 is COMPLETE.
 
 **Goal.** A PennyLane device (`menos.qubit`, registered by an entry point) built on PennyLane's `qml.devices.Device` API, so PennyLane users can run circuits, variational algorithms and gradients through MENOS's planner.
 

@@ -166,8 +166,8 @@ uv build --wheel --python .venv/bin/python --no-build-isolation "${py_cmake_defi
 echo "== python: install wheel into a clean venv =="
 rm -rf /tmp/menos-wheel-venv
 uv venv /tmp/menos-wheel-venv --python 3.14 || fail "clean venv creation"
-uv pip install --python /tmp/menos-wheel-venv/bin/python dist/*.whl "qiskit==2.5.2" pytest \
-    || fail "wheel install"
+uv pip install --python /tmp/menos-wheel-venv/bin/python dist/*.whl "qiskit==2.5.2" \
+    "pennylane==0.45.1" pytest || fail "wheel install"
 
 echo "== python: wheel smoke test =="
 /tmp/menos-wheel-venv/bin/python -m pytest python/tests/test_wheel_smoke.py -v \

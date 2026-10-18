@@ -109,7 +109,7 @@ if (Test-Path $WheelVenv) { Remove-Item -Recurse -Force $WheelVenv }
 Run "clean venv" { uv venv $WheelVenv --python 3.14 }
 $WheelPython = Join-Path $WheelVenv "Scripts\python.exe"
 $Wheel = (Get-ChildItem dist\*.whl | Select-Object -First 1).FullName
-Run "wheel install" { uv pip install --python $WheelPython $Wheel "qiskit==2.5.2" pytest }
+Run "wheel install" { uv pip install --python $WheelPython $Wheel "qiskit==2.5.2" "pennylane==0.45.1" pytest }
 Run "wheel smoke test" { & $WheelPython -m pytest python/tests/test_wheel_smoke.py -v }
 
 if ($Wheels) {

@@ -10,7 +10,7 @@ The authoritative plan is `docs/BUILD_PLAN.md`. Read the current phase specifica
 
 ## Current phase
 
-**Phase 19 is COMPLETE: the owner accepted its acceptance gate on 2026-10-16, on the evidence in `docs/adr/0023` section 10 (`scripts/verify.sh` and `scripts/verify-windows.ps1` exit 0 on `bb720d8`), recorded in section 10.4. Phase 18 (native Windows) is STARTED; its gate is not passed, and Phase 19 merges into `main` after it. Phases 12–17 are COMPLETE. The rest of the interoperability roadmap (Phases 20–26) in `docs/BUILD_PLAN.md` is a proposal only, and the owner sets its order and scope.**
+**Phase 20 is COMPLETE: the owner instructed on 2026-10-17 that its gate be marked passed once every criterion passed, and it was recorded passed on 2026-10-18, on the evidence in `docs/adr/0024` section 10 (`scripts/verify.sh` and `scripts/verify-windows.ps1` exit 0 on `5da898e`), recorded in section 10.7. Phase 19 is COMPLETE (gate accepted 2026-10-16, `docs/adr/0023` section 10.4). Phase 18 (native Windows) is COMPLETE (gate accepted 2026-10-18 on the evidence on `7fa38ce`, `docs/adr/0022` section 10.4). Phases 12–17 are COMPLETE. The rest of the interoperability roadmap (Phases 21–26) in `docs/BUILD_PLAN.md` is a proposal only, and the owner sets its order and scope.**
 
 Platform note (2026-10-02, `docs/adr/0014` section 17): the CUDA backend supports toolkits 12.0 and later. On the WSL machine (driver 566.14), only the `cuda12-dev`/`cuda12-release` presets reach the GPU; `scripts/lsan-wsl-libcuda.supp` suppresses, by path, a leak inside WSL's CUDA driver shim. Git inside WSL has no identity configured; commits use the repository's existing author.
 
@@ -102,13 +102,25 @@ Invariants:
 
 ## Phase 18
 
-**Native Windows (MSVC).** Specification and gate: `docs/BUILD_PLAN.md`, Phase 18. Design: `docs/adr/0022`. The owner started the phase on 2026-10-13 as the next phase, renumbered the proposed interoperability roadmap to Phases 19–26, answered section 9 and approved the plan the same day. Branch `phase-18-windows-native`. **STARTED; gate not passed.**
+**Native Windows (MSVC).** Specification and gate: `docs/BUILD_PLAN.md`, Phase 18. Design: `docs/adr/0022`. The owner started the phase on 2026-10-13 as the next phase, renumbered the proposed interoperability roadmap to Phases 19–26, answered section 9 and approved the plan the same day. Branch `phase-18-windows-native`, merged to `main` in `8742433`. **COMPLETE (frozen): the owner accepted the gate on 2026-10-18** on the evidence in `docs/adr/0022` section 10 (`7fa38ce`), recorded in section 10.4.
 
 Scope decisions: Windows x64, MSVC, CPU only (CUDA on Windows is refused at configure time); wheels for CPython 3.10–3.14 `win_amd64`; MSVC ASan in the `windows-dev` preset, with UBSan/LSan coverage staying in the Linux `verify.sh`; LAPACK from the official OpenBLAS 0.3.34 x64 (LP64) release, pinned by SHA-256 and shipped in the wheel; any Windows-only last-bit numeric failure goes to the owner, never a tolerance change. Windows verification: `scripts/verify-windows.ps1`; Linux verification stays `scripts/verify.sh` in the WSL clone.
 
 ## Phase 19
 
 **OpenQASM 3 import.** Specification and gate: `docs/BUILD_PLAN.md`, Phase 19. Design: `docs/adr/0023`. The owner started the phase on 2026-10-14, in parallel with Phase 18 (native Windows, branch `phase-18-windows-native`, gate still open), and answered `docs/adr/0023` section 9 Q1–Q8 the same day: a hand-rolled parser; `reset` refused and deferred to Phase 24; `input` parameters in scope; a modifier with no exact gate-table equivalent becomes an exact `UnitaryOp`; the OpenQASM 2 importer keeps measurements in source order; the CLI chooses the importer from the header; Python `menos.from_qasm3`; the `stdgates.inc` names as built-in gates with Qiskit's matrices (revised from "embed verbatim" after the section 4.1 measurement). Branch `phase-19-openqasm3-import`, rebased onto `phase-18-windows-native` (`7fa38ce`) at the owner's decision, so it merges after Phase 18. The owner approved the implementation plan and the gate (Q9) the same day. **COMPLETE (frozen): the owner accepted the gate on 2026-10-16** on the evidence in `docs/adr/0023` section 10 (`bb720d8`), recorded in section 10.4.
+
+## Phase 20
+
+**PennyLane device.** Specification and gate: `docs/BUILD_PLAN.md`, Phase 20. Design: `docs/adr/0024`. The owner started the phase on 2026-10-16 and answered section 9 the same day, taking every recommended option. Branch `phase-20-pennylane-device`, from `main` at `887b987`. Implemented in `b942fd6`; the criterion 7 refusals were fixed in `5da898e` at the owner's request (`docs/adr/0024` section 10.6). **COMPLETE (frozen): gate recorded passed on 2026-10-18** on the owner's instruction (section 10.7).
+
+Invariants:
+- `menos.qubit` (`menos.pennylane.MENOSQubitDevice`) is registered by the `pennylane.plugins` entry point. The extra is exact-pinned to `pennylane==0.45.1`, CPython 3.11 or later.
+- Each required run is one `menos.run`, planned alone by `plan_job`; the device never chooses an engine.
+- Under `shots=None`, every result is exact or refused; there is no opt-in.
+- Every refusal raises `MENOSDeviceUnsupportedError` (both `menos.UnsupportedFeatureError` and PennyLane's `DeviceError`) naming the construct, including `backprop`/`adjoint`/`device` derivatives, program capture and `qml.qjit`.
+- PennyLane's own Kraus matrices are used for channels; there is no per-channel convention table.
+- No shared frontend code is extracted, and `MENOSBackend.max_circuits` stays 1.
 
 ## Definition of done
 
