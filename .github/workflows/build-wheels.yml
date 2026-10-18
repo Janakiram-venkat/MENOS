@@ -2,14 +2,44 @@ name: Build MENOS Wheels
 
 on:
   workflow_dispatch:
+    inputs:
+      gpu_runner:
+        description: >-
+          Runner label of a self-hosted machine with an NVIDIA GPU. When set,
+          the CUDA wheel is also installed and run there, so the CUDA path is
+          exercised on real hardware (GitHub-hosted runners have no GPU).
+        required: false
+        default: ""
 
 permissions:
   contents: read
 
+env:
+  CUDA_VERSION: "12-9"
+  CUDA_HOME: /usr/local/cuda-12.9
+
 jobs:
-  build:
-    name: Build MENOS CPython Wheels
+  linux:
+    name: Linux ${{ matrix.variant }} wheels
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # CPU-only wheel: CPython 3.10-3.11 (3.12+ get the auto wheel).
+          - variant: cpu
+            dist_name: menos
+            cibw_build: "cp310-manylinux_x86_64 cp311-manylinux_x86_64"
+            python_tags: "cp310 cp311"
+          # "Auto" wheel: CUDA is compiled in and the planner uses the GPU
+          # only when one is present at run time, otherwise the CPU engines.
+          # CPython 3.12-3.14. Same distribution name as the CPU wheel: pip
+          # picks the wheel by Python tag, so one `pip install menos` gets
+          # CUDA+CPU where it is built and CPU-only elsewhere.
+          - variant: cuda
+            dist_name: menos
+            cibw_build: "cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp314-manylinux_x86_64"
+            python_tags: "cp312 cp313 cp314"
 
     steps:
       - name: Checkout MENOS
@@ -23,26 +53,11 @@ jobs:
       - name: Inspect project configuration
         run: |
           set -eux
-
           python --version
-
-          echo "===== Git status ====="
           git status --short
-
-          echo "===== pyproject.toml ====="
           cat pyproject.toml
-
-          echo "===== CMake LAPACKE configuration ====="
           sed -n '1,180p' src/common/CMakeLists.txt
-
-          echo "===== Python binding configuration ====="
           sed -n '1,120p' src/python/CMakeLists.txt
-
-          echo "===== Project files ====="
-          find . -maxdepth 3 -type f \
-            ! -path './.git/*' \
-            ! -path './.venv/*' \
-            | sort | head -200
 
       - name: Verify package compatibility metadata
         run: |
@@ -50,18 +65,14 @@ jobs:
           import tomllib
 
           with open("pyproject.toml", "rb") as f:
-              config = tomllib.load(f)
-
-          project = config["project"]
+              project = tomllib.load(f)["project"]
 
           print("Package:", project["name"])
           print("Version:", project["version"])
           print("Python requirement:", project.get("requires-python"))
 
-          assert project["name"].lower() == "menos"
-          assert project["version"] == "1.1.0", (
-              "Expected MENOS version 1.1.0."
-          )
+          assert project["name"] == "${{ matrix.dist_name }}"
+          assert project["version"] == "1.2.1", "Expected MENOS version 1.2.1."
           assert project.get("requires-python") == ">=3.10", (
               "Expected requires-python = '>=3.10'."
           )
@@ -74,76 +85,101 @@ jobs:
           python -m pip install cibuildwheel build auditwheel packaging
 
       - name: Build source distribution
+        if: matrix.variant == 'cpu'
         run: |
           set -o pipefail
           python -m build --sdist --verbose 2>&1 | tee sdist-build.log
 
-      - name: Build MENOS wheels for Python 3.10-3.14
+      - name: Build MENOS ${{ matrix.variant }} wheels
         run: |
           set -o pipefail
           python -m cibuildwheel \
             --output-dir wheelhouse \
             --debug-traceback 2>&1 | tee cibuildwheel.log
         env:
-          CIBW_BUILD: "cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp314-manylinux_x86_64"
+          CIBW_BUILD: ${{ matrix.cibw_build }}
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
           CIBW_BUILD_VERBOSITY: "3"
           CIBW_DEBUG_KEEP_CONTAINER: "true"
 
-          CIBW_BEFORE_BUILD_LINUX: |
+          # CUDA wheel only: nvcc from the CUDA 12.9 toolkit, kernels for
+          # Turing through Blackwell (the last entry also embeds PTX, so newer
+          # GPUs still load it). CUDAARCHS is read by CMake itself, which
+          # avoids quoting a ';' list inside CMAKE_ARGS. auditwheel bundles
+          # libcudart; libcuda comes from the GPU driver and is only dlopen'd,
+          # so the wheel imports and runs on the CPU on a machine with no GPU.
+          CIBW_ENVIRONMENT_LINUX: >-
+            LD_LIBRARY_PATH="/usr/local/lib64:/usr/local/lib:${{ matrix.variant == 'cuda' && format('{0}/lib64:{0}/targets/x86_64-linux/lib:', env.CUDA_HOME) || '' }}$LD_LIBRARY_PATH"
+            ${{ matrix.variant == 'cuda' && format('CMAKE_ARGS="-DMENOS_ENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER={0}/bin/nvcc -DCUDAToolkit_ROOT={0}" CUDAARCHS="75;80;86;89;90;120"', env.CUDA_HOME) || '' }}
+
+          # Once per container, not once per Python version.
+          CIBW_BEFORE_ALL_LINUX: |
             set -eux
 
             echo "===== Installing system dependencies ====="
-            yum install -y openblas-devel lapack-devel cmake make gcc gcc-c++
+            yum install -y openblas-devel lapack-devel cmake make gcc gcc-c++ git
+
+            if [ "${{ matrix.variant }}" = "cuda" ]; then
+              echo "===== Installing the CUDA toolkit (nvcc + cudart) ====="
+              dnf install -y dnf-plugins-core
+              dnf config-manager --add-repo \
+                https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo
+              dnf install -y \
+                cuda-nvcc-${{ env.CUDA_VERSION }} \
+                cuda-cudart-devel-${{ env.CUDA_VERSION }}
+              ${{ env.CUDA_HOME }}/bin/nvcc --version
+              test -f ${{ env.CUDA_HOME }}/include/cuda_runtime.h
+            fi
 
             echo "===== Preparing LAPACKE source ====="
             rm -rf /tmp/lapacke-src
+            git clone --depth 1 --branch v3.12.1 \
+              https://github.com/Reference-LAPACK/lapack.git /tmp/lapacke-src
 
-            git clone \
-              --depth 1 \
-              --branch v3.12.1 \
-              https://github.com/Reference-LAPACK/lapack.git \
-              /tmp/lapacke-src
-
-            echo "===== Configuring LAPACKE ====="
-            cmake \
-              -S /tmp/lapacke-src \
-              -B /tmp/lapacke-src/build \
+            echo "===== Building and installing LAPACKE ====="
+            cmake -S /tmp/lapacke-src -B /tmp/lapacke-src/build \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX=/usr/local \
               -DBUILD_SHARED_LIBS=ON \
               -DLAPACKE=ON \
               -DBUILD_TESTING=OFF
-
-            echo "===== Building LAPACKE ====="
             cmake --build /tmp/lapacke-src/build --parallel 2
-
-            echo "===== Installing LAPACKE ====="
             cmake --install /tmp/lapacke-src/build
             ldconfig
 
-            echo "===== Checking LAPACKE header ====="
-            find /usr/local /usr/include -name lapacke.h -print
             test -f /usr/local/include/lapacke.h
-
-            echo "===== Checking LAPACKE library ====="
             ldconfig -p | grep -i lapacke
+
+          # Each wheel is installed into a clean environment and run. The
+          # runner has no GPU, so this proves the wheel imports and runs on
+          # the CPU and refuses a forced CUDA run. That a CUDA wheel really
+          # has CUDA is checked below (bundled libcudart) and by the GPU job.
+          CIBW_TEST_EXTRAS: "test"
+          CIBW_TEST_COMMAND: >-
+            python {project}/scripts/check_wheel_backends.py ${{ matrix.variant }} &&
+            pytest {project}/python/tests/test_wheel_smoke.py {project}/python/tests/test_backend_selection.py -q
 
       - name: Inspect and validate generated wheels
         if: success()
+        env:
+          DIST_NAME: ${{ matrix.dist_name }}
+          PYTHON_TAGS: ${{ matrix.python_tags }}
+          VARIANT: ${{ matrix.variant }}
         run: |
           set -eux
 
-          echo "===== Generated wheels ====="
           ls -lh wheelhouse/
 
           python - <<'PY'
+          import os
           from pathlib import Path
           from zipfile import ZipFile
           from packaging.utils import parse_wheel_filename
 
-          expected = {"cp310", "cp311", "cp312", "cp313", "cp314"}
+          dist = os.environ["DIST_NAME"]
+          expected = set(os.environ["PYTHON_TAGS"].split())
+          cuda = os.environ["VARIANT"] == "cuda"
           found = set()
           wheels = sorted(Path("wheelhouse").glob("*.whl"))
 
@@ -152,58 +188,36 @@ jobs:
 
           for wheel in wheels:
               print(f"\nChecking: {wheel.name}")
-
               name, version, build, tags = parse_wheel_filename(wheel.name)
 
-              if name != "menos":
+              if str(name) != dist:
                   raise SystemExit(f"Unexpected package name: {name}")
-
-              if str(version) != "1.1.0":
-                  raise SystemExit(
-                      f"Expected version 1.1.0, got {version}"
-                  )
+              if str(version) != "1.2.1":
+                  raise SystemExit(f"Expected version 1.2.1, got {version}")
 
               python_tags = {tag.interpreter for tag in tags}
               supported = python_tags & expected
-
               if not supported:
-                  raise SystemExit(
-                      f"Unexpected Python compatibility tags: {python_tags}"
-                  )
-
+                  raise SystemExit(f"Unexpected Python tags: {python_tags}")
               found.update(supported)
 
               with ZipFile(wheel) as archive:
-                  wheel_metadata = [
-                      path for path in archive.namelist()
-                      if path.endswith(".dist-info/WHEEL")
-                  ]
-
-                  if len(wheel_metadata) != 1:
-                      raise SystemExit(
-                          f"Invalid WHEEL metadata in {wheel.name}: "
-                          f"{wheel_metadata}"
-                      )
-
-                  metadata = archive.read(wheel_metadata[0]).decode()
-                  print("WHEEL metadata:")
-                  print(metadata)
-
-                  if "Tag:" not in metadata:
-                      raise SystemExit(
-                          f"No wheel tags found in {wheel.name}"
-                      )
-
-              print("Python tags:", sorted(python_tags))
+                  names = archive.namelist()
+                  if len([n for n in names if n.endswith(".dist-info/WHEEL")]) != 1:
+                      raise SystemExit(f"Invalid WHEEL metadata in {wheel.name}")
+                  if not any(n.startswith("menos/_core") for n in names):
+                      raise SystemExit(f"No menos._core extension in {wheel.name}")
+                  has_cudart = any("libcudart" in n for n in names)
+                  if cuda and not has_cudart:
+                      raise SystemExit(f"{wheel.name}: libcudart was not bundled")
+                  if not cuda and has_cudart:
+                      raise SystemExit(f"{wheel.name}: CPU wheel contains libcudart")
 
           missing = expected - found
-
           if missing:
-              raise SystemExit(
-                  f"Missing wheels for Python versions: {sorted(missing)}"
-              )
+              raise SystemExit(f"Missing wheels for Python versions: {sorted(missing)}")
 
-          print("\nSUCCESS: Wheels for CPython 3.10-3.14 were generated.")
+          print(f"\nSUCCESS: {os.environ['VARIANT']} wheels for {sorted(expected)}")
           PY
 
           for wheel in wheelhouse/*.whl; do
@@ -213,18 +227,13 @@ jobs:
       - name: Print build failure summary
         if: failure()
         run: |
-          echo "===== Relevant build errors ====="
-
           if [ -f cibuildwheel.log ]; then
             grep -in -B 10 -A 15 \
-              -E 'LAPACKE|lapacke\.h|CMake Error|fatal error:|error:|FAILED|not found|No match for argument|fatal:|exit code' \
+              -E 'LAPACKE|lapacke\.h|CUDA|nvcc|CMake Error|fatal error:|error:|FAILED|not found|No match for argument|fatal:|exit code' \
               cibuildwheel.log || true
-
             echo "===== Last 150 lines of build log ====="
             tail -n 150 cibuildwheel.log
           fi
-
-          echo "===== Source distribution log ====="
           if [ -f sdist-build.log ]; then
             tail -n 60 sdist-build.log
           fi
@@ -233,7 +242,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: menos-build-diagnostics
+          name: menos-linux-${{ matrix.variant }}-wheels
           path: |
             cibuildwheel.log
             sdist-build.log
@@ -241,6 +250,36 @@ jobs:
             dist/
           if-no-files-found: warn
           retention-days: 14
+
+  cuda-gpu-test:
+    # Optional: runs only when a GPU runner label is given. Installs the CUDA
+    # wheel built above and checks that the dense engine really runs on
+    # the GPU.
+    name: Run the CUDA wheel on a GPU
+    needs: linux
+    if: inputs.gpu_runner != ''
+    runs-on: ${{ inputs.gpu_runner }}
+
+    steps:
+      - name: Checkout MENOS
+        uses: actions/checkout@v4
+
+      - name: Download CUDA wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: menos-linux-cuda-wheels
+          path: artifact
+
+      - name: Install the wheel and run on the GPU
+        run: |
+          set -eux
+          nvidia-smi
+          python3 -m venv .venv
+          . .venv/bin/activate
+          pyver="cp$(python -c 'import sys; print(f"{sys.version_info[0]}{sys.version_info[1]}")')"
+          wheel="$(ls artifact/wheelhouse/*-${pyver}-*.whl)"
+          pip install "${wheel}[test]"
+          python scripts/check_wheel_backends.py cuda --gpu
 
   windows:
     # Native Windows wheels (docs/adr/0022 section 5). The cibuildwheel
@@ -325,7 +364,7 @@ jobs:
           for wheel in sorted(Path("wheelhouse").glob("*.whl")):
               name, version, _, tags = parse_wheel_filename(wheel.name)
               assert name == "menos", name
-              assert str(version) == "1.1.0", version
+              assert str(version) == "1.2.1", version
               assert {tag.platform for tag in tags} == {"win_amd64"}, tags
               with ZipFile(wheel) as archive:
                   files = archive.namelist()
